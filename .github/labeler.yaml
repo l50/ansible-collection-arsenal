@@ -1,0 +1,41 @@
+---
+area/github:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**/*"
+
+area/pre-commit:
+  - changed-files:
+      - any-glob-to-any-file: ".pre-commit-config.yaml"
+      - any-glob-to-any-file: ".hooks/**/*"
+
+area/license:
+  - changed-files:
+      - any-glob-to-any-file: "LICENSE"
+
+area/readme:
+  - changed-files:
+      - any-glob-to-any-file: "README.md"
+
+area/changelogs:
+  - changed-files:
+      - any-glob-to-any-file: "changelogs/**/*"
+
+area/meta:
+  - changed-files:
+      - any-glob-to-any-file: "meta/**/*"
+
+area/roles:
+  - changed-files:
+      - any-glob-to-any-file: "roles/**/*"
+
+area/playbooks:
+  - changed-files:
+      - any-glob-to-any-file: "playbooks/**/*"
+
+area/magefiles:
+  - changed-files:
+      - any-glob-to-any-file: "magefiles/**/*"
+
+area/galaxy:
+  - changed-files:
+      - any-glob-to-any-file: "galaxy.yml"

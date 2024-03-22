@@ -1,0 +1,97 @@
+---
+name: Molecule Test
+on:
+  pull_request:
+  push:
+
+env:
+  COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/cowdogmoo/workstation
+  RUNZERO_DOWNLOAD_TOKEN: ${{ secrets.RUNZERO_DOWNLOAD_TOKEN }}
+
+jobs:
+  role_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Role Test - asdf"
+            path: "roles/asdf"
+          - name: "Role Test - user_setup"
+            path: "roles/user_setup"
+          - name: "Role Test - package_management"
+            path: "roles/package_management"
+          - name: "Role Test - zsh_setup"
+            path: "roles/zsh_setup"
+          - name: "Role Test - vnc_setup"
+            path: "roles/vnc_setup"
+          - name: "Role Test - logging"
+            path: "roles/logging"
+          - name: "Role Test - runzero_explorer"
+            path: "roles/runzero_explorer"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.6.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install ansible molecule docker
+          python3 -m pip install molecule-docker
+
+      - name: Install galaxy dependencies
+        run: ansible-galaxy install -v -r requirements.yml
+
+      - name: ${{ matrix.name }}
+        run: molecule test
+        working-directory: ${{ matrix.path }}
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+
+  playbook_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: "Playbook Test - attack-box"
+            path: "playbooks/attack-box"
+          - name: "Playbook Test - workstation"
+            path: "playbooks/workstation"
+          - name: "Playbook Test - runzero-explorer"
+            path: "playbooks/runzero-explorer"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.6.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade \
+          ansible-core \
+          docker \
+          molecule \
+          molecule-docker \
+          "molecule-plugins[docker]"
+
+      - name: Install galaxy dependencies
+        run: |
+          ansible-galaxy install -v -r requirements.yml
+          ansible-galaxy collection install -v -r requirements.yml
+          mkdir -p $HOME/.ansible/collections/ansible_collections/cowdogmoo
+          ln -s $PWD $HOME/.ansible/collections/ansible_collections/cowdogmoo/workstation
+
+      - name: ${{ matrix.name }}
+        run: molecule test
+        working-directory: ${{ matrix.path }}
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"

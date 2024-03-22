@@ -1,0 +1,9 @@
+---
+roles:
+  - name: cowdogmoo.firefox
+
+collections:
+  - name: ansible.windows
+  - name: community.docker
+  - name: community.general
+  - name: cowdogmoo.workstation

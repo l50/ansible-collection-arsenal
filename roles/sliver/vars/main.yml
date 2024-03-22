@@ -1,0 +1,51 @@
+---
+sliver_common_install_packages:
+  - git
+  - gnupg
+  - make
+  - wget
+  - unzip
+  - zip
+
+sliver_debian_packages:
+  - apt-utils
+  - autoconf
+  - build-essential
+  - binutils-mingw-w64
+  - bison
+  - curl
+  - g++-mingw-w64
+  - gpg
+  - libapr1
+  - libcurl4-openssl-dev
+  - libgmp3-dev
+  - libpcap-dev
+  - libpq-dev
+  - libsqlite3-dev
+  - libsvn1
+  - libssl-dev
+  - libtool
+  - libxml2
+  - libxml2-dev
+  - libxslt-dev
+  - libyaml-dev
+  - locate
+  - mingw-w64
+  - nasm
+  - ncurses-dev
+  - openssl
+  - packaging-dev
+  - postgresql
+  - postgresql-contrib
+  - postgresql-client
+  - xsel
+  - zlib1g
+  - zlib1g-dev
+
+sliver_el_packages:
+  - epel-release
+  - gcc
+  - gcc-c++
+  - protobuf
+  - zlib
+  - zlib-devel

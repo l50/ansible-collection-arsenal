@@ -1,0 +1,120 @@
+---
+- name: Create Sliver users
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.user_setup
+  vars:
+    user_setup_default_users: "{{ sliver_users }}"
+
+- name: Check if .bash_profile exists for each sliver user
+  ansible.builtin.stat:
+    path: "/home/{{ item.username }}/.bash_profile"
+  register: bash_profile_stat
+  become: true
+  become_user: "{{ item.username }}"
+  loop: "{{ sliver_users }}"
+
+- name: Ensure .bash_profile exists for each sliver user
+  ansible.builtin.file:
+    path: "/home/{{ item.username }}/.bash_profile"
+    state: touch
+    owner: "{{ item.username }}"
+    group: "{{ item.usergroup }}"
+    mode: '0644'
+  become: true
+  become_user: "{{ item.username }}"
+  when: not bash_profile_stat.results | selectattr('invocation.module_args.path', 'equalto', '/home/' + item.username + '/.bash_profile') | map(attribute='stat.exists') | first | default(false)
+  loop: "{{ sliver_users }}"
+
+- name: Install required packages for Sliver
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.package_management
+  vars:
+    package_management_common_install_packages: "{{ sliver_common_install_packages }}"
+    package_management_debian_specific_packages: "{{ sliver_debian_packages }}"
+    package_management_redhat_specific_packages: "{{ sliver_el_packages }}"
+
+- name: Install asdf and go for sliver users
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.asdf
+  vars:
+    asdf_users: "{{ sliver_users }}"
+
+- name: Configure Git to allow sliver_install_path as a safe directory
+  community.general.git_config:
+    name: safe.directory
+    scope: global
+    value: "{{ sliver_install_path }}"
+  become: true
+
+- name: Download and build Sliver
+  ansible.builtin.git:
+    repo: 'https://github.com/bishopfox/sliver.git'
+    dest: "{{ sliver_install_path }}"
+    version: master
+  become: true
+
+- name: Check current ownership of {{ sliver_install_path }}
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}"
+  register: sliver_stat
+  become: true
+
+- name: Change ownership of sliver_install_path if needed for each sliver user
+  ansible.builtin.file:
+    path: "{{ sliver_install_path }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.usergroup }}"
+    recurse: true
+    state: directory
+  become: true
+  register: ownership_change
+  when: sliver_stat.stat.pw_name != item.username or sliver_stat.stat.gr_name != item.usergroup
+  loop: "{{ sliver_users }}"
+
+- name: Add sliver_install_path to $PATH for each sliver user
+  ansible.builtin.lineinfile:
+    path: "/home/{{ item.username }}/.bash_profile"
+    line: "export PATH=$PATH:{{ sliver_install_path }}"
+    insertafter: EOF
+    regexp: "^export PATH=.*:{{ sliver_install_path }}.*$"
+  become: true
+  become_user: "{{ item.username }}"
+  loop: "{{ sliver_users }}"
+
+- name: Build Sliver with a custom PATH for each sliver user
+  ansible.builtin.command:
+    cmd: gmake
+    chdir: "{{ sliver_install_path }}"
+  environment:
+    PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
+  become: true
+  become_user: "{{ item.username }}"
+  become_flags: -i
+  register: gmake_result
+  changed_when: "'Some specific output' in gmake_result.stdout"
+  loop: "{{ sliver_users }}"
+
+- name: Unpack Sliver server for each sliver user
+  ansible.builtin.command:
+    cmd: "{{ sliver_install_path }}/sliver-server unpack --force"
+  become: true
+  become_user: "{{ item.username }}"
+  changed_when: false
+  loop: "{{ sliver_users }}"
+
+- name: Generate operator configs for each sliver user
+  ansible.builtin.shell:
+    cmd: |
+      {{ sliver_install_path }}/sliver-server operator --name {{ item.username }} \
+      --lhost localhost --save "{{ sliver_install_path }}/sliver-client/configs"
+      chown -R {{ item.username }}:"{{ item.usergroup }}" "{{ sliver_install_path }}/sliver-client"
+  become: true
+  args:
+    executable: /bin/bash
+  changed_when: "'configs saved' in result.stdout"
+  register: result
+  loop: "{{ sliver_users }}"
+
+- name: Include systemd tasks
+  ansible.builtin.include_tasks: systemd.yml
+  when: sliver_setup_systemd | bool

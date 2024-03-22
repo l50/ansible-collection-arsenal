@@ -1,0 +1,14 @@
+# Custom attributes files created by macOS
+.DS_Store
+
+# Used for testing actions locally with act
+.secrets
+
+# Ignore .env file containing credentials, API keys, tokens, passwords, etc.
+*.env
+
+# Log files
+*.log
+roles.collections
+library/__pycache__
+changelogs/.plugin-cache.yaml

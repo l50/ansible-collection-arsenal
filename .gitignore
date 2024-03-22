@@ -1,0 +1,6 @@
+roles.collections
+chrome.sh
+library/__pycache__
+.DS_Store
+logs
+changelogs/.plugin-cache.yaml
