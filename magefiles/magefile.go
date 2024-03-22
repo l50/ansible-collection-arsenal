@@ -187,8 +187,8 @@ func GenerateMagePackageDocs() error {
 	sys.Cd(repoRoot)
 
 	repo := docs.Repo{
-		Owner: "CowDogMoo",
-		Name:  "ansible-collection-workstation",
+		Owner: "l50",
+		Name:  "ansible-collection-arsenal",
 	}
 
 	templatePath := filepath.Join("magefiles", "tmpl", "README.md.tmpl")

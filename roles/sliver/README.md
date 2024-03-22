@@ -1,10 +1,5 @@
 # Ansible Role: Sliver
 
-[![Pre-Commit](https://github.com/l50/ansible-sliver/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/l50/ansible-sliver/actions/workflows/pre-commit.yaml)
-[![Molecule Test](https://github.com/l50/ansible-sliver/actions/workflows/molecule.yaml/badge.svg)](https://github.com/l50/ansible-sliver/actions/workflows/molecule.yaml)
-[![Ansible Galaxy](https://img.shields.io/badge/Galaxy-sliver-660198.svg?style=flat)](https://galaxy.ansible.com/l50/sliver)
-[![License](https://img.shields.io/github/license/l50/ansible-sliver?label=License&style=flat&color=blue&logo=github)](https://github.com/l50/ansible-sliver/blob/master/LICENSE)
-
 This role installs [Sliver](https://github.com/BishopFox/sliver.git)
 on Linux hosts.
 

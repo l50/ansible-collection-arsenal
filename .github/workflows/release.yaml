@@ -13,7 +13,7 @@ on:
 
 defaults:
   run:
-    working-directory: ansible_collections/cowdogmoo/workstation
+    working-directory: ansible_collections/l50/arsenal
 
 jobs:
   release:
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
-          path: ansible_collections/cowdogmoo/workstation
+          path: ansible_collections/l50/arsenal
 
       - name: Set up Python
         uses: actions/setup-python@v4

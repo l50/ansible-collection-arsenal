@@ -1,0 +1,12 @@
+---
+- name: Attack Box
+  hosts: all
+  roles:
+    - role: l50.arsenal.sliver
+  tasks:
+    - name: Add MSF tools to PATH
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/zsh/zshrc
+        line: export PATH=$PATH:/usr/share/metasploit-framework/tools/exploit
+      when: ansible_distribution_release is search("kali")

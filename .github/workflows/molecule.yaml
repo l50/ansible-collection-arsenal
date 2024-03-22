@@ -5,8 +5,7 @@ on:
   push:
 
 env:
-  COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/cowdogmoo/workstation
-  RUNZERO_DOWNLOAD_TOKEN: ${{ secrets.RUNZERO_DOWNLOAD_TOKEN }}
+  COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
 
 jobs:
   role_test:
@@ -15,20 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "Role Test - asdf"
-            path: "roles/asdf"
-          - name: "Role Test - user_setup"
-            path: "roles/user_setup"
-          - name: "Role Test - package_management"
-            path: "roles/package_management"
-          - name: "Role Test - zsh_setup"
-            path: "roles/zsh_setup"
-          - name: "Role Test - vnc_setup"
-            path: "roles/vnc_setup"
-          - name: "Role Test - logging"
-            path: "roles/logging"
-          - name: "Role Test - runzero_explorer"
-            path: "roles/runzero_explorer"
+          - name: "Role Test - sliver"
+            path: "roles/sliver"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.6.0
@@ -60,10 +47,6 @@ jobs:
         include:
           - name: "Playbook Test - attack-box"
             path: "playbooks/attack-box"
-          - name: "Playbook Test - workstation"
-            path: "playbooks/workstation"
-          - name: "Playbook Test - runzero-explorer"
-            path: "playbooks/runzero-explorer"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.6.0
@@ -86,8 +69,8 @@ jobs:
         run: |
           ansible-galaxy install -v -r requirements.yml
           ansible-galaxy collection install -v -r requirements.yml
-          mkdir -p $HOME/.ansible/collections/ansible_collections/cowdogmoo
-          ln -s $PWD $HOME/.ansible/collections/ansible_collections/cowdogmoo/workstation
+          mkdir -p $HOME/.ansible/collections/ansible_collections/l50
+          ln -s $PWD $HOME/.ansible/collections/ansible_collections/l50/arsenal
 
       - name: ${{ matrix.name }}
         run: molecule test
