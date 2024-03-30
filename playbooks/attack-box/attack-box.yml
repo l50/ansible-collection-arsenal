@@ -2,6 +2,10 @@
 - name: Attack Box
   hosts: all
   roles:
+    - role: cowdogmoo.workstation.user_setup
+    - role: cowdogmoo.workstation.package_management
+    - role: cowdogmoo.workstation.zsh_setup
+    - role: cowdogmoo.workstation.asdf
     - role: l50.arsenal.sliver
   tasks:
     - name: Add MSF tools to PATH
