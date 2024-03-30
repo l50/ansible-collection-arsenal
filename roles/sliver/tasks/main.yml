@@ -83,15 +83,15 @@
 
 - name: Build Sliver with a custom PATH for each sliver user
   ansible.builtin.command:
-    cmd: gmake
+    cmd: make
     chdir: "{{ sliver_install_path }}"
   environment:
     PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
   become: true
   become_user: "{{ item.username }}"
   become_flags: -i
-  register: gmake_result
-  changed_when: "'Some specific output' in gmake_result.stdout"
+  register: make_result
+  changed_when: "'Some specific output' in make_result.stdout"
   loop: "{{ sliver_users }}"
 
 - name: Unpack Sliver server for each sliver user
