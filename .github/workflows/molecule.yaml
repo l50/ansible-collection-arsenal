@@ -10,12 +10,6 @@ env:
 jobs:
   role_test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: "Role Test - sliver"
-            path: "roles/sliver"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.6.0
@@ -27,54 +21,24 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install ansible molecule docker
-          python3 -m pip install molecule-docker
+          python3 -m pip install --upgrade \
+          ansible-core \
+          docker \
+          molecule \
+          molecule-docker \
+          "molecule-plugins[docker]"
 
       - name: Install galaxy dependencies
-        run: ansible-galaxy install -v -r requirements.yml
+        run: |
+          ansible-galaxy install -v -r requirements.yml
+          ansible-galaxy collection install -v -r requirements.yml
+          mkdir -p "${HOME}/.ansible/${COLLECTION_PATH}/roles/sliver"
+          ln -s ${{ github.workspace }}/roles/sliver "${HOME}/.ansible/${COLLECTION_PATH}/roles/sliver"
+        working-directory: ${{ github.workspace }}/roles/sliver
 
-      - name: ${{ matrix.name }}
-        run: molecule test
-        working-directory: ${{ matrix.path }}
+      - name: Run Molecule Test
+        run: molecule converge && molecule verify
+        working-directory: ${{ github.workspace }}/roles/sliver
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
-
-#   playbook_test:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         include:
-#           - name: "Playbook Test - attack-box"
-#             path: "playbooks/attack-box"
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3.6.0
-
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: "3.x"
-
-#       - name: Install dependencies
-#         run: |
-#           python3 -m pip install --upgrade \
-#           ansible-core \
-#           docker \
-#           molecule \
-#           molecule-docker \
-#           "molecule-plugins[docker]"
-
-#       - name: Install galaxy dependencies
-#         run: |
-#           ansible-galaxy install -v -r requirements.yml
-#           ansible-galaxy collection install -v -r requirements.yml
-#           mkdir -p $HOME/.ansible/collections/ansible_collections/l50
-#           ln -s $PWD $HOME/.ansible/collections/ansible_collections/l50/arsenal
-
-#       - name: ${{ matrix.name }}
-#         run: molecule test
-#         working-directory: ${{ matrix.path }}
-#         env:
-#           PY_COLORS: "1"
-#           ANSIBLE_FORCE_COLOR: "1"
