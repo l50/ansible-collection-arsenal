@@ -10,6 +10,12 @@ env:
 jobs:
   role_test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Role Test - sliver"
+            path: "roles/sliver"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.6.0
@@ -29,16 +35,11 @@ jobs:
           "molecule-plugins[docker]"
 
       - name: Install galaxy dependencies
-        run: |
-          ansible-galaxy install -v -r requirements.yml
-          ansible-galaxy collection install -v -r requirements.yml
-          mkdir -p "${HOME}/.ansible/${COLLECTION_PATH}/roles/sliver"
-          ln -s ${{ github.workspace }}/roles/sliver "${HOME}/.ansible/${COLLECTION_PATH}/roles/sliver"
-        working-directory: ${{ github.workspace }}/roles/sliver
+        run: ansible-galaxy install -v -r requirements.yml
 
-      - name: Run Molecule Test
-        run: molecule converge && molecule verify
-        working-directory: ${{ github.workspace }}/roles/sliver
+      - name: ${{ matrix.name }}
+        run: molecule test
+        working-directory: ${{ matrix.path }}
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
