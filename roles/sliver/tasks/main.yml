@@ -59,18 +59,6 @@
   register: sliver_stat
   become: true
 
-- name: Change ownership of sliver_install_path if needed for each sliver user
-  ansible.builtin.file:
-    path: "{{ sliver_install_path }}"
-    owner: "{{ item.username }}"
-    group: "{{ item.usergroup }}"
-    recurse: true
-    state: directory
-  become: true
-  register: ownership_change
-  when: sliver_stat.stat.pw_name != item.username or sliver_stat.stat.gr_name != item.usergroup
-  loop: "{{ sliver_users }}"
-
 - name: Add sliver_install_path to $PATH for each sliver user
   ansible.builtin.lineinfile:
     path: "/home/{{ item.username }}/.bash_profile"
@@ -81,53 +69,52 @@
   become_user: "{{ item.username }}"
   loop: "{{ sliver_users }}"
 
-- name: Debug PATH for each sliver user
-  ansible.builtin.command:
-    cmd: echo $PATH
-  environment:
-    PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
+- name: Set build user to the first sliver user with sudo privileges
+  ansible.builtin.set_fact:
+    build_user: "{{ sliver_users | selectattr('sudo', 'equalto', true) | first | default({'username': 'root'}) }}"
+
+- name: Ensure correct ownership of the Sliver repository
+  ansible.builtin.file:
+    path: "{{ sliver_install_path }}"
+    owner: sliver
+    group: sliver
+    recurse: true
   become: true
-  become_user: "{{ item.username }}"
-  loop: "{{ sliver_users }}"
-  register: debug_path
+  when: sliver_stat.stat.pw_name != 'sliver' or sliver_stat.stat.gr_name != 'sliver'
+
+- name: Check if Sliver server needs to be built
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/sliver-server"
+  register: sliver_server_stat
+  become: true
   changed_when: false
 
-- name: Show PATH output
-  ansible.builtin.debug:
-    var: debug_path.results
-
-- name: Build Sliver with a custom PATH for each sliver user with timeout
+- name: Build Sliver as the build user
   ansible.builtin.command:
-    _raw_params: timeout 300 make
+    cmd: gmake
     chdir: "{{ sliver_install_path }}"
-  environment:
-    PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
   become: true
-  become_user: "{{ item.username }}"
-  loop: "{{ sliver_users }}"
-  register: make_result
+  become_user: "{{ build_user.username }}"
+  environment:
+    PATH: "/home/{{ build_user.username }}/.asdf/shims:{{ ansible_env.PATH }}"
+  tags:
+    - molecule-idempotence-notest
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+- name: Check if Sliver server has been unpacked
+  ansible.builtin.stat:
+    path: "/home/{{ build_user.username }}/.sliver"
+  register: sliver_server_unpacked_stat
+  become: true
   changed_when: false
 
-# - name: Build Sliver with a custom PATH for each sliver user
-#   ansible.builtin.command:
-#     cmd: gmake
-#     chdir: "{{ sliver_install_path }}"
-#   environment:
-#     PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
-#   become: true
-#   become_user: "{{ item.username }}"
-#   become_flags: -i
-#   register: gmake_result
-#   changed_when: "'Some specific output' in gmake_result.stdout"
-#   loop: "{{ sliver_users }}"
-
-- name: Unpack Sliver server for each sliver user
+- name: Unpack Sliver server
   ansible.builtin.command:
     cmd: "{{ sliver_install_path }}/sliver-server unpack --force"
   become: true
-  become_user: "{{ item.username }}"
-  changed_when: false
-  loop: "{{ sliver_users }}"
+  when: not sliver_server_unpacked_stat.stat.exists
+  changed_when: "'Unpacking complete' in unpack_result.stdout"
+  register: unpack_result
 
 - name: Generate operator configs for each sliver user
   ansible.builtin.shell:
