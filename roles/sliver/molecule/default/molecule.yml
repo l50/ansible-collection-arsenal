@@ -1,4 +1,13 @@
 ---
+# Use Ansible Galaxy to install dependencies
+dependency:
+  name: galaxy
+  options:
+    # Install required galaxy roles
+    role-file: ../../requirements.yml
+    # Install required collections
+    requirements-file: ../../requirements.yml
+
 # Run molecule inside of a docker container
 driver:
   name: docker
