@@ -1,0 +1,5 @@
+---
+- name: Sliver
+  hosts: all
+  roles:
+    - role: l50.arsenal.sliver

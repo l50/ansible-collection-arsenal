@@ -17,6 +17,13 @@ jobs:
           - name: "Role Test - sliver"
             path: "roles/sliver"
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+
       - name: Checkout code
         uses: actions/checkout@v3.6.0
 
@@ -41,6 +48,45 @@ jobs:
         run: molecule test
         working-directory: ${{ matrix.path }}
         timeout-minutes: 40
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+
+  playbook_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: "Playbook Test - sliver"
+            path: "playbooks/sliver"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.6.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade \
+          ansible-core \
+          docker \
+          molecule \
+          molecule-docker \
+          "molecule-plugins[docker]"
+
+      - name: Install galaxy dependencies
+        run: |
+          ansible-galaxy install -v -r requirements.yml
+          ansible-galaxy collection install -v -r requirements.yml
+          mkdir -p ~/.ansible/collections/ansible_collections/l50
+          ln -s $PWD ~/.ansible/collections/ansible_collections/l50/arsenal
+
+      - name: ${{ matrix.name }}
+        run: molecule test
+        working-directory: ${{ matrix.path }}
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"

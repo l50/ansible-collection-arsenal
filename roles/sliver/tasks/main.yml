@@ -37,7 +37,7 @@
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.asdf
   vars:
-    asdf_users: "{{ sliver_users }}"
+    asdf_users: "{{ sliver_users | list }}"
 
 - name: Configure Git to allow sliver_install_path as a safe directory
   community.general.git_config:
