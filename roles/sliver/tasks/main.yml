@@ -81,6 +81,21 @@
   become_user: "{{ item.username }}"
   loop: "{{ sliver_users }}"
 
+- name: Debug PATH for each sliver user
+  ansible.builtin.command:
+    cmd: echo $PATH
+  environment:
+    PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
+  become: true
+  become_user: "{{ item.username }}"
+  loop: "{{ sliver_users }}"
+  register: debug_path
+  changed_when: false
+
+- name: Show PATH output
+  ansible.builtin.debug:
+    var: debug_path.results
+
 - name: Build Sliver with a custom PATH for each sliver user
   ansible.builtin.command:
     cmd: gmake
