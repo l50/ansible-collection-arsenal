@@ -17,12 +17,8 @@ jobs:
           - name: "Role Test - sliver"
             path: "roles/sliver"
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@v10
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
+      - name: Delete huge unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache
 
       - name: Checkout code
         uses: actions/checkout@v3.6.0
@@ -60,6 +56,9 @@ jobs:
           - name: "Playbook Test - sliver"
             path: "playbooks/sliver"
     steps:
+      - name: Delete huge unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache
+
       - name: Checkout code
         uses: actions/checkout@v3.6.0
 
