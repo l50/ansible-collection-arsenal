@@ -40,6 +40,7 @@ jobs:
       - name: ${{ matrix.name }}
         run: molecule test
         working-directory: ${{ matrix.path }}
+        timeout-minutes: 40
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
