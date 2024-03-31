@@ -96,18 +96,30 @@
   ansible.builtin.debug:
     var: debug_path.results
 
-- name: Build Sliver with a custom PATH for each sliver user
+- name: Build Sliver with a custom PATH for each sliver user with timeout
   ansible.builtin.command:
-    cmd: gmake
+    _raw_params: timeout 300 make
     chdir: "{{ sliver_install_path }}"
   environment:
     PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
   become: true
   become_user: "{{ item.username }}"
-  become_flags: -i
-  register: gmake_result
-  changed_when: "'Some specific output' in gmake_result.stdout"
   loop: "{{ sliver_users }}"
+  register: make_result
+  changed_when: false
+
+# - name: Build Sliver with a custom PATH for each sliver user
+#   ansible.builtin.command:
+#     cmd: gmake
+#     chdir: "{{ sliver_install_path }}"
+#   environment:
+#     PATH: "/home/{{ item.username }}/.asdf/shims:{{ ansible_env.PATH }}"
+#   become: true
+#   become_user: "{{ item.username }}"
+#   become_flags: -i
+#   register: gmake_result
+#   changed_when: "'Some specific output' in gmake_result.stdout"
+#   loop: "{{ sliver_users }}"
 
 - name: Unpack Sliver server for each sliver user
   ansible.builtin.command:
