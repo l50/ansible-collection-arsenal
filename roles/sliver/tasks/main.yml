@@ -46,7 +46,7 @@
     value: "{{ sliver_install_path }}"
   become: true
 
-- name: Download and build Sliver
+- name: Clone Sliver repo
   ansible.builtin.git:
     repo: 'https://github.com/bishopfox/sliver.git'
     dest: "{{ sliver_install_path }}"
