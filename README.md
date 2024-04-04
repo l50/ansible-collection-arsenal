@@ -27,6 +27,12 @@ ansible-galaxy collection install git+https://github.com/l50/arsenal.git,main
 Installs and configures [Sliver](https://github.com/BishopFox/sliver), a
 cross-platform implant framework.
 
+### TTPForge
+
+Installs and configures [TTPForge](https://github.com/facebookincubator/TTPForge),
+a Cybersecurity Framework for developing, automating, and executing attacker
+Tactics, Techniques, and Procedures (TTPs)
+
 ## Usage
 
 Include the roles from this collection in your playbook. Here's an example:
@@ -37,6 +43,7 @@ Include the roles from this collection in your playbook. Here's an example:
   hosts: localhost
   roles:
     - l50.arsenal.sliver
+    - l50.arsenal.ttpforge
     ...
 ```
 

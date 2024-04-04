@@ -1,0 +1,57 @@
+---
+- name: Install required packages for ttpforge
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.package_management
+  vars:
+    package_management_common_install_packages: "{{ ttpforge_common_install_packages }}"
+    package_management_debian_specific_packages: "{{ ttpforge_debian_packages }}"
+    package_management_redhat_specific_packages: "{{ ttpforge_el_packages }}"
+
+- name: Clone ttpforge repo
+  ansible.builtin.git:
+    repo: 'https://github.com/facebookincubator/ttpforge.git'
+    dest: "{{ ttpforge_repo_path }}"
+    version: main
+
+- name: Check current ownership of {{ ttpforge_repo_path }}
+  ansible.builtin.stat:
+    path: "{{ ttpforge_repo_path }}"
+  register: ttpforge_stat
+
+- name: Ensure correct ownership of the ttpforge repository
+  ansible.builtin.file:
+    path: "{{ ttpforge_repo_path }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    recurse: true
+
+- name: Check if ttpforge server needs to be built
+  ansible.builtin.stat:
+    path: "{{ ttpforge_install_path }}"
+  register: ttpforge_server_stat
+  become: true
+  changed_when: false
+
+- name: Compile ttpforge
+  ansible.builtin.shell:
+    cmd: |
+      {{ ttpforge_go_path }} build -o {{ ttpforge_install_path }}
+    chdir: "{{ ttpforge_repo_path }}"
+    executable: /bin/bash
+  tags:
+    - molecule-idempotence-notest
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+- name: Check if ttpforge server has been initialized
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.ttpforge"
+  register: ttpforge_server_unpacked_stat
+  changed_when: false
+
+- name: Initialize ttpforge
+  ansible.builtin.command:
+    cmd: "{{ ttpforge_install_path }} init"
+  become: true
+  when: not ttpforge_server_unpacked_stat.stat.exists
+  register: unpack_result
+  changed_when: "'TTPForge Initialized' in unpack_result.stdout"

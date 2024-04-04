@@ -1,0 +1,28 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Check if ttpforge is installed
+      ansible.builtin.stat:
+        path: "{{ ttpforge_install_path }}"
+      register: ttpforge
+
+    - name: Assert that ttpforge is installed
+      ansible.builtin.assert:
+        that:
+          - ttpforge.stat.exists
+
+    - name: Check if ttpforge is initialized
+      ansible.builtin.stat:
+        path: "{{ ansible_env.HOME }}/.ttpforge"
+      register: forgeinit
+
+    - name: Assert that ttpforge has been initialized
+      ansible.builtin.assert:
+        that:
+          - forgeinit.stat.isdir

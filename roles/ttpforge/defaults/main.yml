@@ -1,0 +1,4 @@
+---
+ttpforge_repo_path: "{{ ansible_env.HOME }}/ttpforge"
+ttpforge_install_path: /usr/local/bin/ttpforge
+ttpforge_go_path: /usr/bin/go
