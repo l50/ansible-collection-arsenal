@@ -42,7 +42,7 @@
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
 
-- name: Check if ttpforge server has been initialized
+- name: Check if ttpforge has been initialized
   ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.ttpforge"
   register: ttpforge_server_unpacked_stat
