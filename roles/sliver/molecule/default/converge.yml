@@ -9,15 +9,5 @@
       ansible.builtin.include_vars:
         file: "../../vars/main.yml"
   roles:
-    - name: Create and configure sliver users
-      role: cowdogmoo.workstation.user_setup
-      vars:
-        user_setup_default_users: "{{ sliver_users }}"
-
-    - name: Install asdf and go for sliver users
-      role: cowdogmoo.workstation.asdf
-      vars:
-        asdf_users: "{{ sliver_users }}"
-
     - name: Run the sliver role
       role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
