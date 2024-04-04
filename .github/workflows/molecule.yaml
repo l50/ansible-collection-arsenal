@@ -16,6 +16,8 @@ jobs:
         include:
           - name: "Role Test - sliver"
             path: "roles/sliver"
+          - name: "Role Test - ttpforge"
+            path: "roles/ttpforge"
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
@@ -55,6 +57,8 @@ jobs:
         include:
           - name: "Playbook Test - sliver"
             path: "playbooks/sliver"
+          - name: "Playbook Test - ttpforge"
+            path: "playbooks/ttpforge"
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache

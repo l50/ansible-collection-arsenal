@@ -1,0 +1,5 @@
+---
+- name: TTPForge
+  hosts: all
+  roles:
+    - role: l50.arsenal.ttpforge

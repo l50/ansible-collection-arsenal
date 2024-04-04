@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+
+- name: Import playbook for testing
+  ansible.builtin.import_playbook: ../../ttpforge.yml
