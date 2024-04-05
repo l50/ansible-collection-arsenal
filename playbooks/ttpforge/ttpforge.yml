@@ -6,7 +6,7 @@
       # Install and configure TTPForge for the current user
       - username: "{{ ansible_user_id }}"
         usergroup: "{{ ansible_user_id }}"
-        shell: "{{ ansible_env.SHELL }}"
+        shell: "{{ ansible_env.SHELL | default('/bin/bash') }}"
         sudo: true
         plugins:
           - name: golang
