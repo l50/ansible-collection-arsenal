@@ -31,7 +31,7 @@ cross-platform implant framework.
 
 Installs and configures [TTPForge](https://github.com/facebookincubator/TTPForge),
 a Cybersecurity Framework for developing, automating, and executing attacker
-Tactics, Techniques, and Procedures (TTPs)
+Tactics, Techniques, and Procedures (TTPs).
 
 ## Usage
 
