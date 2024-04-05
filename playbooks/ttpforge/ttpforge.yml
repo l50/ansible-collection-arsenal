@@ -2,8 +2,9 @@
 - name: TTPForge
   hosts: all
   vars:
-    ttpforge_users:
-      # Install and configure TTPForge for the current user
+    asdf_dir: /opt/asdf
+    forge_users:
+      # Install and configure TTPForge for the current user by default
       - username: "{{ ansible_user_id }}"
         usergroup: "{{ ansible_user_id }}"
         shell: "{{ ansible_env.SHELL | default('/bin/bash') }}"
@@ -11,21 +12,24 @@
         plugins:
           - name: golang
             version: "1.22.0"
-            scope: "global"
-
-  tasks:
-    - name: Include default variables
-      ansible.builtin.include_vars:
-        file: "../../defaults/main.yml"
-
-    - name: Include variables
-      ansible.builtin.include_vars:
-        file: "../../vars/main.yml"
+            scope: global
 
   roles:
     - name: Install asdf and go
+      become: true # Required to install asdf system-wide
       role: cowdogmoo.workstation.asdf
       vars:
         asdf_global_install: true
-        asdf_users: ["{{ ttpforge_users }}"]
-    - role: l50.arsenal.ttpforge
+        asdf_users: "{{ forge_users }}"
+
+    - name: Install TTPForge
+      become: true # Required to install TTPForge system-wide
+      role: l50.arsenal.ttpforge
+      vars:
+        ttpforge_users: "{{ forge_users }}"
+        ttpforge_repo_path: /opt/ttpforge
+        ttpforge_install_path: /usr/local/bin/ttpforge
+        ttpforge_go_path: /opt/asdf/shims/go
+      environment:
+        ASDF_DATA_DIR: "{{ asdf_dir }}"
+        ASDF_DIR: "{{ asdf_dir }}"
