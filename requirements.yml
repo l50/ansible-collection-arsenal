@@ -1,6 +1,7 @@
 ---
-# roles:
-#   - name: cowdogmoo.firefox
+roles:
+  - name: l50.ansible_atomic_red_team
+    src: https://github.com/l50/ansible-atomic-red-team
 
 collections:
   - name: community.docker

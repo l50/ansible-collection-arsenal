@@ -1,0 +1,7 @@
+---
+- name: Install atomic_red_team and optionally execute the tests
+  hosts: all
+  roles:
+    - role: l50.ansible_atomic_red_team
+      vars:
+        ansible_atomic_red_team_execute: "{{ atomic_red_team_execute | default(true) }}"
