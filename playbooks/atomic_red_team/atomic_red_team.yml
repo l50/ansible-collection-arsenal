@@ -4,4 +4,4 @@
   roles:
     - role: l50.ansible_atomic_red_team
       vars:
-        ansible_atomic_red_team_execute: "{{ atomic_red_team_execute | default(true) }}"
+        ansible_atomic_red_team_execute: "{{ atomic_red_team_execute | default(false) }}"
