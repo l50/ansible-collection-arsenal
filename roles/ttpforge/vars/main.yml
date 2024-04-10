@@ -54,7 +54,7 @@ ttpforge_el_packages:
   - gcc
   - gcc-c++
   - protobuf
-  - zlib
-  - zlib-devel
   - make
   - openssl-devel
+  - zlib
+  - zlib-devel

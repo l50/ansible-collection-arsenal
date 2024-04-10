@@ -1,7 +1,12 @@
 ---
-- name: Install atomic_red_team and optionally execute the tests
+- name: Atomic Red Team
   hosts: all
+  vars:
+    # Install Atomic Red Team and do not execute the tests by default
+    atomic_red_team_execute: false
+
   roles:
+    - role: cowdogmoo.workstation.user_setup
     - role: l50.ansible_atomic_red_team
       vars:
-        ansible_atomic_red_team_execute: "{{ atomic_red_team_execute | default(false) }}"
+        ansible_atomic_red_team_execute: "{{ atomic_red_team_execute }}"

@@ -42,6 +42,9 @@ provisioner:
   name: ansible
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+  # Uncomment for verbose output
+  # env:
+  #   ANSIBLE_VERBOSITY: 3
 
 verifier:
   name: ansible
