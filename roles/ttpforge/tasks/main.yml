@@ -1,4 +1,10 @@
 ---
+# - name: Create ttpforge role user (if not already present)
+#   ansible.builtin.include_role:
+#     name: cowdogmoo.workstation.user_setup
+#   vars:
+#     user_setup_default_users: "{{ ttpforge_users }}"
+
 - name: Install required packages for ttpforge
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.package_management
@@ -6,6 +12,19 @@
     package_management_common_install_packages: "{{ ttpforge_common_install_packages }}"
     package_management_debian_specific_packages: "{{ ttpforge_debian_packages }}"
     package_management_redhat_specific_packages: "{{ ttpforge_el_packages }}"
+
+# - name: Install asdf and go
+#   ansible.builtin.include_role:
+#     name: cowdogmoo.workstation.asdf
+#   vars:
+#     asdf_global_install: "{{ ttpforge_global_install | default(false) }}"
+
+- name: Configure Git to allow ttpforge repository as a safe directory
+  community.general.git_config:
+    name: safe.directory
+    scope: global
+    value: "{{ ttpforge_repo_path }}"
+  become: true
 
 - name: Clone ttpforge repo
   ansible.builtin.git:
@@ -21,21 +40,21 @@
 - name: Ensure correct ownership of the ttpforge repository
   ansible.builtin.file:
     path: "{{ ttpforge_repo_path }}"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
+    owner: "{{ ttpforge_users[0].username }}"
+    group: "{{ ttpforge_users[0].usergroup }}"
     recurse: true
+  changed_when: false
 
 - name: Check if ttpforge server needs to be built
   ansible.builtin.stat:
     path: "{{ ttpforge_install_path }}"
   register: ttpforge_server_stat
-  become: true
   changed_when: false
 
 - name: Compile ttpforge
   ansible.builtin.shell:
     cmd: |
-      {{ ttpforge_go_path }} build -o {{ ttpforge_install_path }}
+      {{ ttpforge_go_path }} build -buildvcs=false -o {{ ttpforge_install_path }}
     chdir: "{{ ttpforge_repo_path }}"
     executable: /bin/bash
   tags:
@@ -49,9 +68,10 @@
   changed_when: false
 
 - name: Initialize ttpforge
+  become: true
+  become_user: "{{ ttpforge_users[0].username }}"
   ansible.builtin.command:
     cmd: "{{ ttpforge_install_path }} init"
-  become: true
   when: not ttpforge_server_unpacked_stat.stat.exists
   register: unpack_result
   changed_when: "'TTPForge Initialized' in unpack_result.stdout"

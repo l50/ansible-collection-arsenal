@@ -1,17 +1,6 @@
 ---
 - name: Converge
   hosts: all
-  vars:
-    ttpforge_users:
-      - username: ttpforge
-        usergroup: ttpforge
-        shell: "/bin/bash"
-        sudo: true
-        plugins:
-          - name: golang
-            version: "1.22.0"
-            scope: "global"
-
   tasks:
     - name: Include default variables
       ansible.builtin.include_vars:
@@ -19,9 +8,11 @@
     - name: Include variables
       ansible.builtin.include_vars:
         file: "../../vars/main.yml"
+  vars:
+    ttpforge_global_install: true
 
   roles:
-    - name: Create ttpforge role test user
+    - name: Create ttpforge role user (if not already present)
       role: cowdogmoo.workstation.user_setup
       vars:
         user_setup_default_users: "{{ ttpforge_users }}"
@@ -29,8 +20,7 @@
     - name: Install asdf and go
       role: cowdogmoo.workstation.asdf
       vars:
-        asdf_global_install: true
-        asdf_users: "{{ ttpforge_users }}"
+        asdf_global_install: "{{ ttpforge_global_install | default(false) }}"
 
     - name: Run the ttpforge role
       role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
@@ -39,3 +29,6 @@
         ASDF_DIR: /opt/asdf
       vars:
         ttpforge_go_path: /opt/asdf/shims/go
+        ttpforge_install_path: /usr/local/bin/ttpforge
+        ttpforge_repo_path: /opt/ttpforge
+        ttpforge_global_install: true
