@@ -4,7 +4,3 @@
 
 - name: Import playbook for testing
   ansible.builtin.import_playbook: ../../atomic_red_team.yml
-  # This is already tested by the role, we don't need to run all of the atomic
-  # tests again for our test.
-  vars:
-    atomic_red_team_execute: false
