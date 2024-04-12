@@ -2,8 +2,8 @@
 - name: Atomic Red Team
   hosts: all
   roles:
-    - role: cowdogmoo.workstation.user_setup
-    - role: l50.ansible_atomic_red_team
-      vars:
-        # Install Atomic Red Team and do not execute the tests by default
-        ansible_atomic_red_team_execute: false
+    - name: Create Atomic Red Team role user (if not already present)
+      role: cowdogmoo.workstation.user_setup
+
+    - name: Install Atomic Red Team
+      role: l50.ansible_atomic_red_team
