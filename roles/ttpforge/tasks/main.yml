@@ -1,4 +1,27 @@
 ---
+- name: Define user-specific ttpforge installation path
+  ansible.builtin.set_fact:
+    ttpforge_install_path: "/home/{{ item.username }}/.local/bin/ttpforge"
+  loop: "{{ ttpforge_users }}"
+  when: item.username != 'root'
+
+- name: Define root-specific ttpforge installation path
+  ansible.builtin.set_fact:
+    ttpforge_install_path: "/usr/local/bin/ttpforge"
+  when: item.username == 'root'
+  loop: "{{ ttpforge_users }}"
+
+- name: Set global Go path for ttpforge
+  ansible.builtin.set_fact:
+    ttpforge_go_path: "/opt/asdf/shims/go"
+  when: ttpforge_global_install
+
+- name: Set user-specific Go path for ttpforge
+  ansible.builtin.set_fact:
+    ttpforge_go_path: "/home/{{ item.username }}/.asdf/shims/go"
+  loop: "{{ ttpforge_users }}"
+  when: not ttpforge_global_install
+
 - name: Install required packages for ttpforge
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.package_management
@@ -24,40 +47,32 @@
 - name: Clone ttpforge repo for each specified user
   ansible.builtin.git:
     repo: 'https://github.com/facebookincubator/ttpforge.git'
-    dest: "{{ ttpforge_repo_path }}"
+    dest: "/home/{{ item.username }}/ttpforge"
     version: main
   become: true
   become_user: "{{ item.username }}"
   loop: "{{ ttpforge_users }}"
   when: not ttpforge_global_install
 
-- name: Check current ownership of {{ ttpforge_repo_path }}
-  ansible.builtin.stat:
-    path: "{{ ttpforge_repo_path }}"
-  register: ttpforge_stat
+- name: Debug output for user-specific paths
+  ansible.builtin.debug:
+    msg: "Installing for user {{ item.username }} in path /home/{{ item.username }}/ttpforge"
+  loop: "{{ ttpforge_users }}"
 
-- name: Ensure correct ownership of {{ ttpforge_repo_path }}
+- name: Ensure correct ownership of ttpforge repository
   ansible.builtin.file:
-    path: "{{ ttpforge_repo_path }}"
+    path: "/home/{{ item.username }}/ttpforge"
     owner: "{{ item.username }}"
     group: "{{ item.usergroup }}"
     recurse: true
   changed_when: false
-  loop: "{{ ttforge_users }}"
-  when: not ttpforge_stat.stat.exists
-
-- name: Check if ttpforge needs to be compiled
-  ansible.builtin.stat:
-    path: "{{ ttpforge_install_path }}"
-  register: ttpforge_stat
-  changed_when: false
-  when: ttpforge_global_install
+  loop: "{{ ttpforge_users }}"
+  when: not ttpforge_global_install
 
 - name: Check if ttpforge needs to be compiled for each user
   ansible.builtin.stat:
-    path: "{{ ttpforge_install_path }}"
-  register: ttpforge_stat
-  changed_when: false
+    path: "{{ item.install_path | default(ttpforge_install_path) }}"
+  register: ttpforge_compiled
   become: true
   become_user: "{{ item.username }}"
   loop: "{{ ttpforge_users }}"
@@ -66,38 +81,33 @@
 - name: Compile ttpforge for each user
   ansible.builtin.shell:
     cmd: |
-      {{ ttpforge_go_path }} build -buildvcs=false -o {{ ttpforge_install_path }}
-    chdir: "{{ ttpforge_repo_path }}"
-    executable: "{{ item.shell }}"
+      {{ ttpforge_go_path }} build -buildvcs=false -o {{ item.item.install_path | default(ttpforge_install_path) }}
+    chdir: "{{ item.item.repo_path | default('/home/' ~ item.item.username ~ '/ttpforge') }}"
+    executable: "{{ item.item.shell }}"
   become: true
-  become_user: "{{ item.username }}"
-  # Fix idempotency linting issue
+  become_user: "{{ item.item.username }}"
+  loop: "{{ ttpforge_compiled.results }}"
+  when:
+    - not ttpforge_global_install
+    - not item.stat.exists
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
-  loop: "{{ ttpforge_users }}"
-  when:
-    - not ttpforge_global_install
-    - ttpforge_stat is defined
-    - not ttpforge_stat.stat.exists
 
 - name: Check if ttpforge has been initialized for each user
   ansible.builtin.stat:
-    path: "/home/{{ item.username }}/.ttpforge" # TODO: unless the user is root
+    path: "/home/{{ item.username }}/.ttpforge"
   register: ttpforge_unpacked_stat_result
   changed_when: false
   become: true
   become_user: "{{ item.username }}"
   loop: "{{ ttpforge_users }}"
   when: not ttpforge_global_install
-  loop_control:
-    label: "{{ item.username }}"
-    loop_var: item
 
 - name: Set ttpforge_unpacked_stat for each user
   ansible.builtin.set_fact:
-    ttpforge_unpacked_stat: "{{ ttpforge_unpacked_stat | default({}) | combine({ user_item.username: ttpforge_unpacked_stat_result.stat.exists }) }}"
-  loop: "{{ ttpforge_users }}"
+    ttpforge_unpacked_stat: "{{ ttpforge_unpacked_stat | default({}) | combine({item.item.username: item.stat.exists}) }}"
+  loop: "{{ ttpforge_unpacked_stat_result.results }}"
   when: not ttpforge_global_install
 
 - name: Initialize ttpforge for each user

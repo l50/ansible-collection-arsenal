@@ -1,23 +1,11 @@
 ---
-# Path to the ttpforge repository on the local machine - this is default for a per-user install
-ttpforge_repo_path: "{{ ansible_env.HOME }}/ttpforge"
-## For a system-wide install, use the following:
-# ttpforge_repo_path: /opt/ttpforge
+# Path to the ttpforge repository (defaults to a globally accessible path)
+ttpforge_repo_path: /opt/ttpforge
 
-# Install ttpforge globally
-ttpforge_global_install: true
+# Install ttpforge for all users on the system (this is for a system-wide install)
+ttpforge_global_install: false
 
-# Path to install the ttpforge binary - this is default for a per-user install
-ttpforge_install_path: "{{ ansible_env.HOME }}/.local/bin/ttpforge"
-## For a system-wide install, use the following:
-# ttpforge_install_path: /usr/local/bin/ttpforge
-
-# Path to the go binary - this is default for a per-user install
-ttpforge_go_path: "{{ ansible_env.HOME }}/.asdf/shims/go"
-## For a system-wide install using the latest go binary
-## installed with asdf globally, use the following:
-# ttpforge_go_path: /opt/asdf/shims/go
-
+# Default users to install ttpforge for (modify as needed for a per-user install)
 ttpforge_users:
   - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
     usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"

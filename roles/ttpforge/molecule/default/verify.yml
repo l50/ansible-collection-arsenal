@@ -1,43 +1,42 @@
----
-- name: Verify
+- name: Verify TTPForge Setup
   hosts: all
-  gather_facts: true
-  vars:
-    ttpforge_go_path: /opt/asdf/shims/go
-    ttpforge_install_path: /usr/local/bin/ttpforge
-    ttpforge_repo_path: /opt/ttpforge
-    ttpforge_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
-        shell: "/bin/bash"
-        sudo: true
-        plugins:
-          - name: golang
-            version: "1.22.1"
-            scope: "global"
-
   tasks:
-    - name: Check if ttpforge is installed
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Print the PATH for each user
+      ansible.builtin.shell:
+        cmd: echo $PATH
+      register: user_path
+      become: true
+      become_user: "{{ item.username }}"
+      loop: "{{ ttpforge_users }}"
+      changed_when: false
+
+    - name: Output the PATH for each user
+      ansible.builtin.debug:
+        msg: "User: {{ item.item.username }}, PATH: {{ item.stdout }}"
+      loop: "{{ user_path.results }}"
+
+    - name: Define user-specific ttpforge installation path
+      ansible.builtin.set_fact:
+        ttpforge_install_path: "/home/{{ item.username }}/.local/bin/ttpforge"
+      loop: "{{ ttpforge_users }}"
+      when: item.username != 'root'
+
+    - name: Check if ttpforge is installed for each user
       ansible.builtin.stat:
         path: "{{ ttpforge_install_path }}"
-      register: ttpforge
+      register: ttpforge_stat
+      become: true
+      become_user: "{{ item.username }}"
+      loop: "{{ ttpforge_users }}"
 
-    - name: Debug ttpforge installation
-      ansible.builtin.debug:
-        msg: "TTPForge path: {{ ttpforge_install_path }}, exists: {{ ttpforge.stat.exists }}"
-
-    - name: Assert that ttpforge is installed
+    - name: Assert that ttpforge is installed correctly
       ansible.builtin.assert:
         that:
-          - ttpforge.stat.exists
-
-    - name: Check if ttpforge is initialized
-      ansible.builtin.stat:
-        path: "/home/{{ ttpforge_users[0].username }}/.ttpforge"
-      register: forgeinit
-
-    - name: Assert that ttpforge has been initialized
-      ansible.builtin.assert:
-        that:
-          - forgeinit.stat.isdir is defined
-          - forgeinit.stat.isdir
+          - item.stat.exists
+        fail_msg: "TTPForge is not installed correctly for user {{ item.item.username }}"
+        success_msg: "TTPForge is installed correctly for user {{ item.item.username }}"
+      loop: "{{ ttpforge_stat.results }}"

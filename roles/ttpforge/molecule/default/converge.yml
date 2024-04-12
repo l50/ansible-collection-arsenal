@@ -8,12 +8,26 @@
     - name: Include variables
       ansible.builtin.include_vars:
         file: "../../vars/main.yml"
-
+  vars:
+    ttpforge_default_username: "{{ ansible_distribution | lower }}"
+    ttpforge_default_group: "{{ ansible_distribution | lower }}"
+    asdf_users:
+      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
+        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
+        sudo: true
+        shell: /bin/bash
+        plugins:
+          - name: golang
+            version: "1.22.1"
+            scope: "global"
+    user_setup_default_users:
+      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
+        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
+        sudo: true
+        shell: /bin/bash
   roles:
     - name: Create ttpforge role user (if not already present)
       role: cowdogmoo.workstation.user_setup
-      vars:
-        user_setup_default_users: "{{ ttpforge_users }}"
 
     - name: Install asdf and go
       role: cowdogmoo.workstation.asdf
