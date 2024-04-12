@@ -104,6 +104,22 @@
   loop: "{{ ttpforge_users }}"
   when: not ttpforge_global_install
 
+- name: Update user PATH in dotfile
+  ansible.builtin.lineinfile:
+    path: "/home/{{ item.username }}/{{ (item.shell == '/bin/zsh' and '.zshrc') or '.bashrc' }}"
+    line: 'export PATH=$HOME/.local/bin:$PATH'
+    owner: "{{ item.username }}"
+    group: "{{ item.usergroup }}"
+    mode: '0644'
+    state: present
+    create: true
+  loop: "{{ ttpforge_users }}"
+  when:
+    - not ttpforge_global_install
+    - item.shell in ['/bin/bash', '/bin/zsh']
+  become: true
+  become_user: "{{ item.username }}"
+
 - name: Set ttpforge_unpacked_stat for each user
   ansible.builtin.set_fact:
     ttpforge_unpacked_stat: "{{ ttpforge_unpacked_stat | default({}) | combine({item.item.username: item.stat.exists}) }}"
