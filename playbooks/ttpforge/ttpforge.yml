@@ -1,27 +1,39 @@
 ---
 - name: TTPForge
   hosts: all
+  vars:
+    ttpforge_default_username: "{{ ansible_distribution | lower }}"
+    ttpforge_default_group: "{{ ansible_distribution | lower }}"
+    asdf_users:
+      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
+        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
+        sudo: true
+        shell: /bin/bash
+        plugins:
+          - name: golang
+            version: "1.22.1"
+            scope: "global"
+
+    user_setup_default_users:
+      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
+        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
+        sudo: true
+        shell: /bin/bash
   roles:
     - name: Create ttpforge role user (if not already present)
       become: true
       role: cowdogmoo.workstation.user_setup
-      vars:
-        user_setup_default_users: "{{ ttpforge_users }}"
 
     - name: Install asdf and go
       role: cowdogmoo.workstation.asdf
-      vars:
-        asdf_global_install: "{{ ttpforge_global_install | default(false) }}"
 
     - name: Install TTPForge
-      # Required to install TTPForge system-wide
-      become: true
       role: l50.arsenal.ttpforge
-      environment:
-        ASDF_DATA_DIR: /opt/asdf
-        ASDF_DIR: /opt/asdf
-      vars:
-        ttpforge_go_path: /opt/asdf/shims/go
-        ttpforge_install_path: /usr/local/bin/ttpforge
-        ttpforge_repo_path: /opt/ttpforge
-        ttpforge_global_install: true
+      # environment:
+      #   ASDF_DATA_DIR: /opt/asdf
+      #   ASDF_DIR: /opt/asdf
+      # vars:
+      #   ttpforge_go_path: /opt/asdf/shims/go
+      #   ttpforge_install_path: /usr/local/bin/ttpforge
+      #   ttpforge_repo_path: /opt/ttpforge
+      #   ttpforge_global_install: true

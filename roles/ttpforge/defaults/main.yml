@@ -13,7 +13,7 @@ ttpforge_install_path: "{{ ansible_env.HOME }}/.local/bin/ttpforge"
 # ttpforge_install_path: /usr/local/bin/ttpforge
 
 # Path to the go binary - this is default for a per-user install
-ttpforge_go_path: /usr/bin/go
+ttpforge_go_path: "{{ ansible_env.HOME }}/.asdf/shims/go"
 ## For a system-wide install using the latest go binary
 ## installed with asdf globally, use the following:
 # ttpforge_go_path: /opt/asdf/shims/go
@@ -21,8 +21,8 @@ ttpforge_go_path: /usr/bin/go
 ttpforge_users:
   - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
     usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
-    shell: "/bin/bash"
     sudo: true
+    shell: /bin/bash
     plugins:
       - name: golang
         version: "1.22.1"

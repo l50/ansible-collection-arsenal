@@ -8,8 +8,6 @@
     - name: Include variables
       ansible.builtin.include_vars:
         file: "../../vars/main.yml"
-  vars:
-    ttpforge_global_install: true
 
   roles:
     - name: Create ttpforge role user (if not already present)
@@ -19,16 +17,6 @@
 
     - name: Install asdf and go
       role: cowdogmoo.workstation.asdf
-      vars:
-        asdf_global_install: "{{ ttpforge_global_install | default(false) }}"
 
     - name: Run the ttpforge role
       role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      environment:
-        ASDF_DATA_DIR: /opt/asdf
-        ASDF_DIR: /opt/asdf
-      vars:
-        ttpforge_go_path: /opt/asdf/shims/go
-        ttpforge_install_path: /usr/local/bin/ttpforge
-        ttpforge_repo_path: /opt/ttpforge
-        ttpforge_global_install: true
