@@ -42,6 +42,7 @@
     repo: 'https://github.com/facebookincubator/ttpforge.git'
     dest: "{{ ttpforge_repo_path }}"
     version: main
+  become: true
   when: ttpforge_global_install
 
 - name: Clone ttpforge repo for each specified user
@@ -65,6 +66,7 @@
     owner: "{{ item.username }}"
     group: "{{ item.usergroup }}"
     recurse: true
+  become: true
   changed_when: false
   loop: "{{ ttpforge_users }}"
   when: not ttpforge_global_install
