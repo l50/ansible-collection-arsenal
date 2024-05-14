@@ -3,4 +3,4 @@
   hosts: all
 
 - name: Import playbook for testing
-  ansible.builtin.import_playbook: ../../atomic_red_team.yml
+  ansible.builtin.import_playbook: ../../atomic-red-team.yml

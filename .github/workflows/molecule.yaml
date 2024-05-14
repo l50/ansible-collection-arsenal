@@ -60,7 +60,7 @@ jobs:
           - name: "Playbook Test - ttpforge"
             path: "playbooks/ttpforge"
           - name: "Playbook Test - Atomic Red Team"
-            path: "playbooks/atomic_red_team"
+            path: "playbooks/atomic-red-team"
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
