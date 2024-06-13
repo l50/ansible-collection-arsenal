@@ -17,7 +17,7 @@ that I employ regularly.
 Install the Workstation collection from Ansible Galaxy:
 
 ```bash
-ansible-galaxy collection install git+https://github.com/l50/arsenal.git,main
+ansible-galaxy collection install git+https://github.com/l50/ansible-collection-arsenal.git,main
 ```
 
 ## Roles
