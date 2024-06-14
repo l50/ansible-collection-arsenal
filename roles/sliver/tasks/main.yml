@@ -40,17 +40,20 @@
     asdf_users: "{{ sliver_users | list }}"
 
 - name: Configure Git to allow sliver_install_path as a safe directory
+  become: true
   community.general.git_config:
     name: safe.directory
     scope: global
     value: "{{ sliver_install_path }}"
-  become: true
 
 - name: Clone Sliver repo
   ansible.builtin.git:
     repo: 'https://github.com/bishopfox/sliver.git'
     dest: "{{ sliver_install_path }}"
     version: master
+    depth: 1
+    force: true
+    update: true
   become: true
 
 - name: Check current ownership of {{ sliver_install_path }}
@@ -91,7 +94,7 @@
 
 - name: Compile Sliver as the build user
   ansible.builtin.command:
-    cmd: gmake
+    cmd: gmake -j"{{ ansible_processor_vcpus | default(2) }}"
     chdir: "{{ sliver_install_path }}"
   become: true
   become_user: "{{ build_user.username }}"
