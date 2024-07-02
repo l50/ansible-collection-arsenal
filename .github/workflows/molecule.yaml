@@ -61,6 +61,8 @@ jobs:
             path: "playbooks/ttpforge"
           - name: "Playbook Test - Atomic Red Team"
             path: "playbooks/atomic-red-team"
+          - name: "Playbook Test - Attack Box"
+            path: "playbooks/attack-box"
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
@@ -88,6 +90,9 @@ jobs:
           ansible-galaxy collection install -v -r requirements.yml
           mkdir -p ~/.ansible/collections/ansible_collections/l50
           ln -s $PWD ~/.ansible/collections/ansible_collections/l50/arsenal
+          # Set up public SSH key for attack-box
+          mkdir -p ~/.ansible/collections/ansible_collections/l50/arsenal/playbooks/attack-box/files
+          echo ${{ secrets.PUB_SSH_KEY }} > ~/.ansible/collections/ansible_collections/l50/arsenal/playbooks/attack-box/files/id_rsa.pub
 
       - name: ${{ matrix.name }}
         run: molecule test
