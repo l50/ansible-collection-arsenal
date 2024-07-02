@@ -1,14 +1,65 @@
 ---
 - name: Attack Box
   hosts: all
-  roles:
-    - role: cowdogmoo.workstation.package_management
-    - role: cowdogmoo.workstation.asdf
-    - role: l50.arsenal.sliver
   tasks:
-    - name: Add MSF tools to PATH
+    - name: Install required packages for attack box
+      ansible.builtin.package:
+        name: "{{ attack_box_packages }}"
+        state: present
       become: true
-      ansible.builtin.lineinfile:
-        path: /etc/zsh/zshrc
-        line: export PATH=$PATH:/usr/share/metasploit-framework/tools/exploit
       when: ansible_distribution_release is search("kali")
+      vars:
+        attack_box_packages:
+          - gzip
+          - kali-linux-default
+          - vim
+          - wordlists
+          - zsh
+
+    - name: Ensure wordlists directory exists
+      ansible.builtin.file:
+        path: /usr/share/wordlists
+        mode: '0755'
+        state: directory
+
+    - name: Download rockyou wordlist if not present
+      ansible.builtin.get_url:
+        url: https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+        dest: /usr/share/wordlists/rockyou.txt
+        mode: '0644'
+
+    - name: Extract wordlists
+      ansible.builtin.command: gzip -d /usr/share/wordlists/rockyou.txt.gz
+      args:
+        creates: /usr/share/wordlists/rockyou.txt
+
+    - name: Ensure kali user exists
+      ansible.builtin.user:
+        name: kali
+        state: present
+        shell: /bin/zsh
+        createhome: yes
+      when: ansible_distribution_release is search("kali")
+      become: true
+
+    - name: Ensure .ssh directory exists
+      ansible.builtin.file:
+        path: /home/kali/.ssh
+        state: directory
+        owner: kali
+        group: kali
+        mode: '0700'
+      become: true
+      when: ansible_distribution_release is search("kali")
+
+    - name: Add public SSH key files to kali authorized_keys
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/home/kali/.ssh/authorized_keys"
+        owner: kali
+        group: kali
+        mode: '0600'
+      with_fileglob:
+        - "files/*.pub"
+      when: ansible_distribution_release is search("kali")
+      become: true
