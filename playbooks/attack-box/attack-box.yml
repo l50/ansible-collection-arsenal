@@ -6,6 +6,7 @@
       ansible.builtin.package:
         name: "{{ attack_box_packages }}"
         state: present
+        update_cache: true
       become: true
       when: ansible_distribution_release is search("kali")
       vars:
