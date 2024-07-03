@@ -1,0 +1,58 @@
+---
+- name: Generate random password for PaigeTurner
+  set_fact:
+    paige_turner_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters') }}"
+
+- name: Create local user PaigeTurner with random password
+  win_user:
+    name: "PaigeTurner"
+    password: "{{ paige_turner_password | password_hash('sha512') }}"
+    full_name: "Paige Turner"
+    description: "New User"
+    groups: []
+  when: ansible_os_family == "Windows"
+
+- name: Ensure the Resources directory exists
+  win_file:
+    path: C:\Resources
+    state: directory
+  when: ansible_os_family == "Windows"
+
+- name: Create the sensitive document in Resources
+  win_file:
+    path: C:\Resources\attorney_client_privileged_intellectual_property.txt
+    state: touch
+  when: ansible_os_family == "Windows"
+
+- name: Set content of the sensitive document
+  win_lineinfile:
+    path: C:\Resources\attorney_client_privileged_intellectual_property.txt
+    line: "this is secret do not share with anyone 4f67650d0f81f138ba00675ea26cc9a4"
+    create: yes
+  when: ansible_os_family == "Windows"
+
+- name: Create the network share for Resources
+  win_share:
+    name: DATABOX
+    path: C:\Resources
+    description: Resources Share
+    full_access:
+      - "PaigeTurner"
+  when: ansible_os_family == "Windows"
+
+- name: Ensure only PaigeTurner has access to the Resources share
+  win_share:
+    name: DATABOX
+    path: C:\Resources
+    description: Resources Share
+    full_access:
+      - "PaigeTurner"
+    change_access:
+      - Everyone
+    change_permissions: yes
+  when: ansible_os_family == "Windows"
+
+- name: Display PaigeTurner's password
+  debug:
+    msg: "PaigeTurner's password is {{ paige_turner_password }}"
+  when: ansible_os_family == "Windows"
