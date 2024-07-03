@@ -22,7 +22,7 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        entry: codespell -q 3 -f -S ".git,.github,README.md,magefiles/go.*"
+        entry: codespell -q 3 -f -S ".git,.github,README.md,magefiles/go.*,roles/scenarios/tasks/windows/vuln-cifs/vuln-cifs-user.yaml"
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0

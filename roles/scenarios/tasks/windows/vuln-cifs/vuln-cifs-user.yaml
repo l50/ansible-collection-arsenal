@@ -1,25 +1,25 @@
 ---
 - name: Set crummy password for Frank Furter
-  set_fact:
-    frank_furter_password: "Password123!"
+  ansible.builtin.set_fact:
+    scenarios_frank_furter_password: "Password123!"
 
 - name: Create local user FrankFurter with weak password
-  win_user:
+  ansible.windows.win_user:
     name: "FrankFurter"
-    password: "{{ frank_furter_password | password_hash('sha512') }}"
+    password: "{{ scenarios_frank_furter_password | password_hash('sha512') }}"
     full_name: "New User"
     description: "Description of the user"
     groups: []
   when: ansible_os_family == "Windows"
 
 - name: Ensure the DeptFiles directory exists
-  win_file:
+  ansible.windows.win_file:
     path: C:\DeptFiles
     state: directory
   when: ansible_os_family == "Windows"
 
 - name: Create the network share for DeptFiles
-  win_share:
+  ansible.windows.win_share:
     name: FSERVER01
     path: C:\DeptFiles
     description: Department Files Share
@@ -28,7 +28,7 @@
   when: ansible_os_family == "Windows"
 
 - name: Create the welcome text file in DeptFiles
-  win_template:
+  ansible.windows.win_template:
     src: welcome.txt.j2
     dest: C:\DeptFiles\Welcome.txt
   when: ansible_os_family == "Windows"
