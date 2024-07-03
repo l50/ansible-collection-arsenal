@@ -42,7 +42,7 @@
         name: kali
         state: present
         shell: /bin/zsh
-        createhome: yes
+        createhome: true
       when: ansible_distribution_release is search("kali")
       become: true
 

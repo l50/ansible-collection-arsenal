@@ -1,0 +1,8 @@
+---
+- name: Vulnerable Windows Scenarios
+  hosts: windows
+  roles:
+    - role: scenarios
+      scenarios_tasks_from: windows/vuln-cifs/vuln-cifs-user.yaml
+    - role: scenarios
+      scenarios_tasks_from: windows/vuln-cifs/secure-cifs-user.yaml
