@@ -76,9 +76,39 @@
           - Everyone
       when: ansible_os_family == "Windows"
 
-    - name: Create the welcome text file in DeptFiles
-      ansible.builtin.copy:
-        src: welcome.txt
-        dest: C:\DeptFiles\Welcome.txt
-        mode: 0644
+    - name: Create the welcome document in created DeptFiles file
+      ansible.windows.win_file:
+        path: C:\DeptFiles\Welcome.txt
+        state: touch
+      when: ansible_os_family == "Windows"
+
+    - name: Populate the DeptFiles welcome document with content
+      community.windows.win_lineinfile:
+        path: C:\DeptFiles\Welcome.txt
+        line: |
+          Welcome aboard, Paige Turner!
+
+          Your account details:
+          Username: PaigeTurner
+          Temp password: (set by IT Support, contact them for it, please change upon first login!!!)
+
+          Important resources:
+          - Employee handbook: \\DATABOX\Resources\
+          - IT Support: x1234 or itsupport@
+          - HR portal: http://intern/hr
+
+          Your team:
+          Manager: Frank
+          Mentor: Sarah
+
+          First week checklist:
+          1. Set up workstation
+          2. Complete new hire paperwork
+          3. Attend orientation (Tues, 9 AM, Room 305)
+          4. Schedule 1:1 with your manager
+          5. Review Q3_Planning folder
+
+          Don't forget to check out our Cake_Budget share for office snack info!
+
+          Welcome to the team!
       when: ansible_os_family == "Windows"
