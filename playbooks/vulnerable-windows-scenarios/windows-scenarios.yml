@@ -2,19 +2,9 @@
 - name: Apply Vulnerable Windows Scenarios Role
   hosts: "{{ target | default('all') }}"
   vars_files:
-    - ../../vars/main.yml
+    - ../../roles/vulnerable-windows-scenarios/vars/main.yml
   vars:
     ansible_connection: aws_ssm
     ansible_shell_type: powershell
   roles:
     - role: vulnerable-windows-scenarios
-  tasks:
-    - name: Fail if no target is provided
-      ansible.builtin.fail:
-        msg: "You must provide a target host using --extra-vars"
-      when: target is undefined or target == "none"
-
-    - name: Fail if no bucket name is provided
-      ansible.builtin.fail:
-        msg: "You must provide an S3 bucket name using --extra-vars ansible_aws_ssm_bucket_name=<bucket_name>"
-      when: ansible_aws_ssm_bucket_name is undefined or ansible_aws_ssm_bucket_name == "none"
