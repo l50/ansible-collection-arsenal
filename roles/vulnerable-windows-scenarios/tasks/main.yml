@@ -1,0 +1,12 @@
+---
+- name: Include tasks for user setup
+  ansible.builtin.include_tasks: users.yml
+  when: ansible_os_family == "Windows"
+
+- name: Include tasks for share setup
+  ansible.builtin.include_tasks: shares.yml
+  when: ansible_os_family == "Windows"
+
+- name: Include tasks for document setup
+  ansible.builtin.include_tasks: documents.yml
+  when: ansible_os_family == "Windows"

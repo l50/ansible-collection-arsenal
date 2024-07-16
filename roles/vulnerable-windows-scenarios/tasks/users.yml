@@ -1,0 +1,11 @@
+---
+- name: Create users with provided details
+  ansible.windows.win_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    description: "{{ item.description }}"
+    groups: []
+  loop: "{{ users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: ansible_os_family == "Windows"

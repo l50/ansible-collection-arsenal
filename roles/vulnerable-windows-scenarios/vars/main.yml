@@ -1,0 +1,43 @@
+---
+sensitive_document_content: "this is secret do not share with anyone 4f67650d0f81f138ba00675ea26cc9a4"
+share_name: "DATABOX"
+
+users:
+  - name: "PaigeTurner"
+    password: "{{ lookup('ansible.builtin.password', '/dev/null', length=16, chars=['ascii_letters', 'digits', 'punctuation']) }}"
+    description: "New User"
+    manager: "Frank"
+    mentor: "Sarah"
+  - name: "FrankFurter"
+    password: "Password123!"
+    description: "Description of the user"
+    manager: "John"
+    mentor: "Doe"
+
+shares:
+  - name: "DATABOX"
+    path: "C:\\Resources"
+    description: "Resources Share"
+    full_access: ["PaigeTurner"]
+  - name: "FSERVER01"
+    path: "C:\\DeptFiles"
+    description: "Department Files Share"
+    full_access: ["Everyone"]
+
+documents:
+  - path: "C:\\Resources\\attorney_client_privileged_intellectual_property.txt"
+    content: "{{ sensitive_document_content }}"
+
+welcome_documents:
+  - path: "C:\\DeptFiles\\Welcome.txt"
+    user:
+      name: "PaigeTurner"
+      password: "{{ lookup('ansible.builtin.password', '/dev/null', length=16, chars=['ascii_letters', 'digits', 'punctuation']) }}"
+      description: "New User"
+      manager: "Frank"
+      mentor: "Sarah"
+    share:
+      name: "DATABOX"
+      path: "C:\\Resources"
+      description: "Resources Share"
+      full_access: ["PaigeTurner"]
