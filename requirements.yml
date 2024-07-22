@@ -4,7 +4,8 @@ roles:
     src: https://github.com/l50/ansible-atomic-red-team
 
 collections:
-  - name: community.aws
+  - name: amazon.aws
+    version: 8.1.0
   - name: ansible.windows
   - name: community.docker
   - name: community.general
