@@ -1,0 +1,5 @@
+---
+- name: Apply Vulnerable Windows Scenarios Role
+  hosts: all
+  roles:
+    - role: l50.arsenal.vulnerable_windows_scenarios

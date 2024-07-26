@@ -54,8 +54,8 @@ in the playbook.
 1. **Run the Playbook with the First Instance**:
 
    ```bash
-   INVENTORY_PATH=ansible-collection-arsenal/playbooks/vulnerable-windows-scenarios/windows_inventory_aws_ec2.yaml
-   PLAYBOOK_PATH=ansible-collection-arsenal/playbooks/vulnerable-windows-scenarios/windows-scenarios.yml
+   INVENTORY_PATH=ansible-collection-arsenal/playbooks/vulnerable_windows_scenarios/windows_inventory_aws_ec2.yaml
+   PLAYBOOK_PATH=ansible-collection-arsenal/playbooks/vulnerable_windows_scenarios/windows_scenarios.yml
 
    ansible-playbook \
      -i $INVENTORY_PATH \

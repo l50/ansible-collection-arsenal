@@ -3,7 +3,7 @@
   ansible.windows.win_file:
     path: "{{ item.path }}"
     state: directory
-  loop: "{{ shares }}"
+  loop: "{{ vulnerable_windows_scenarios_shares }}"
   loop_control:
     label: "{{ item.path }}"
   when: ansible_os_family == "Windows"
@@ -14,7 +14,7 @@
     path: "{{ item.path }}"
     description: "{{ item.description }}"
     full_access: "{{ item.full_access }}"
-  loop: "{{ shares }}"
+  loop: "{{ vulnerable_windows_scenarios_shares }}"
   loop_control:
     label: "{{ item.name }}"
   when: ansible_os_family == "Windows"

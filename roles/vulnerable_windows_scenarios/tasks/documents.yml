@@ -3,7 +3,7 @@
   ansible.windows.win_file:
     path: "{{ item.path }}"
     state: touch
-  loop: "{{ documents }}"
+  loop: "{{ vulnerable_windows_scenarios_documents }}"
   loop_control:
     label: "{{ item.path }}"
   when: ansible_os_family == "Windows"
@@ -12,7 +12,7 @@
   community.windows.win_lineinfile:
     path: "{{ item.path }}"
     line: "{{ item.content }}"
-  loop: "{{ documents }}"
+  loop: "{{ vulnerable_windows_scenarios_documents }}"
   loop_control:
     label: "{{ item.path }}"
   when: ansible_os_family == "Windows"
@@ -22,7 +22,7 @@
     src: welcome.txt.j2
     dest: "{{ item.path }}"
     mode: '0644'
-  loop: "{{ welcome_documents }}"
+  loop: "{{ vulnerable_windows_scenarios_welcome_documents }}"
   loop_control:
     label: "{{ item.path }}"
   vars:

@@ -5,7 +5,7 @@
     password: "{{ item.password }}"
     description: "{{ item.description }}"
     groups: []
-  loop: "{{ users }}"
+  loop: "{{ vulnerable_windows_scenarios_users }}"
   loop_control:
     label: "{{ item.name }}"
   when: ansible_os_family == "Windows"
