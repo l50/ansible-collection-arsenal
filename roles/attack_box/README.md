@@ -64,7 +64,7 @@ attack_box_packages:
 
 ### Connect with Ansible using the playbook through SSM and the provided S3 bucket
 
-```sh
+```bash
 ansible-playbook -i playbooks/attack_box/attack_box_inventory_aws_ec2.yml \
   -e ansible_aws_ssm_bucket_name=$AWS_S3_BUCKET_NAME \
   -e ansible_connection=aws_ssm \
