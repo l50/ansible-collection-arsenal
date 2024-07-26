@@ -7,7 +7,7 @@ hostnames:
   - tag:Name
 filters:
   "tag:Name":
-    - "*packer*"
+    - "packer-attack-box"
 keyed_groups:
   - key: tags.Name
     prefix: name_

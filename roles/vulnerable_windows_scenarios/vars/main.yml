@@ -26,7 +26,7 @@ vulnerable_windows_scenarios_shares:
 
 vulnerable_windows_scenarios_documents:
   - path: "C:\\Resources\\attorney_client_privileged_intellectual_property.txt"
-    content: "{{ sensitive_document_content }}"
+    content: "{{ vulnerable_windows_scenarios_sensitive_document_content }}"
 
 vulnerable_windows_scenarios_welcome_documents:
   - path: "C:\\DeptFiles\\Welcome.txt"

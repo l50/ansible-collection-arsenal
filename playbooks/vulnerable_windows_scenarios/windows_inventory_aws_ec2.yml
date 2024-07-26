@@ -7,7 +7,7 @@ hostnames:
   - tag:Name
 filters:
   "tag:Name":
-    - "*windows*"
+    - "packer-windows"
 keyed_groups:
   - key: tags.Name
     prefix: name_

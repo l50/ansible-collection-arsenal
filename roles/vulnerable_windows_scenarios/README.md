@@ -34,7 +34,7 @@ in the playbook.
     ansible_aws_ssm_bucket_name: your-s3-bucket-name
     ansible_shell_type: powershell
   roles:
-    - role: vulnerable-windows-scenarios
+    - role: vulnerable_windows_scenarios
   tasks:
     - name: Fail if no target is provided
       fail:
@@ -42,26 +42,44 @@ in the playbook.
       when: target is undefined or target == "none"
 ```
 
-### Running Provided Playbook
+### Running the Playbook
 
 1. **Identify the First Instance**:
 
    ```bash
-   first_instance=$(ansible-inventory -i ansible-collection-arsenal/playbooks/vulnerable-windows-scenarios/windows_inventory_aws_ec2.yaml \
+   first_instance=$(ansible-inventory -i playbooks/vulnerable_windows_scenarios/windows_inventory_aws_ec2.yaml \
      --list | jq -r '._meta.hostvars | keys | sort | .[0]')
    ```
 
-1. **Run the Playbook with the First Instance**:
+2. **Run the Playbook with the First Instance**:
 
    ```bash
-   INVENTORY_PATH=ansible-collection-arsenal/playbooks/vulnerable_windows_scenarios/windows_inventory_aws_ec2.yaml
-   PLAYBOOK_PATH=ansible-collection-arsenal/playbooks/vulnerable_windows_scenarios/windows_scenarios.yml
+   INVENTORY_PATH=playbooks/vulnerable_windows_scenarios/windows_inventory_aws_ec2.yaml
+   PLAYBOOK_PATH=playbooks/vulnerable_windows_scenarios/windows_scenarios.yml
 
    ansible-playbook \
      -i $INVENTORY_PATH \
      $PLAYBOOK_PATH \
      --extra-vars "target=${first_instance}"
    ```
+
+### Running with SSM and S3 Bucket
+
+```bash
+INVENTORY_PATH=playbooks/vulnerable_windows_scenarios/windows_inventory_aws_ec2.yml
+PLAYBOOK_PATH=playbooks/vulnerable_windows_scenarios/windows_scenarios.yml
+
+ansible-playbook \
+  -i $INVENTORY_PATH \
+  -e ansible_aws_ssm_bucket_name=$AWS_S3_BUCKET_NAME \
+  -e ansible_connection=aws_ssm \
+  -e ansible_aws_ssm_region=$AWS_DEFAULT_REGION \
+  -e ansible_shell_type=powershell \
+  -e ansible_shell_executable=None \
+  -e ansible_aws_ssm_s3_addressing_style=virtual \
+  -vvvv \
+  $PLAYBOOK_PATH
+```
 
 ## License
 
