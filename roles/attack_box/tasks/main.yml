@@ -1,13 +1,7 @@
 ---
-- name: Get primary group name of the current user "{{ attack_box_user | default(ansible_user_id) }}"
-  ansible.builtin.command:
-    cmd: id -gn "{{ attack_box_user | default(ansible_user_id) }}"
-  changed_when: false
-  register: primary_group_name
-
-- name: Include tasks for package installation
-  ansible.builtin.include_tasks: packages.yml
-  when: ansible_distribution_release == "kali-rolling"
+# - name: Include tasks for package installation
+#   ansible.builtin.include_tasks: packages.yml
+#   when: ansible_distribution_release == "kali-rolling"
 
 - name: Include tasks for wordlists setup
   ansible.builtin.include_tasks: wordlists.yml

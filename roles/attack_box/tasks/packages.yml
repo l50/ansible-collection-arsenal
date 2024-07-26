@@ -5,4 +5,3 @@
     state: present
     update_cache: true
   become: true
-  when: ansible_distribution_release == "kali-rolling"
