@@ -1,0 +1,26 @@
+---
+- name: Ensure .ssh directory exists for "{{ attack_box_user | default(ansible_user_id) }}"
+  ansible.builtin.file:
+    path: "{{ (attack_box_user | default(ansible_user_id)) == 'root' | ternary('/root/.ssh', '/home/' + (attack_box_user | default(ansible_user_id)) + '/.ssh') }}"
+    state: directory
+    owner: "{{ attack_box_user | default(ansible_user_id) }}"
+    group: "{{ primary_group_name.stdout }}"
+    mode: '0700'
+
+- name: Get list of public SSH key files
+  ansible.builtin.find:
+    paths: files/
+    patterns: "*.pub"
+  register: ssh_key_files
+
+- name: Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user | default(ansible_user_id) }}"
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ (attack_box_user | default(ansible_user_id)) == 'root' | ternary('/root/.ssh/authorized_keys', '/home/' + (attack_box_user | default(ansible_user_id)) + '/.ssh/authorized_keys') }}"
+    owner: "{{ attack_box_user | default(ansible_user_id) }}"
+    group: "{{ primary_group_name.stdout }}"
+    mode: '0600'
+  loop: "{{ ssh_key_files.files }}"
+  when: ssh_key_files.matched > 0
+  loop_control:
+    label: "{{ item.path }}"

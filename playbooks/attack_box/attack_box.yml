@@ -1,0 +1,5 @@
+---
+- name: Attack Box
+  hosts: all
+  roles:
+    - role: l50.arsenal.attack_box

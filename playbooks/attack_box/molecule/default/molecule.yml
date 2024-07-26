@@ -13,7 +13,7 @@ driver:
   name: docker
 
 platforms:
-  - name: kali-attack-box
+  - name: kali_attack_box
     image: cisagov/docker-kali-ansible:latest
     command: "" # necessary for systemd
     volumes:

@@ -1,0 +1,8 @@
+---
+- name: Install required packages for attack box
+  ansible.builtin.package:
+    name: "{{ attack_box_packages }}"
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_distribution_release == "kali-rolling"

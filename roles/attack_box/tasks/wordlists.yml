@@ -1,0 +1,21 @@
+---
+- name: Ensure wordlists directory exists
+  ansible.builtin.file:
+    path: /usr/share/wordlists
+    mode: '0755'
+    state: directory
+  become: true
+
+- name: Download rockyou wordlist if not present
+  ansible.builtin.get_url:
+    url: https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+    dest: /usr/share/wordlists/rockyou.txt
+    mode: '0644'
+  become: true
+
+- name: Extract wordlists
+  ansible.builtin.command:
+    cmd: gzip -d /usr/share/wordlists/rockyou.txt.gz
+  args:
+    creates: /usr/share/wordlists/rockyou.txt
+  become: true

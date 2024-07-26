@@ -1,0 +1,69 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Check if required packages are installed
+      ansible.builtin.package_facts:
+
+    - name: Assert required packages are installed
+      ansible.builtin.assert:
+        that:
+          - item in ansible_facts.packages
+      loop: "{{ attack_box_packages }}"
+      when: ansible_distribution_release == "kali-rolling"
+
+    - name: Check wordlists directory exists
+      ansible.builtin.stat:
+        path: /usr/share/wordlists
+      register: wordlists_dir
+      when: ansible_distribution_release == "kali-rolling"
+
+    - name: Assert wordlists directory exists
+      ansible.builtin.assert:
+        that:
+          - wordlists_dir.stat.exists
+      when: ansible_distribution_release == "kali-rolling"
+
+    - name: Check rockyou wordlist file exists
+      ansible.builtin.stat:
+        path: /usr/share/wordlists/rockyou.txt
+      register: rockyou_file
+      when: ansible_distribution_release == "kali-rolling"
+
+    - name: Assert rockyou wordlist file exists
+      ansible.builtin.assert:
+        that:
+          - rockyou_file.stat.exists
+      when: ansible_distribution_release == "kali-rolling"
+
+    - name: Check user exists
+      ansible.builtin.command:
+        cmd: "id -un {{ ansible_user_id }}"
+      register: user_check
+      changed_when: false
+      failed_when: user_check.rc != 0
+
+    - name: Check .ssh directory exists for the user
+      ansible.builtin.stat:
+        path: "{{ ansible_user_id == 'root' | ternary('/root/.ssh', '/home/' + ansible_user_id + '/.ssh') }}"
+      register: ssh_dir_check
+
+    - name: Assert .ssh directory exists
+      ansible.builtin.assert:
+        that:
+          - ssh_dir_check.stat.exists
+
+    - name: Check authorized_keys file exists for the user
+      ansible.builtin.stat:
+        path: "{{ ansible_user_id == 'root' | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_user_id + '/.ssh/authorized_keys') }}"
+      register: authorized_keys_check
+
+    - name: Assert authorized_keys file exists
+      ansible.builtin.assert:
+        that:
+          - authorized_keys_check.stat.exists

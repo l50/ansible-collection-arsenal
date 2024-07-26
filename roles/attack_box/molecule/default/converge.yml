@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+  roles:
+    - name: Run the attack_box role
+      role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"

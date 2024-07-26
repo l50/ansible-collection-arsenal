@@ -4,4 +4,4 @@
   gather_facts: true
 
 - name: Import playbook for testing
-  ansible.builtin.import_playbook: ../../attack-box.yml
+  ansible.builtin.import_playbook: ../../attack_box.yml

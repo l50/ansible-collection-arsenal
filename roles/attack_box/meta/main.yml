@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: "attack_box"
+  namespace: l50
+  author: Jayson Grace
+  description: Creates an attack box for penetration testing and red teaming
+  company: techvomit
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Kali
+      versions:
+        - all
+  galaxy_tags:
+    - offsec

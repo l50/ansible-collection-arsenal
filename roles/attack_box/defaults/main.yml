@@ -1,0 +1,9 @@
+---
+attack_box_packages:
+  - gzip
+  - kali-linux-default
+  - vim
+  - wordlists
+  - zsh
+
+attack_box_user: "{{ ansible_user_id }}"

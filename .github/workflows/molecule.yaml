@@ -18,6 +18,8 @@ jobs:
             path: "roles/sliver"
           - name: "Role Test - ttpforge"
             path: "roles/ttpforge"
+          - name: "Role Test - Attack Box"
+            path: "roles/attack_box"
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
@@ -62,7 +64,7 @@ jobs:
           - name: "Playbook Test - Atomic Red Team"
             path: "playbooks/atomic-red-team"
           - name: "Playbook Test - Attack Box"
-            path: "playbooks/attack-box"
+            path: "playbooks/attack_box"
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
