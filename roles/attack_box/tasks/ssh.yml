@@ -12,12 +12,14 @@
     owner: "{{ attack_box_user | default(ansible_user_id) }}"
     group: "{{ primary_group_name.stdout }}"
     mode: '0700'
+  become: true
 
 - name: Get list of public SSH key files
   ansible.builtin.find:
     paths: "{{ (attack_box_user | default(ansible_user_id)) | ternary('/root/.ssh', ansible_user_dir + '/.ssh') }}"
     patterns: "*.pub"
   register: ssh_key_files
+  become: true
 
 - name: Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user | default(ansible_user_id) }}"
   ansible.builtin.copy:
@@ -30,3 +32,4 @@
   when: ssh_key_files.matched > 0
   loop_control:
     label: "{{ item.path }}"
+  become: true

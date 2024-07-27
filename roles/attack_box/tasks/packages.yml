@@ -1,4 +1,13 @@
 ---
+- name: Ensure no other package management processes are running
+  ansible.builtin.shell: |
+    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      echo "Waiting for other package management process to finish...";
+      sleep 5;
+    done
+  become: true
+  changed_when: false
+
 - name: Install required packages for attack box
   ansible.builtin.package:
     name: "{{ attack_box_packages }}"
