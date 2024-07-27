@@ -33,6 +33,15 @@ Installs and configures [TTPForge](https://github.com/facebookincubator/TTPForge
 a Cybersecurity Framework for developing, automating, and executing attacker
 Tactics, Techniques, and Procedures (TTPs).
 
+### Attack Box
+
+Creates an attack box for penetration testing and red teaming.
+
+### Vulnerable Windows Scenarios
+
+Sets up vulnerable Windows scenarios for use in training and testing of
+cybersecurity tools and techniques.
+
 ## Usage
 
 Include the roles from this collection in your playbook. Here's an example:
@@ -44,7 +53,8 @@ Include the roles from this collection in your playbook. Here's an example:
   roles:
     - l50.arsenal.sliver
     - l50.arsenal.ttpforge
-    ...
+    - l50.arsenal.attack_box
+    - l50.arsenal.vulnerable_windows_scenarios
 ```
 
 ## License
