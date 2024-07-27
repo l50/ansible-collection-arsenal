@@ -6,7 +6,6 @@
   loop: "{{ vulnerable_windows_scenarios_documents }}"
   loop_control:
     label: "{{ item.path }}"
-  when: ansible_os_family == "Windows"
 
 - name: Set content of documents
   community.windows.win_lineinfile:
@@ -15,7 +14,6 @@
   loop: "{{ vulnerable_windows_scenarios_documents }}"
   loop_control:
     label: "{{ item.path }}"
-  when: ansible_os_family == "Windows"
 
 - name: Create and populate welcome document
   ansible.builtin.template:
@@ -31,4 +29,3 @@
     user_manager: "{{ item.user.manager }}"
     user_mentor: "{{ item.user.mentor }}"
     share_name: "{{ item.share.name }}"
-  when: ansible_os_family == "Windows"

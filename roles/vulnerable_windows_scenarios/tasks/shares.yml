@@ -6,7 +6,6 @@
   loop: "{{ vulnerable_windows_scenarios_shares }}"
   loop_control:
     label: "{{ item.path }}"
-  when: ansible_os_family == "Windows"
 
 - name: Create network shares
   ansible.windows.win_share:
@@ -17,4 +16,3 @@
   loop: "{{ vulnerable_windows_scenarios_shares }}"
   loop_control:
     label: "{{ item.name }}"
-  when: ansible_os_family == "Windows"
