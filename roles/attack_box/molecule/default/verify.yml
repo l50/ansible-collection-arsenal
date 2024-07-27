@@ -50,7 +50,7 @@
 
     - name: Check .ssh directory exists for the user
       ansible.builtin.stat:
-        path: "{{ ansible_user_id == 'root' | ternary('/root/.ssh', '/home/' + ansible_user_id + '/.ssh') }}"
+        path: "{{ ansible_user_id | ternary('/root/.ssh', '/home/' + ansible_user_id + '/.ssh') }}"
       register: ssh_dir_check
 
     - name: Assert .ssh directory exists
@@ -60,10 +60,12 @@
 
     - name: Check authorized_keys file exists for the user
       ansible.builtin.stat:
-        path: "{{ ansible_user_id == 'root' | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_user_id + '/.ssh/authorized_keys') }}"
+        path: "{{ ansible_user_id | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_user_id + '/.ssh/authorized_keys') }}"
       register: authorized_keys_check
+      when: ssh_dir_check.stat.exists
 
     - name: Assert authorized_keys file exists
       ansible.builtin.assert:
         that:
           - authorized_keys_check.stat.exists
+      when: authorized_keys_check.stat.exists
