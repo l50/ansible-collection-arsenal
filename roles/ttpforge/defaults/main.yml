@@ -13,5 +13,5 @@ ttpforge_users:
     shell: /bin/bash
     plugins:
       - name: golang
-        version: "1.22.1"
+        version: "1.22.4"
         scope: "global"

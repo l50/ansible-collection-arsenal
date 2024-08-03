@@ -83,7 +83,7 @@
 - name: Compile ttpforge for each user
   ansible.builtin.shell:
     cmd: |
-      {{ ttpforge_go_path }} build -buildvcs=false -o {{ item.item.install_path | default(ttpforge_install_path) }}
+      {{ item.item.go_path | default(ttpforge_go_path) }} build -buildvcs=false -o {{ item.item.install_path | default(ttpforge_install_path) }}
     chdir: "{{ item.item.repo_path | default('/home/' ~ item.item.username ~ '/ttpforge') }}"
     executable: "{{ item.item.shell }}"
   become: true
