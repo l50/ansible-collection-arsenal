@@ -1,24 +1,6 @@
 ---
 - name: TTPForge
   hosts: all
-  vars:
-    ttpforge_default_username: "{{ ansible_distribution | lower }}"
-    ttpforge_default_group: "{{ ansible_distribution | lower }}"
-    go_version: "1.22.4"
-    asdf_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
-        sudo: true
-        shell: /bin/bash
-        plugins:
-          - name: golang
-            version: "{{ go_version }}"
-            scope: "global"
-    user_setup_default_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
-        sudo: true
-        shell: /bin/bash
   roles:
     - name: Create ttpforge role user (if not already present)
       role: cowdogmoo.workstation.user_setup

@@ -55,11 +55,6 @@
   loop: "{{ ttpforge_users }}"
   when: not ttpforge_global_install
 
-- name: Debug output for user-specific paths
-  ansible.builtin.debug:
-    msg: "Installing for user {{ item.username }} in path /home/{{ item.username }}/ttpforge"
-  loop: "{{ ttpforge_users }}"
-
 - name: Ensure correct ownership of ttpforge repository
   ansible.builtin.file:
     path: "/home/{{ item.username }}/ttpforge"

@@ -7,10 +7,10 @@ ttpforge_global_install: false
 
 # Default users to install ttpforge for (modify as needed for a per-user install)
 ttpforge_users:
-  - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
-    usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ansible_distribution | lower }}"
+  - username: "{{ ansible_env.USER if ansible_os_family == 'Darwin' else 'Administrator' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
+    usergroup: "{{ 'staff' if ansible_os_family == 'Darwin' else 'Administrators' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
     sudo: true
-    shell: /bin/bash
+    shell: "{{ 'powershell' if ansible_os_family == 'Windows' else (ansible_env.SHELL | default('/bin/bash')).strip() | regex_replace('\\n', '') }}"
     plugins:
       - name: golang
         version: "1.22.4"
