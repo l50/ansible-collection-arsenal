@@ -1,5 +1,5 @@
 ---
-attack_box_packages:
+attack_box_common_install_packages:
   - gzip
   - kali-linux-core
   - vim

@@ -14,7 +14,7 @@
       ansible.builtin.assert:
         that:
           - item in ansible_facts.packages
-      loop: "{{ attack_box_packages }}"
+      loop: "{{ attack_box_common_install_packages }}"
       when: ansible_distribution_release == "kali-rolling"
 
     - name: Check wordlists directory exists
