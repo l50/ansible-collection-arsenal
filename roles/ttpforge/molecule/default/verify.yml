@@ -40,3 +40,31 @@
         fail_msg: "TTPForge is not installed correctly for user {{ item.item.username }}"
         success_msg: "TTPForge is installed correctly for user {{ item.item.username }}"
       loop: "{{ ttpforge_stat.results }}"
+
+    - name: List available TTPForge repositories for each user
+      ansible.builtin.command:
+        cmd: "{{ ttpforge_install_path }} list repos"
+      register: ttpforge_repos
+      become: true
+      become_user: "{{ item.username }}"
+      loop: "{{ ttpforge_users }}"
+      changed_when: false
+
+    - name: Output available TTPForge repositories for each user
+      ansible.builtin.debug:
+        msg: "User: {{ item.item.username }}, Repositories: {{ item.stdout }}"
+      loop: "{{ ttpforge_repos.results }}"
+
+    - name: List available TTPs that can be run for each user
+      ansible.builtin.command:
+        cmd: "{{ ttpforge_install_path }} list ttps"
+      register: ttpforge_ttps
+      become: true
+      become_user: "{{ item.username }}"
+      loop: "{{ ttpforge_users }}"
+      changed_when: false
+
+    - name: Output available TTPs for each user
+      ansible.builtin.debug:
+        msg: "User: {{ item.item.username }}, TTPs: {{ item.stdout }}"
+      loop: "{{ ttpforge_ttps.results }}"
