@@ -27,8 +27,6 @@
     name: cowdogmoo.workstation.package_management
   vars:
     package_management_common_install_packages: "{{ ttpforge_common_install_packages }}"
-    package_management_debian_specific_packages: "{{ ttpforge_debian_packages }}"
-    package_management_redhat_specific_packages: "{{ ttpforge_el_packages }}"
 
 - name: Configure Git to allow ttpforge repository as a safe directory
   community.general.git_config:
