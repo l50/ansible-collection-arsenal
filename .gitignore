@@ -4,3 +4,4 @@ __pycache__
 .DS_Store
 logs
 changelogs/.plugin-cache.yaml
+*inventory_aws_ec2.yml
