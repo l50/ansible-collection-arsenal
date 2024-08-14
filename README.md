@@ -54,7 +54,6 @@ Include the roles from this collection in your playbook. Here's an example:
     - l50.arsenal.sliver
     - l50.arsenal.ttpforge
     - l50.arsenal.attack_box
-    - l50.arsenal.vulnerable_windows_scenarios
 ```
 
 ## License
