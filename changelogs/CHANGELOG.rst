@@ -1,8 +1,41 @@
 ==============================================
-Arsenal Ansible Collection 1.0.0 Release Notes
+Arsenal Ansible Collection 1.0.1 Release Notes
 ==============================================
 
 .. contents:: Topics
+
+v1.0.1
+======
+
+Release Summary
+---------------
+
+New and updated roles for penetration testing, red teaming, and cybersecurity drills.
+
+Added
+-----
+
+- Added new Molecule tests for the `attack_box` role, ensuring proper setup and configuration.
+- Added role `vulnerable_windows_scenarios` to create vulnerable Windows environments for cybersecurity training and testing.
+- Added tasks and configurations for SSH key management, wordlist setup, and package management within the `attack_box` role.
+- Included playbook `vulnerable_windows_scenarios.yml` for deploying vulnerable Windows scenarios using AWS EC2 instances.
+- Integrated new collections `amazon.aws` and `community.windows` in `requirements.yml` to enhance AWS and Windows functionalities.
+- Introduced callback plugin `profile_tasks.py` for task profiling in the `attack_box` role.
+- Introduced new role `attack_box` for setting up a Kali Linux-based attack box for penetration testing and red teaming.
+- Updated `ttpforge` role to support dynamic user and shell configurations across different OS platforms, including Windows.
+
+Changed
+-------
+
+- Enhanced GitHub Actions workflows (`molecule.yaml`) to include new roles (`attack_box`, `vulnerable_windows_scenarios`) and updated dependencies.
+- Enhanced the `ttpforge` role by updating user management and shell assignment logic, improving cross-platform compatibility.
+- Updated Go toolchain to `go1.23.0` and upgraded multiple Go dependencies for improved performance and security.
+- Updated `README.md` to reflect the addition of the `attack_box` and `vulnerable_windows_scenarios` roles.
+
+Removed
+-------
+
+- Removed the deprecated playbook `attack-box.yml` and replaced it with the updated `attack_box.yml`.
 
 v1.0.0
 ======
