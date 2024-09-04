@@ -28,18 +28,14 @@
   color: "ff6600"
   description: >-
     Changes made to Ansible roles
-- name: area/magefiles
+- name: area/taskfiles
   color: "7BD7E0"
   description: >-
-    Changes made to magefiles
+    Changes made to taskfiles
 - name: area/galaxy
   color: "7BD7E0"
   description: >-
     Changes made to galaxy.yml
-- name: area/go
-  color: "7BD7E0"
-  description: >-
-    Changes made to go resources
 - name: area/ansible-role
   color: "ff6600"
   description: >-
