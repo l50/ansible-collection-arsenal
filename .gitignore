@@ -1,7 +1,9 @@
 roles.collections
-chrome.sh
-__pycache__
+TODO
+library/__pycache__
 .DS_Store
 logs
 changelogs/.plugin-cache.yaml
+*.pyc
+.task/
 *inventory_aws_ec2.yml
