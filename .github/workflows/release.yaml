@@ -35,5 +35,5 @@ jobs:
       - name: Install dependencies
         run: python3 -m pip install ansible-core
 
-      - name: Release to Ansible Galaxy.
+      - name: Release to Ansible Galaxy
         run: ansible-playbook -i 'localhost,' galaxy-deploy.yml -e "github_tag=${{ github.ref }}"
