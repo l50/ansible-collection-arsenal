@@ -10,8 +10,11 @@ ttpforge_users:
   - username: "{{ ansible_env.USER if ansible_os_family == 'Darwin' else 'Administrator' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
     usergroup: "{{ 'staff' if ansible_os_family == 'Darwin' else 'Administrators' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
     sudo: true
-    shell: "{{ 'powershell' if ansible_os_family == 'Windows' else (ansible_env.SHELL | default('/bin/bash')).strip() | regex_replace('\\n', '') }}"
+    shell: "{{ '/bin/zsh' if ansible_os_family == 'Darwin' else 'powershell' if ansible_os_family == 'Windows' else '/bin/bash' }}"
     plugins:
       - name: golang
         version: "1.22.4"
+        scope: "global"
+      - name: python
+        version: "3.12.5"
         scope: "global"
