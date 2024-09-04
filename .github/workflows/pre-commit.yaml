@@ -27,7 +27,7 @@ jobs:
         run: python3 -m pip install ansible \
           ansible-lint \
           docker \
-          molecule[docker] \
+          'molecule-plugins[docker]'
           pre-commit
 
       - name: Set up Go
