@@ -20,12 +20,13 @@ jobs:
             path: "roles/ttpforge"
           - name: "Role Test - Attack Box"
             path: "roles/attack_box"
+
     steps:
       - name: Delete huge unnecessary tools folder
         run: rm -rf /opt/hostedtoolcache
 
-      - name: Set up git repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout git repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
@@ -47,7 +48,7 @@ jobs:
       - name: ${{ matrix.name }}
         run: molecule test
         working-directory: ${{ matrix.path }}
-        # timeout-minutes: 40
+        timeout-minutes: 40
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
@@ -92,13 +93,11 @@ jobs:
           ansible-galaxy collection install -v -r requirements.yml
           mkdir -p ~/.ansible/collections/ansible_collections/l50
           ln -s $PWD ~/.ansible/collections/ansible_collections/l50/arsenal
-          # Set up public SSH key for attack-box
-          mkdir -p ~/.ansible/collections/ansible_collections/l50/arsenal/playbooks/attack-box/files
-          echo ${{ secrets.PUB_SSH_KEY }} > ~/.ansible/collections/ansible_collections/l50/arsenal/playbooks/attack-box/files/id_rsa.pub
 
       - name: ${{ matrix.name }}
         run: molecule test
         working-directory: ${{ matrix.path }}
+        timeout-minutes: 40
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
