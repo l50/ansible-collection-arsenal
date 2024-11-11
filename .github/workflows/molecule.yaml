@@ -61,6 +61,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
 
       - name: Cache Ansible collections
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
@@ -70,15 +71,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade \
-          ansible-core \
-          docker \
-          molecule \
-          molecule-docker \
-          "molecule-plugins[docker]"
-
-      - name: Install galaxy dependencies
-        run: ansible-galaxy install -v -r requirements.yml
+          python3 -m pip install -r requirements.txt
 
       - name: Run molecule test for ${{ matrix.name }}
         run: |
@@ -121,8 +114,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
-            python-version: ${{ env.PYTHON_VERSION }}
-            cache: 'pip'
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
 
       - name: Cache Ansible collections
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
@@ -132,12 +126,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade \
-          ansible-core \
-          docker \
-          molecule \
-          molecule-docker \
-          "molecule-plugins[docker]"
+          python3 -m pip install -r requirements.txt
 
       - name: Install galaxy dependencies
         run: |
