@@ -2,10 +2,23 @@
 name: Molecule Test
 on:
   pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
   push:
+    branches:
+      - main
+  schedule:
+    # Runs every Sunday at 4 AM (see https://crontab.guru)
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
 
+# Cancel any in-progress job when a new workflow is triggered
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
