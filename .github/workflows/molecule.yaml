@@ -76,9 +76,28 @@ jobs:
       - name: Run molecule test for ${{ matrix.name }}
         run: |
           set -x
-          molecule test || {
-            echo "Molecule test failed. Collecting logs..."
-            find . -name '*.log' -exec cat {} \;
+          # Show molecule version and config
+          molecule --version
+          molecule status
+
+          # Run with debug logging
+          MOLECULE_DEBUG=1 molecule --debug test || {
+            echo "Molecule test failed. Collecting debug information..."
+
+            # Show docker logs if containers exist
+            for container in $(docker ps -aq); do
+              echo "Logs from container $container:"
+              docker logs $container
+            done
+
+            # Show molecule logs
+            echo "Molecule logs:"
+            find . -name '*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+
+            # Show ansible logs if they exist
+            echo "Ansible logs:"
+            find . -name '*ansible*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+
             exit 1
           }
         working-directory: ${{ matrix.path }}
@@ -138,9 +157,28 @@ jobs:
       - name: Run molecule test for ${{ matrix.name }}
         run: |
           set -x
-          molecule test || {
-            echo "Molecule test failed. Collecting logs..."
-            find . -name '*.log' -exec cat {} \;
+          # Show molecule version and config
+          molecule --version
+          molecule status
+
+          # Run with debug logging
+          MOLECULE_DEBUG=1 molecule --debug test || {
+            echo "Molecule test failed. Collecting debug information..."
+
+            # Show docker logs if containers exist
+            for container in $(docker ps -aq); do
+              echo "Logs from container $container:"
+              docker logs $container
+            done
+
+            # Show molecule logs
+            echo "Molecule logs:"
+            find . -name '*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+
+            # Show ansible logs if they exist
+            echo "Ansible logs:"
+            find . -name '*ansible*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+
             exit 1
           }
         working-directory: ${{ matrix.path }}
