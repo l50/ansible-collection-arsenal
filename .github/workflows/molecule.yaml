@@ -23,9 +23,6 @@ concurrency:
 env:
   COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
   ANSIBLE_FORCE_COLOR: "1"
-  MOLECULE_NO_LOG: "false"
-  PYTHONUNBUFFERED: "1"
-  PY_COLORS: "1"
   PYTHON_VERSION: "3.12.6"
 
 jobs:
@@ -70,36 +67,44 @@ jobs:
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
 
       - name: Install dependencies
-        run: |
-          python3 -m pip install -r .hooks/requirements.txt
+        run: python3 -m pip install -r .hooks/requirements.txt
 
       - name: Run molecule test for ${{ matrix.name }}
         run: |
-          set -x
-          # Show molecule version and config
+          set -ex
           molecule --version
-          molecule status
+          molecule list
 
-          # Run with debug logging
-          MOLECULE_DEBUG=1 molecule --debug test || {
+          if ! MOLECULE_DEBUG=1 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
 
-            # Show docker logs if containers exist
-            for container in $(docker ps -aq); do
-              echo "Logs from container $container:"
-              docker logs $container
+            echo "Docker containers:"
+            docker ps -a
+
+            echo "=== Docker Container Logs ==="
+            docker ps -q | while read -r container; do
+              echo "=== Logs from container ${container} ==="
+              docker logs "${container}" 2>&1
+              echo "=== End logs for container ${container} ==="
             done
 
-            # Show molecule logs
-            echo "Molecule logs:"
-            find . -name '*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+            echo "=== Molecule Logs ==="
+            find . -name '*.log' -print0 | while IFS= read -r -d '' log; do
+              echo "Contents of ${log}:"
+              cat "${log}"
+              echo "=== End of ${log} ==="
+            done
 
-            # Show ansible logs if they exist
-            echo "Ansible logs:"
-            find . -name '*ansible*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+            echo "=== Directory structure ==="
+            ls -R molecule/
+
+            if [ -f "molecule/default/molecule.yml" ]; then
+              echo "=== molecule.yml content ==="
+              cat "molecule/default/molecule.yml"
+            fi
 
             exit 1
-          }
+          fi
         working-directory: ${{ matrix.path }}
 
   playbook_test:
@@ -144,41 +149,49 @@ jobs:
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
 
       - name: Install dependencies
-        run: |
-          python3 -m pip install -r .hooks/requirements.txt
+        run: python3 -m pip install -r .hooks/requirements.txt
 
       - name: Install galaxy dependencies
         run: |
           ansible-galaxy install -v -r requirements.yml
           ansible-galaxy collection install -v -r requirements.yml
           mkdir -p ~/.ansible/collections/ansible_collections/l50
-          ln -s $PWD ~/.ansible/collections/ansible_collections/l50/arsenal
+          ln -s "$PWD" ~/.ansible/collections/ansible_collections/l50/arsenal
 
       - name: Run molecule test for ${{ matrix.name }}
         run: |
-          set -x
-          # Show molecule version and config
+          set -ex
           molecule --version
-          molecule status
+          molecule list
 
-          # Run with debug logging
-          MOLECULE_DEBUG=1 molecule --debug test || {
+          if ! MOLECULE_DEBUG=1 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
 
-            # Show docker logs if containers exist
-            for container in $(docker ps -aq); do
-              echo "Logs from container $container:"
-              docker logs $container
+            echo "Docker containers:"
+            docker ps -a
+
+            echo "=== Docker Container Logs ==="
+            docker ps -q | while read -r container; do
+              echo "=== Logs from container ${container} ==="
+              docker logs "${container}" 2>&1
+              echo "=== End logs for container ${container} ==="
             done
 
-            # Show molecule logs
-            echo "Molecule logs:"
-            find . -name '*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+            echo "=== Molecule Logs ==="
+            find . -name '*.log' -print0 | while IFS= read -r -d '' log; do
+              echo "Contents of ${log}:"
+              cat "${log}"
+              echo "=== End of ${log} ==="
+            done
 
-            # Show ansible logs if they exist
-            echo "Ansible logs:"
-            find . -name '*ansible*.log' -exec sh -c 'echo "=== {} ==="; cat {}' \;
+            echo "=== Directory structure ==="
+            ls -R molecule/
+
+            if [ -f "molecule/default/molecule.yml" ]; then
+              echo "=== molecule.yml content ==="
+              cat "molecule/default/molecule.yml"
+            fi
 
             exit 1
-          }
+          fi
         working-directory: ${{ matrix.path }}
