@@ -4,14 +4,24 @@ on:
   pull_request:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
 env:
   COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
+  ANSIBLE_FORCE_COLOR: "1"
+  MOLECULE_NO_LOG: "false"
+  PYTHONUNBUFFERED: "1"
+  PY_COLORS: "1"
+  PYTHON_VERSION: "3.12.6"
 
 jobs:
   role_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - name: "Role Test - sliver"
@@ -23,7 +33,12 @@ jobs:
 
     steps:
       - name: Delete huge unnecessary tools folder
-        run: rm -rf /opt/hostedtoolcache
+        run: |
+          echo "Initial disk space:"
+          df -h
+          rm -rf /opt/hostedtoolcache
+          echo "Disk space after cleanup:"
+          df -h
 
       - name: Checkout git repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -31,7 +46,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
-          python-version: "3.x"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Cache Ansible collections
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        with:
+          path: ~/.ansible/collections
+          key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
 
       - name: Install dependencies
         run: |
@@ -45,17 +67,22 @@ jobs:
       - name: Install galaxy dependencies
         run: ansible-galaxy install -v -r requirements.yml
 
-      - name: ${{ matrix.name }}
-        run: molecule test
+      - name: Run molecule test for ${{ matrix.name }}
+        run: |
+          set -x
+          molecule test || {
+            echo "Molecule test failed. Collecting logs..."
+            find . -name '*.log' -exec cat {} \;
+            exit 1
+          }
         working-directory: ${{ matrix.path }}
-        timeout-minutes: 40
-        env:
-          PY_COLORS: "1"
-          ANSIBLE_FORCE_COLOR: "1"
 
   playbook_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
+      fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - name: "Playbook Test - sliver"
@@ -68,7 +95,12 @@ jobs:
             path: "playbooks/attack_box"
     steps:
       - name: Delete huge unnecessary tools folder
-        run: rm -rf /opt/hostedtoolcache
+        run: |
+          echo "Initial disk space:"
+          df -h
+          rm -rf /opt/hostedtoolcache
+          echo "Disk space after cleanup:"
+          df -h
 
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -76,7 +108,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
-          python-version: "3.x"
+            python-version: ${{ env.PYTHON_VERSION }}
+            cache: 'pip'
+
+      - name: Cache Ansible collections
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        with:
+          path: ~/.ansible/collections
+          key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
 
       - name: Install dependencies
         run: |
@@ -94,10 +133,12 @@ jobs:
           mkdir -p ~/.ansible/collections/ansible_collections/l50
           ln -s $PWD ~/.ansible/collections/ansible_collections/l50/arsenal
 
-      - name: ${{ matrix.name }}
-        run: molecule test
+      - name: Run molecule test for ${{ matrix.name }}
+        run: |
+          set -x
+          molecule test || {
+            echo "Molecule test failed. Collecting logs..."
+            find . -name '*.log' -exec cat {} \;
+            exit 1
+          }
         working-directory: ${{ matrix.path }}
-        timeout-minutes: 40
-        env:
-          PY_COLORS: "1"
-          ANSIBLE_FORCE_COLOR: "1"
