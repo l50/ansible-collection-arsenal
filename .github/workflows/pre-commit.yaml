@@ -1,34 +1,46 @@
 ---
 name: Pre-Commit
 on:
-  push:
   pull_request:
+    branches:
+      - main
     types:
       - opened
       - synchronize
-  # Run once a week (see https://crontab.guru)
+  push:
+    branches:
+      - main
   schedule:
+    # Run once a week (see https://crontab.guru)
     - cron: "0 0 * * 0"
   workflow_dispatch:
+
+# Cancel any in-progress job when a new workflow is triggered
+concurrency:
+  cancel-in-progress: true
+  group: pre-commit-${{ github.workflow }}-${{ github.ref }}
+
+env:
+  PYTHON_VERSION: "3.12.6"
+
 jobs:
   pre-commit:
     name: Update pre-commit hooks and run pre-commit
     runs-on: ubuntu-latest
     steps:
-      - name: Set up git repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Checkout git repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Set up Python
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
-          python-version: "3.12.0"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: '.hooks/requirements.txt'
 
       - name: Install dependencies
-        run: python3 -m pip install ansible \
-          ansible-lint \
-          docker \
-          'molecule-plugins[docker]'
-          pre-commit
+        run: |
+          python3 -m pip install -r .hooks/requirements.txt
 
       - name: Set up Go
         uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5
@@ -40,7 +52,7 @@ jobs:
           go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
       - name: Setup go-task
-        uses: pnorton5432/setup-task@v1
+        uses: pnorton5432/setup-task@eec4717ae80f02d1614a4fecfa4a55d507768696 # v1.0.0
         with:
           task-version: 3.38.0
 

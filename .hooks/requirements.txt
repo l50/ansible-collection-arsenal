@@ -3,3 +3,4 @@ docker
 molecule
 molecule-docker
 molecule-plugins[docker]
+pre-commit

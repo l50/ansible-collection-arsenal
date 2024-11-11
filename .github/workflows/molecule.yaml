@@ -17,8 +17,8 @@ on:
 
 # Cancel any in-progress job when a new workflow is triggered
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: 'requirements.txt'
+          cache-dependency-path: '.hooks/requirements.txt'
 
       - name: Cache Ansible collections
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
@@ -71,7 +71,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install -r requirements.txt
+          python3 -m pip install -r .hooks/requirements.txt
 
       - name: Run molecule test for ${{ matrix.name }}
         run: |
@@ -116,7 +116,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: 'requirements.txt'
+          cache-dependency-path: '.hooks/requirements.txt'
 
       - name: Cache Ansible collections
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
@@ -126,7 +126,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install -r requirements.txt
+          python3 -m pip install -r .hooks/requirements.txt
 
       - name: Install galaxy dependencies
         run: |
