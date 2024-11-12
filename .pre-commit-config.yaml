@@ -12,6 +12,11 @@ repos:
       - id: detect-private-key
       - id: check-shebang-scripts-are-executable
 
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.4
+    hooks:
+      - id: actionlint
+
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.35.1
     hooks:
@@ -22,7 +27,7 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        entry: codespell -q 3 -f -S ".git,.github,README.md,magefiles/go.*,roles/scenarios/tasks/windows/vuln-cifs/vuln-cifs-user.yaml,playbooks/windows-scenarios/windows-scenarios.yml"
+        entry: codespell -q 3 -f -S ".git,.github,README.md,roles/scenarios/tasks/windows/vuln-cifs/vuln-cifs-user.yaml,playbooks/windows-scenarios/windows-scenarios.yml"
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0

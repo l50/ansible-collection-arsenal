@@ -13,8 +13,8 @@ ttpforge_users:
     shell: "{{ '/bin/zsh' if ansible_os_family == 'Darwin' else 'powershell' if ansible_os_family == 'Windows' else '/bin/bash' }}"
     plugins:
       - name: golang
-        version: "1.22.4"
+        version: "1.23.1"
         scope: "global"
       - name: python
-        version: "3.12.5"
+        version: "3.12.6"
         scope: "global"
