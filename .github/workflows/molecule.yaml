@@ -164,63 +164,33 @@ jobs:
           molecule --version
           molecule list
 
-          # Ensure converge.yml exists and show its content
-          echo "=== Converge playbook content ==="
-          cat molecule/default/converge.yml
-
-          # Run with enhanced debugging
-          if ! ANSIBLE_VERBOSITY=2 MOLECULE_DEBUG=1 molecule test --debug; then
+          if ! ANSIBLE_VERBOSITY=2 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
 
-            echo "=== Failed Playbook Debug ==="
-            cat molecule/default/converge.yml
+            echo "=== Playbook content ==="
+            cat molecule/default/converge.yml || true
 
-            echo "Docker containers:"
+            echo "=== Docker Status ==="
             docker ps -a
 
             echo "=== Docker Container Logs ==="
             docker ps -q | while read -r container; do
               echo "=== Logs from container ${container} ==="
               docker logs "${container}" 2>&1 || true
-              echo "=== Ansible facts from container ${container} ==="
-              docker exec "${container}" ansible localhost -m setup || true
-              echo "=== End logs for container ${container} ==="
             done
 
             echo "=== Molecule Logs ==="
             find . -type f -name '*.log' -print0 | while IFS= read -r -d '' log; do
               echo "Contents of ${log}:"
               cat "${log}"
-              echo "=== End of ${log} ==="
             done
 
-            echo "=== Directory structure ==="
+            echo "=== Directory Contents ==="
             ls -R molecule/
 
-            echo "=== molecule.yml content ==="
-            cat molecule/default/molecule.yml
-
-            # Show Ansible inventory
-            echo "=== Inventory content ==="
-            cat molecule/default/inventory/hosts || true
+            echo "=== Molecule Config ==="
+            cat molecule/default/molecule.yml || true
 
             exit 1
           fi
-        working-directory: ${{ matrix.path }}
-        env:
-          ANSIBLE_FORCE_COLOR: "1"
-          ANSIBLE_VERBOSITY: "2"
-
-      # Add a post-failure debug step
-      - name: Debug on failure
-        if: failure()
-        run: |
-          echo "=== Environment Variables ==="
-          env | sort
-
-          echo "=== Directory Structure ==="
-          ls -R
-
-          echo "=== Docker Status ==="
-          docker ps -a
         working-directory: ${{ matrix.path }}
