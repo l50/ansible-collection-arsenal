@@ -4,39 +4,42 @@
 #
 # See: https://github.com/marketplace/actions/publish-ansible-role-to-galaxy
 # See: https://github.com/ansible/galaxy/issues/46
-
 name: Release
 on:
   push:
     tags:
       - "*"
-
-defaults:
-  run:
-    working-directory: ansible_collections/l50/arsenal
+# Cancel any in-progress job when a new workflow is triggered
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+env:
+  ANSIBLE_GALAXY_TOKEN: ${{ secrets.GALAXY_API_KEY }}
+  PYTHON_VERSION: "3.12.6"
+  WORKING_DIRECTORY: ansible_collections/l50/arsenal
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      ANSIBLE_GALAXY_TOKEN: ${{ secrets.GALAXY_API_KEY }}
-      ANSIBLE_FORCE_COLOR: 1
     steps:
       - name: Checkout git repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
-          path: ansible_collections/l50/arsenal
+          path: ${{ env.WORKING_DIRECTORY }}
+          fetch-depth: 0  # Fetch all history for proper versioning
 
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: '.hooks/requirements.txt'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/.hooks/requirements.txt'
 
       - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
           python3 -m pip install -r .hooks/requirements.txt
 
       - name: Release to Ansible Galaxy
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: ansible-playbook -i 'localhost,' galaxy-deploy.yml -e "github_tag=${{ github.ref }}"
