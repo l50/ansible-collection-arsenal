@@ -21,9 +21,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 env:
-  COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
   ANSIBLE_FORCE_COLOR: "1"
+  COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
+  PY_COLORS: "1"
   PYTHON_VERSION: "3.12.6"
+  ANSIBLE_VERBOSITY: "2"
 
 jobs:
   role_test:
@@ -65,11 +67,21 @@ jobs:
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-ansible-
 
       - name: Install dependencies
         run: python3 -m pip install -r .hooks/requirements.txt
 
+      - name: Install galaxy dependencies
+        run: |
+          ansible-galaxy install -v -r requirements.yml
+          ansible-galaxy collection install -v -r requirements.yml
+          mkdir -p ~/.ansible/collections/ansible_collections/l50
+          ln -s "$PWD" ~/.ansible/collections/ansible_collections/l50/arsenal
+
       - name: Run molecule test for ${{ matrix.name }}
+        working-directory: ${{ matrix.path }}
         run: |
           set -ex
           molecule --version
@@ -78,34 +90,39 @@ jobs:
           if ! MOLECULE_DEBUG=1 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
 
-            echo "Docker containers:"
+            echo "=== Environment Information ==="
+            env | grep -i ansible || true
+            python3 --version
+            ansible --version
+
+            echo "=== Playbook content ==="
+            cat molecule/default/converge.yml || true
+
+            echo "=== Docker Status ==="
             docker ps -a
 
             echo "=== Docker Container Logs ==="
             docker ps -q | while read -r container; do
               echo "=== Logs from container ${container} ==="
-              docker logs "${container}" 2>&1
+              docker logs "${container}" 2>&1 || true
               echo "=== End logs for container ${container} ==="
             done
 
             echo "=== Molecule Logs ==="
-            find . -name '*.log' -print0 | while IFS= read -r -d '' log; do
+            find . -type f -name '*.log' -print0 | while IFS= read -r -d '' log; do
               echo "Contents of ${log}:"
               cat "${log}"
               echo "=== End of ${log} ==="
             done
 
-            echo "=== Directory structure ==="
+            echo "=== Directory Contents ==="
             ls -R molecule/
 
-            if [ -f "molecule/default/molecule.yml" ]; then
-              echo "=== molecule.yml content ==="
-              cat "molecule/default/molecule.yml"
-            fi
+            echo "=== Molecule Config ==="
+            cat molecule/default/molecule.yml || true
 
             exit 1
           fi
-        working-directory: ${{ matrix.path }}
 
   playbook_test:
     runs-on: ubuntu-latest
@@ -123,6 +140,7 @@ jobs:
             path: "playbooks/atomic-red-team"
           - name: "Playbook Test - Attack Box"
             path: "playbooks/attack_box"
+
     steps:
       - name: Delete huge unnecessary tools folder
         run: |
@@ -147,6 +165,8 @@ jobs:
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-ansible-
 
       - name: Install dependencies
         run: python3 -m pip install -r .hooks/requirements.txt
@@ -159,6 +179,7 @@ jobs:
           ln -s "$PWD" ~/.ansible/collections/ansible_collections/l50/arsenal
 
       - name: Run molecule test for ${{ matrix.name }}
+        working-directory: ${{ matrix.path }}
         run: |
           set -ex
           molecule --version
@@ -166,6 +187,11 @@ jobs:
 
           if ! ANSIBLE_VERBOSITY=2 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
+
+            echo "=== Environment Information ==="
+            env | grep -i ansible || true
+            python3 --version
+            ansible --version
 
             echo "=== Playbook content ==="
             cat molecule/default/converge.yml || true
@@ -177,12 +203,14 @@ jobs:
             docker ps -q | while read -r container; do
               echo "=== Logs from container ${container} ==="
               docker logs "${container}" 2>&1 || true
+              echo "=== End logs for container ${container} ==="
             done
 
             echo "=== Molecule Logs ==="
             find . -type f -name '*.log' -print0 | while IFS= read -r -d '' log; do
               echo "Contents of ${log}:"
               cat "${log}"
+              echo "=== End of ${log} ==="
             done
 
             echo "=== Directory Contents ==="
@@ -193,4 +221,3 @@ jobs:
 
             exit 1
           fi
-        working-directory: ${{ matrix.path }}
