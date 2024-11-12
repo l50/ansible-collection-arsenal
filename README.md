@@ -1,4 +1,4 @@
-# Ansible Collection: l50 arsenal
+# Ansible Collection: Arsenal
 
 [![License](https://img.shields.io/github/license/l50/ansible-collection-arsenal?label=License&style=flat&color=blue&logo=github)](https://github.com/l50/ansible-collection-arsenal/blob/main/LICENSE)
 [![Pre-Commit](https://github.com/l50/ansible-collection-arsenal/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/l50/ansible-collection-arsenal/actions/workflows/pre-commit.yaml)

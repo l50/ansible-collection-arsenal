@@ -2,9 +2,10 @@
 version: "3"
 
 includes:
-  pre-commit: "https://raw.githubusercontent.com/CowDogMoo/taskfile-templates/main/pre-commit/Taskfile.yaml"
   ansible: "https://raw.githubusercontent.com/CowDogMoo/taskfile-templates/main/ansible/Taskfile.yaml"
   github: "https://raw.githubusercontent.com/CowDogMoo/taskfile-templates/main/github/Taskfile.yaml"
+  pre-commit: "https://raw.githubusercontent.com/CowDogMoo/taskfile-templates/main/pre-commit/Taskfile.yaml"
+  renovate: "https://raw.githubusercontent.com/CowDogMoo/taskfile-templates/main/renovate/Taskfile.yaml"
 
 tasks:
   default:

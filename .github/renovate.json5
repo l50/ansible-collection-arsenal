@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     "docker:enableMajor",
     ":disableRateLimiting",
     ":dependencyDashboard",
@@ -52,7 +52,7 @@
       "customType": "regex",
       "fileMatch": ["(^|/)requirements\\.ya?ml$", "(^|/)galaxy\\.ya?ml$"],
       "matchStrings": [
-        "name: (?<depName>[^\\s]+)\\n\\s+src: (?<lookupName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
+        "name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
       ],
       "datasourceTemplate": "git-tags"
     },
