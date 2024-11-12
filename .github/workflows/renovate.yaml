@@ -41,6 +41,13 @@ env:
   RENOVATE_USERNAME: "${{ secrets.BOT_USERNAME }}[bot]"
   RENOVATE_GIT_AUTHOR: "${{ secrets.BOT_USERNAME }} <${{ secrets.BOT_USER_ID }}+${{ secrets.BOT_USERNAME }}[bot]@users.noreply.github.com>"
 
+# Permissions block for GitHub App
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   renovate:
     name: Renovate
@@ -75,7 +82,7 @@ jobs:
           GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
 
       - name: Renovate
-        uses: renovatebot/github-action@b266b24b144602ed4f512f0773009d026722f4cc # v40.2.6
+        uses: renovatebot/github-action@67a664fc9b4481b33a3eff6ee9edfb7a7b9dfa1e # v41.0.2
         with:
           configurationFile: "${{ env.RENOVATE_ONBOARDING_CONFIG_FILE_NAME }}"
           token: "${{ steps.app-token.outputs.token }}"
