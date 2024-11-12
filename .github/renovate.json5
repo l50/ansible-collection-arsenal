@@ -8,7 +8,6 @@
     ":semanticCommits",
     ":enablePreCommit",
     ":automergeDigest",
-    ":automergeBranch",
     "helpers:pinGitHubActionDigests"
   ],
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
@@ -23,7 +22,7 @@
       "description": "Auto merge Galaxy dependencies",
       "matchDatasources": ["galaxy"],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": ["digest"]
     },
     {
@@ -31,7 +30,7 @@
       "matchManagers": ["github-actions"],
       "matchDatasources": ["github-tags"],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
@@ -55,6 +54,6 @@
         "name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
       ],
       "datasourceTemplate": "git-tags"
-    },
+    }
   ]
 }
