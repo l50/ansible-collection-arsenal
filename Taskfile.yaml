@@ -45,6 +45,19 @@ tasks:
       - task: ansible:changelog-release
 
   create-release:
-    desc: "Create a release on GitHub"
+    desc: Create and push a new release tag
     cmds:
-      - task: github:create-release
+      - |
+        if [ -z "$NEXT_VERSION" ]; then
+          echo "'NEXT_VERSION' environment variable not set. Example: NEXT_VERSION=1.0.0"
+          exit 1
+        fi
+
+        echo "Creating and pushing tag $NEXT_VERSION"
+        git tag -a $NEXT_VERSION -m "Release $NEXT_VERSION"
+        git push origin $NEXT_VERSION
+
+        echo "Creating GitHub release $NEXT_VERSION"
+        gh release create $NEXT_VERSION -F changelogs/CHANGELOG.rst
+    env:
+      TASK_X_REMOTE_TASKFILES: '1'
