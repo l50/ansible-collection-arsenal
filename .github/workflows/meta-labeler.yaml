@@ -1,6 +1,5 @@
 ---
 name: "Labeler"
-
 on:
   pull_request_target:
     branches: ["main"]
@@ -14,9 +13,6 @@ jobs:
   labeler:
     name: Labeler
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       - name: Generate Token
         uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
