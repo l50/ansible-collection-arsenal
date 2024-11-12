@@ -22,10 +22,13 @@ concurrency:
 
 env:
   ANSIBLE_FORCE_COLOR: "1"
-  COLLECTION_PATH: $HOME/.ansible/collections/ansible_collections/l50/arsenal
+  ANSIBLE_VERBOSITY: "2"
+  COLLECTION_NAMESPACE: l50
+  COLLECTION_NAME: arsenal
+  COLLECTION_PATH: ansible_collections/l50/arsenal
   PY_COLORS: "1"
   PYTHON_VERSION: "3.12.6"
-  ANSIBLE_VERBOSITY: "2"
+  REQUIREMENTS_FILE: .hooks/requirements.txt
 
 jobs:
   role_test:
@@ -44,7 +47,14 @@ jobs:
             path: "roles/attack_box"
 
     steps:
+      - name: Install Act dependencies
+        if: ${{ env.ACT }}
+        run: |
+          apt-get update && apt-get install rsync sudo -y
+
       - name: Delete huge unnecessary tools folder
+        if: env.ACT == ''
+        shell: bash
         run: |
           echo "Initial disk space:"
           df -h
@@ -54,34 +64,36 @@ jobs:
 
       - name: Checkout git repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          path: ${{ env.COLLECTION_PATH }}
 
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: '.hooks/requirements.txt'
+          cache-dependency-path: '${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}'
 
       - name: Cache Ansible collections
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-ansible-
 
       - name: Install dependencies
-        run: python3 -m pip install -r .hooks/requirements.txt
+        shell: bash
+        run: |
+          python3 -m pip install -r "${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}"
 
       - name: Install galaxy dependencies
+        working-directory: ${{ env.COLLECTION_PATH }}
+        shell: bash
         run: |
-          ansible-galaxy install -v -r requirements.yml
           ansible-galaxy collection install -v -r requirements.yml
-          mkdir -p ~/.ansible/collections/ansible_collections/l50
-          ln -s "$PWD" ~/.ansible/collections/ansible_collections/l50/arsenal
+          ansible-galaxy install -v -r requirements.yml
 
       - name: Run molecule test for ${{ matrix.name }}
-        working-directory: ${{ matrix.path }}
+        working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
         run: |
           set -ex
           molecule --version
@@ -90,15 +102,7 @@ jobs:
           if ! MOLECULE_DEBUG=1 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
 
-            echo "=== Environment Information ==="
-            env | grep -i ansible || true
-            python3 --version
-            ansible --version
-
-            echo "=== Playbook content ==="
-            cat molecule/default/converge.yml || true
-
-            echo "=== Docker Status ==="
+            echo "Docker containers:"
             docker ps -a
 
             echo "=== Docker Container Logs ==="
@@ -109,17 +113,11 @@ jobs:
             done
 
             echo "=== Molecule Logs ==="
-            find . -type f -name '*.log' -print0 | while IFS= read -r -d '' log; do
+            while IFS= read -r -d '' log; do
               echo "Contents of ${log}:"
               cat "${log}"
               echo "=== End of ${log} ==="
-            done
-
-            echo "=== Directory Contents ==="
-            ls -R molecule/
-
-            echo "=== Molecule Config ==="
-            cat molecule/default/molecule.yml || true
+            done < <(find . -name '*.log' -print0)
 
             exit 1
           fi
@@ -142,7 +140,14 @@ jobs:
             path: "playbooks/attack_box"
 
     steps:
+      - name: Install Act dependencies
+        if: ${{ env.ACT }}
+        run: |
+          apt-get update && apt-get install rsync sudo -y
+
       - name: Delete huge unnecessary tools folder
+        if: env.ACT == ''
+        shell: bash
         run: |
           echo "Initial disk space:"
           df -h
@@ -150,53 +155,48 @@ jobs:
           echo "Disk space after cleanup:"
           df -h
 
-      - name: Checkout
+      - name: Checkout git repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          path: ${{ env.COLLECTION_PATH }}
 
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: '.hooks/requirements.txt'
+          cache-dependency-path: '${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}'
 
       - name: Cache Ansible collections
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-ansible-
 
       - name: Install dependencies
-        run: python3 -m pip install -r .hooks/requirements.txt
+        shell: bash
+        run: |
+          python3 -m pip install -r "${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}"
 
       - name: Install galaxy dependencies
+        working-directory: ${{ env.COLLECTION_PATH }}
         run: |
           ansible-galaxy install -v -r requirements.yml
           ansible-galaxy collection install -v -r requirements.yml
-          mkdir -p ~/.ansible/collections/ansible_collections/l50
-          ln -s "$PWD" ~/.ansible/collections/ansible_collections/l50/arsenal
+          mkdir -p ~/.ansible/collections/ansible_collections/${{ env.COLLECTION_NAMESPACE }}
+          ln -s "$PWD" ~/.ansible/collections/ansible_collections/${{ env.COLLECTION_NAMESPACE }}/${{ env.COLLECTION_NAME }}
 
       - name: Run molecule test for ${{ matrix.name }}
-        working-directory: ${{ matrix.path }}
+        working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
         run: |
           set -ex
           molecule --version
           molecule list
 
-          if ! ANSIBLE_VERBOSITY=2 molecule test; then
+          if ! MOLECULE_DEBUG=1 molecule test; then
             echo "Molecule test failed. Collecting debug information..."
 
-            echo "=== Environment Information ==="
-            env | grep -i ansible || true
-            python3 --version
-            ansible --version
-
-            echo "=== Playbook content ==="
-            cat molecule/default/converge.yml || true
-
-            echo "=== Docker Status ==="
+            echo "Docker containers:"
             docker ps -a
 
             echo "=== Docker Container Logs ==="
@@ -207,17 +207,11 @@ jobs:
             done
 
             echo "=== Molecule Logs ==="
-            find . -type f -name '*.log' -print0 | while IFS= read -r -d '' log; do
+            while IFS= read -r -d '' log; do
               echo "Contents of ${log}:"
               cat "${log}"
               echo "=== End of ${log} ==="
-            done
-
-            echo "=== Directory Contents ==="
-            ls -R molecule/
-
-            echo "=== Molecule Config ==="
-            cat molecule/default/molecule.yml || true
+            done < <(find . -name '*.log' -print0)
 
             exit 1
           fi
