@@ -1,3 +1,4 @@
+---
 ancestor: null
 releases:
   1.0.0:
@@ -66,3 +67,24 @@ releases:
       - Removed the deprecated playbook `attack-box.yml` and replaced it with the
         updated `attack_box.yml`.
     release_date: '2024-08-13'
+  1.0.2:
+    changes:
+      changed:
+      - Added `permissions` blocks for GitHub Actions workflows to enhance security
+        compliance.
+      - Deleted redundant `magefiles` directory, replacing it with `Taskfile.yaml`
+        for task management.
+      - Introduced `.hooks/requirements.txt` to centralize Python dependencies for
+        pre-commit and Molecule testing.
+      - Renamed `area/magefiles` to `area/taskfiles` in `.github/labeler.yaml` and
+        `.github/labels.yaml`.
+      - Updated Ansible Galaxy version to `1.0.1` in `galaxy.yml`.
+      - Updated GitHub Actions workflows (`meta-labeler.yaml`, `meta-sync-labels.yaml`,
+        `molecule.yaml`) for improved label syncing and Molecule testing on schedule.
+      - Updated Renovate configuration to align with new `Taskfile.yaml` structure
+        and added Ansible collection grouping rules.
+      release_summary: 'Enhanced security compliance, task management, and automation
+        workflows.
+
+        '
+    release_date: '2024-11-12'

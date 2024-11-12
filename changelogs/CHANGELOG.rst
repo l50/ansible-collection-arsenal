@@ -1,8 +1,27 @@
 ==============================================
-Arsenal Ansible Collection 1.0.1 Release Notes
+Arsenal Ansible Collection 1.0.2 Release Notes
 ==============================================
 
 .. contents:: Topics
+
+v1.0.2
+======
+
+Release Summary
+---------------
+
+Enhanced security compliance, task management, and automation workflows.
+
+Changed
+-------
+
+- Added `permissions` blocks for GitHub Actions workflows to enhance security compliance.
+- Deleted redundant `magefiles` directory, replacing it with `Taskfile.yaml` for task management.
+- Introduced `.hooks/requirements.txt` to centralize Python dependencies for pre-commit and Molecule testing.
+- Renamed `area/magefiles` to `area/taskfiles` in `.github/labeler.yaml` and `.github/labels.yaml`.
+- Updated Ansible Galaxy version to `1.0.1` in `galaxy.yml`.
+- Updated GitHub Actions workflows (`meta-labeler.yaml`, `meta-sync-labels.yaml`, `molecule.yaml`) for improved label syncing and Molecule testing on schedule.
+- Updated Renovate configuration to align with new `Taskfile.yaml` structure and added Ansible collection grouping rules.
 
 v1.0.1
 ======
