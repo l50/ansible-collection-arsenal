@@ -11,6 +11,6 @@ collections:
   - name: community.docker
     version: 4.1.0
   - name: community.general
-    version: 10.0.1
+    version: 10.1.0
   - name: cowdogmoo.workstation
     version: 1.9.4
