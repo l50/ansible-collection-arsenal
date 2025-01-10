@@ -9,8 +9,8 @@ collections:
   - name: ansible.windows
     version: 2.6.0
   - name: community.docker
-    version: 4.2.0
+    version: 4.3.0
   - name: community.general
-    version: 10.1.0
+    version: 10.2.0
   - name: cowdogmoo.workstation
     version: 1.9.4
