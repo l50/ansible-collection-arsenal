@@ -37,7 +37,17 @@
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.asdf
   vars:
-    asdf_users: "{{ sliver_users | list }}"
+    asdf_username: "{{ sliver_item.username }}"
+    asdf_usergroup: "{{ sliver_item.usergroup }}"
+    asdf_shell: "{{ sliver_item.shell }}"
+    asdf_plugins: "{{ sliver_item.asdf_plugins }}"
+    asdf_user_home: "/home/{{ sliver_item.username }}"
+    asdf_dir: "/home/{{ sliver_item.username }}/.asdf"
+    ansible_env:
+      HOME: "/home/{{ sliver_item.username }}"
+  loop: "{{ sliver_users }}"
+  loop_control:
+    loop_var: sliver_item
 
 - name: Configure Git to allow sliver_install_path as a safe directory
   become: true
@@ -72,18 +82,16 @@
   become_user: "{{ item.username }}"
   loop: "{{ sliver_users }}"
 
-- name: Set build user to the first sliver user with sudo privileges
-  ansible.builtin.set_fact:
-    build_user: "{{ sliver_users | selectattr('sudo', 'equalto', true) | first | default({'username': 'root'}) }}"
-
 - name: Ensure correct ownership of the Sliver repository
   ansible.builtin.file:
     path: "{{ sliver_install_path }}"
-    owner: sliver
-    group: sliver
+    owner: "{{ sliver_users[0].username }}"
+    group: "{{ sliver_users[0].usergroup }}"
     recurse: true
   become: true
-  when: sliver_stat.stat.pw_name != 'sliver' or sliver_stat.stat.gr_name != 'sliver'
+  when: >
+    sliver_stat.stat.pw_name != sliver_users[0].username or
+    sliver_stat.stat.gr_name != sliver_users[0].usergroup
 
 - name: Check if Sliver server needs to be built
   ansible.builtin.stat:
@@ -92,41 +100,54 @@
   become: true
   changed_when: false
 
-# - name: Install additional build dependencies for Kali
-#   ansible.builtin.apt:
-#     name:
-#       - make
-#       - build-essential
-#     state: present
-#   become: true
-#   when: ansible_distribution == "Kali GNU/Linux"
+- name: Set up Go version in Sliver directory
+  ansible.builtin.copy:
+    dest: "{{ sliver_install_path }}/.tool-versions"
+    content: "golang {{ item.asdf_plugins[0].version }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.usergroup }}"
+    mode: '0644'
+  loop: "{{ sliver_users }}"
+  when: item.asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
 
-- name: Compile Sliver as the build user
-  ansible.builtin.command:
-    cmd: "{{ 'make' if ansible_distribution == 'Kali GNU/Linux' else 'gmake' }} -j{{ ansible_processor_vcpus | default(2) }}"
+- name: Compile Sliver
+  ansible.builtin.shell: |
+    . ~/.bashrc
+    asdf reshim golang
+    {{ 'make' if ansible_distribution == 'Kali GNU/Linux' else 'gmake' }} -j{{ ansible_processor_vcpus | default(2) }} 2>&1
+  args:
     chdir: "{{ sliver_install_path }}"
+    executable: /bin/bash
   become: true
-  become_user: "{{ build_user.username }}"
+  become_user: "{{ item.username }}"
   environment:
-    PATH: "/home/{{ build_user.username }}/.asdf/shims:/usr/local/bin:/usr/bin:/bin"
+    HOME: "/home/{{ item.username }}"
+    ASDF_DIR: "/home/{{ item.username }}/.asdf"
+    PATH: "/home/{{ item.username }}/.asdf/shims:/home/{{ item.username }}/.asdf/bin:/usr/local/bin:/usr/bin:/bin"
+  loop: "{{ sliver_users }}"
+  async: 3600
+  poll: 30
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
 
-- name: Check if Sliver server has been unpacked
+- name: Check if Sliver server unpacked
   ansible.builtin.stat:
-    path: "/home/{{ build_user.username }}/.sliver"
-  register: sliver_server_unpacked_stat
+    path: "{{ sliver_install_path }}/configs/server"
   become: true
-  changed_when: false
+  become_user: "{{ item.username }}"
+  register: sliver_server_unpacked_stat
+  loop: "{{ sliver_users }}"
 
 - name: Unpack Sliver server
   ansible.builtin.command:
     cmd: "{{ sliver_install_path }}/sliver-server unpack --force"
   become: true
-  when: not sliver_server_unpacked_stat.stat.exists
+  become_user: "{{ item.0.username }}"
+  when: not item.1.stat.exists
   changed_when: "'Unpacking complete' in unpack_result.stdout"
   register: unpack_result
+  loop: "{{ sliver_users | zip(sliver_server_unpacked_stat.results) | list }}"
 
 - name: Generate operator configs for each sliver user
   ansible.builtin.shell:

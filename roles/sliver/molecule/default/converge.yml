@@ -2,23 +2,11 @@
 - name: Converge
   hosts: all
   vars:
-    container_user: "{{ ansible_distribution | lower }}"
+    container_user: "sliver"
     container_home: "/home/{{ container_user }}"
     sliver_default_username: "{{ container_user }}"
     sliver_default_group: "{{ container_user }}"
   tasks:
-    - name: Create test user
-      ansible.builtin.user:
-        name: "{{ container_user }}"
-        shell: /bin/bash
-        create_home: true
-      become: true
-
-    - name: Set home directory fact
-      ansible.builtin.set_fact:
-        ansible_env:
-          HOME: "{{ container_home }}"
-
     - name: Include default variables
       ansible.builtin.include_vars:
         file: "../../defaults/main.yml"
@@ -31,7 +19,12 @@
       ansible.builtin.include_role:
         name: l50.arsenal.sliver
       vars:
-        asdf_plugins:
-          - name: golang
-            version: "1.23.5"
-            scope: "global"
+        sliver_users:
+          - username: "{{ container_user }}"
+            usergroup: "{{ container_user }}"
+            shell: "/bin/bash"
+            sudo: false
+            asdf_plugins:
+              - name: golang
+                version: "1.23.5"
+                scope: global

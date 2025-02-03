@@ -11,7 +11,7 @@ ttpforge_users:
     usergroup: "{{ 'staff' if ansible_os_family == 'Darwin' else 'Administrators' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
     sudo: true
     shell: "{{ '/bin/zsh' if ansible_os_family == 'Darwin' else 'powershell' if ansible_os_family == 'Windows' else '/bin/bash' }}"
-    plugins:
+    asdf_plugins:
       - name: golang
         version: "1.23.1"
         scope: "global"
