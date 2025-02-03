@@ -1,12 +1,20 @@
 ---
 - name: Sliver
   hosts: all
+  vars:
+    user: "sliver"
+    group: "sliver"
   tasks:
-    - name: Install Sliver c2
+    - name: Include Sliver role
       ansible.builtin.include_role:
         name: l50.arsenal.sliver
       vars:
-        asdf_plugins:
-          - name: golang
-            version: "1.23.5"
-            scope: "global"
+        sliver_users:
+          - username: "{{ user }}"
+            usergroup: "{{ group }}"
+            shell: "/bin/bash"
+            sudo: false
+            asdf_plugins:
+              - name: golang
+                version: "1.23.5"
+                scope: global
