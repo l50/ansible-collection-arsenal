@@ -13,4 +13,4 @@ collections:
   - name: community.general
     version: 10.3.0
   - name: cowdogmoo.workstation
-    version: 1.9.4
+    version: 2.0.0

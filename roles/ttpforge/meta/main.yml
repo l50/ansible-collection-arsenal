@@ -23,6 +23,7 @@ galaxy_info:
     - purpleteam
     - ttpforge
     - offsec
+
 dependencies:
   - role: cowdogmoo.workstation.package_management
   - role: cowdogmoo.workstation.asdf

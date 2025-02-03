@@ -1,36 +1,47 @@
 ---
 - name: Converge
   hosts: all
-  tasks:
-    - name: Include default variables
-      ansible.builtin.include_vars:
-        file: "../../defaults/main.yml"
-    - name: Include variables
-      ansible.builtin.include_vars:
-        file: "../../vars/main.yml"
   vars:
-    ttpforge_default_username: "{{ ansible_distribution | lower }}"
-    ttpforge_default_group: "{{ ansible_distribution | lower }}"
+    container_user: "{{ ansible_distribution | lower }}"
+    container_home: "/home/{{ container_user }}"
+    ttpforge_default_username: "{{ container_user }}"
+    ttpforge_default_group: "{{ container_user }}"
     asdf_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
+      - username: "{{ container_user }}"
+        usergroup: "{{ container_user }}"
         sudo: true
         shell: /bin/bash
         plugins:
           - name: golang
             version: "1.22.4"
             scope: "global"
-    user_setup_default_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
-        sudo: true
+  tasks:
+    - name: Create test user
+      ansible.builtin.user:
+        name: "{{ container_user }}"
         shell: /bin/bash
-  roles:
-    - name: Create ttpforge role user (if not already present)
-      role: cowdogmoo.workstation.user_setup
+        create_home: true
+      become: true
 
-    - name: Install asdf and go
-      role: cowdogmoo.workstation.asdf
+    - name: Set home directory fact
+      ansible.builtin.set_fact:
+        ansible_env:
+          HOME: "{{ container_home }}"
 
-    - name: Run the ttpforge role
-      role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Include variables
+      ansible.builtin.include_vars:
+        file: "../../vars/main.yml"
+
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: l50.arsenal.ttpforge
+      vars:
+        asdf_username: "{{ container_user }}"
+        asdf_plugins:
+          - name: golang
+            version: "1.23.5"
+            scope: "global"

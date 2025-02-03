@@ -92,14 +92,23 @@
   become: true
   changed_when: false
 
+# - name: Install additional build dependencies for Kali
+#   ansible.builtin.apt:
+#     name:
+#       - make
+#       - build-essential
+#     state: present
+#   become: true
+#   when: ansible_distribution == "Kali GNU/Linux"
+
 - name: Compile Sliver as the build user
   ansible.builtin.command:
-    cmd: gmake -j"{{ ansible_processor_vcpus | default(2) }}"
+    cmd: "{{ 'make' if ansible_distribution == 'Kali GNU/Linux' else 'gmake' }} -j{{ ansible_processor_vcpus | default(2) }}"
     chdir: "{{ sliver_install_path }}"
   become: true
   become_user: "{{ build_user.username }}"
   environment:
-    PATH: "/home/{{ build_user.username }}/.asdf/shims:{{ ansible_env.PATH }}"
+    PATH: "/home/{{ build_user.username }}/.asdf/shims:/usr/local/bin:/usr/bin:/bin"
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
