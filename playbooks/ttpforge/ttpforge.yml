@@ -1,5 +1,12 @@
 ---
 - name: TTPForge
   hosts: all
-  roles:
-    - l50.arsenal.ttpforge
+  tasks:
+    - name: Install TTPForge
+      ansible.builtin.include_role:
+        name: l50.arsenal.ttpforge
+      vars:
+        asdf_plugins:
+          - name: golang
+            version: "1.23.5"
+            scope: "global"

@@ -1,5 +1,12 @@
 ---
 - name: Sliver
   hosts: all
-  roles:
-    - role: l50.arsenal.sliver
+  tasks:
+    - name: Install Sliver c2
+      ansible.builtin.include_role:
+        name: l50.arsenal.sliver
+      vars:
+        asdf_plugins:
+          - name: golang
+            version: "1.23.5"
+            scope: "global"
