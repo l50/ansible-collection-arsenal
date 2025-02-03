@@ -43,13 +43,18 @@
     "fileMatch": [
       "^requirements\\.yml$",
       "^roles/[^/]+/meta/main\\.yml$",
-      "^galaxy\\.yml$"
+      "^galaxy\\.yml$",
+      "^playbooks/.+/molecule/.+/molecule\\.yml$"
     ]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)requirements\\.ya?ml$", "(^|/)galaxy\\.ya?ml$"],
+      "fileMatch": [
+        "(^|/)requirements\\.ya?ml$",
+        "(^|/)galaxy\\.ya?ml$",
+        "playbooks/.+/molecule/.+/molecule\\.ya?ml$"
+      ],
       "matchStrings": [
         "name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
       ],

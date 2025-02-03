@@ -1,41 +1,67 @@
 ---
+# Area
 area/github:
   - changed-files:
       - any-glob-to-any-file: ".github/**/*"
-
 area/pre-commit:
   - changed-files:
       - any-glob-to-any-file: ".pre-commit-config.yaml"
       - any-glob-to-any-file: ".hooks/**/*"
-
 area/license:
   - changed-files:
       - any-glob-to-any-file: "LICENSE"
-
 area/readme:
   - changed-files:
       - any-glob-to-any-file: "README.md"
-
 area/changelogs:
   - changed-files:
       - any-glob-to-any-file: "changelogs/**/*"
-
 area/meta:
   - changed-files:
       - any-glob-to-any-file: "meta/**/*"
-
 area/roles:
   - changed-files:
       - any-glob-to-any-file: "roles/**/*"
-
 area/playbooks:
   - changed-files:
       - any-glob-to-any-file: "playbooks/**/*"
-
 area/taskfiles:
   - changed-files:
       - any-glob-to-any-file: "Taskfile.yaml"
-
 area/galaxy:
   - changed-files:
       - any-glob-to-any-file: "galaxy.yml"
+area/molecule:
+  - changed-files:
+      - any-glob-to-any-file: "**/molecule/**/*"
+
+# Individual roles
+role/attack_box:
+  - changed-files:
+      - any-glob-to-any-file: "roles/attack_box/**/*"
+role/sliver:
+  - changed-files:
+      - any-glob-to-any-file: "roles/sliver/**/*"
+role/ttpforge:
+  - changed-files:
+      - any-glob-to-any-file: "roles/ttpforge/**/*"
+role/vulnerable_windows_scenarios:
+  - changed-files:
+      - any-glob-to-any-file: "roles/vulnerable_windows_scenarios/**/*"
+
+# Individual playbooks
+playbook/atomic-red-team:
+  - changed-files:
+      - any-glob-to-any-file: "playbooks/atomic-red-team/**/*"
+playbook/attack_box:
+  - changed-files:
+      - any-glob-to-any-file: "playbooks/attack_box/**/*"
+playbook/sliver:
+  - changed-files:
+      - any-glob-to-any-file: "playbooks/sliver/**/*"
+playbook/ttpforge:
+  - changed-files:
+      - any-glob-to-any-file: "playbooks/ttpforge/**/*"
+playbook/vulnerable_windows_scenarios:
+  - changed-files:
+      - any-glob-to-any-file: "playbooks/vulnerable_windows_scenarios/**/*"

@@ -1,7 +1,7 @@
 ---
 namespace: l50
 name: arsenal
-version: "1.0.1"
+version: "1.0.3"
 readme: README.md
 authors:
   - Jayson Grace <techvomit.net>
@@ -9,4 +9,4 @@ description: Install and configure offsec utilities and tooling that I employ re
 license_file: "LICENSE"
 tags: [c2, linux, sliver, tools, offsec]
 repository: https://github.com/l50/ansible-collection-arsenal
-issues: https://github.com/l50/ansible-collection-arsenal
+issues: https://github.com/l50/ansible-collection-arsenal/issues

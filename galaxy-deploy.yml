@@ -16,7 +16,7 @@
   gather_facts: false
 
   vars:
-    namespace: l50
+    collection_namespace: l50
     collection: arsenal
     # Requires github_tag to be set when calling playbook.
     release_tag: "{{ github_tag.split('/')[-1] }}"
@@ -53,5 +53,5 @@
 
     - name: Publish the collection.
       ansible.builtin.command: >
-        ansible-galaxy collection publish ./{{ namespace }}-{{ collection }}-{{ release_tag }}.tar.gz
+        ansible-galaxy collection publish ./{{ collection_namespace }}-{{ collection }}-{{ release_tag }}.tar.gz
       changed_when: false
