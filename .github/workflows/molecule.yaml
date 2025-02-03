@@ -296,8 +296,6 @@ jobs:
             path: "roles/sliver"
           - name: "Role Test - ttpforge"
             path: "roles/ttpforge"
-          - name: "Role Test - vulnerable_windows_scenarios"
-            path: "roles/vulnerable_windows_scenarios"
           - name: "Playbook Test - atomic-red-team"
             path: "playbooks/atomic-red-team"
           - name: "Playbook Test - attack_box"
@@ -306,8 +304,6 @@ jobs:
             path: "playbooks/sliver"
           - name: "Playbook Test - ttpforge"
             path: "playbooks/ttpforge"
-          - name: "Playbook Test - vulnerable_windows_scenarios"
-            path: "playbooks/vulnerable_windows_scenarios"
 
     steps:
       - name: Install Act dependencies

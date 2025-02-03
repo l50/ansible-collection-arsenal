@@ -45,9 +45,6 @@ role/sliver:
 role/ttpforge:
   - changed-files:
       - any-glob-to-any-file: "roles/ttpforge/**/*"
-role/vulnerable_windows_scenarios:
-  - changed-files:
-      - any-glob-to-any-file: "roles/vulnerable_windows_scenarios/**/*"
 
 # Individual playbooks
 playbook/atomic-red-team:
@@ -62,6 +59,3 @@ playbook/sliver:
 playbook/ttpforge:
   - changed-files:
       - any-glob-to-any-file: "playbooks/ttpforge/**/*"
-playbook/vulnerable_windows_scenarios:
-  - changed-files:
-      - any-glob-to-any-file: "playbooks/vulnerable_windows_scenarios/**/*"

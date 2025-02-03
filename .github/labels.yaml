@@ -58,10 +58,6 @@
   color: "FF3366" # Hot Pink
   description: >-
     Changes made to ttpforge role
-- name: role/vulnerable_windows_scenarios
-  color: "FF9933" # Dark Orange
-  description: >-
-    Changes made to vulnerable_windows_scenarios role
 
 # Individual Playbooks
 - name: playbook/atomic-red-team
@@ -80,10 +76,6 @@
   color: "CC6699" # Dusty Rose
   description: >-
     Changes made to ttpforge playbook
-- name: playbook/vulnerable_windows_scenarios
-  color: "9933CC" # Purple
-  description: >-
-    Changes made to vulnerable_windows_scenarios playbook
 
 # Renovate
 - name: renovate/container
