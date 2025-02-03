@@ -2,11 +2,4 @@
 - name: TTPForge
   hosts: all
   roles:
-    - name: Create ttpforge role user (if not already present)
-      role: cowdogmoo.workstation.user_setup
-
-    - name: Install asdf and go
-      role: cowdogmoo.workstation.asdf
-
-    - name: Install TTPForge
-      role: l50.arsenal.ttpforge
+    - l50.arsenal.ttpforge
