@@ -1,4 +1,3 @@
----
 ancestor: null
 releases:
   1.0.0:
@@ -27,6 +26,8 @@ releases:
       - Updated `README.md` to reflect new repository URL and added TTPForge role.
       - Updated default versions for Go and plugins in roles.
       - Updated dependencies in `.pre-commit-config.yaml` for various tools.
+      release_summary: Initial release with roles for Atomic Red Team, TTPForge, and
+        Sliver.
       removed:
       - Deleted unnecessary `.gitignore` and `LICENSE` files from sliver role.
       - Removed redundant files and old configurations from sliver role.
@@ -59,10 +60,8 @@ releases:
         improved performance and security.
       - Updated `README.md` to reflect the addition of the `attack_box` and `vulnerable_windows_scenarios`
         roles.
-      release_summary: 'New and updated roles for penetration testing, red teaming,
+      release_summary: New and updated roles for penetration testing, red teaming,
         and cybersecurity drills.
-
-        '
       removed:
       - Removed the deprecated playbook `attack-box.yml` and replaced it with the
         updated `attack_box.yml`.
@@ -83,8 +82,56 @@ releases:
         `molecule.yaml`) for improved label syncing and Molecule testing on schedule.
       - Updated Renovate configuration to align with new `Taskfile.yaml` structure
         and added Ansible collection grouping rules.
-      release_summary: 'Enhanced security compliance, task management, and automation
+      release_summary: Enhanced security compliance, task management, and automation
         workflows.
-
-        '
     release_date: '2024-11-12'
+  1.0.3:
+    changes:
+      added:
+      - Added `area/molecule` label to track molecule-related changes.
+      - Added `ttpforge_get_user_home.yml` task file to dynamically determine home
+        directories.
+      - Added logging and error collection for failed Molecule tests to improve debugging.
+      - Implemented input validation for role and playbook names in the Molecule workflow
+        to prevent incorrect invocations.
+      - Introduced role and playbook-specific labels in `.github/labeler.yaml` and
+        `.github/labels.yaml` for better issue categorization.
+      - Introduced targeted Molecule testing for individual roles and playbooks via
+        workflow dispatch inputs.
+      - Refactored and modularized `ttpforge` role by introducing a dedicated `setup.yml`
+        task file.
+      changed:
+      - Changed `sliver_users` in `sliver/defaults/main.yml` to dynamically set usernames
+        based on environment variables.
+      - Improved concurrency settings in GitHub Actions workflows to ensure efficient
+        job execution.
+      - Refactored `.github/labeler.yaml` and `.github/labels.yaml` to use consistent
+        color codes and descriptions.
+      - Removed Red Hat Rocky Linux 9 test images from `molecule.yml` in `atomic-red-team`,
+        `sliver`, and `ttpforge` playbooks.
+      - Standardized error handling in Molecule test jobs.
+      - Updated Ansible Galaxy version to `1.0.3` in `galaxy.yml`.
+      - Updated Renovate configuration to track molecule playbook dependencies (`playbooks/.+/molecule/.+/molecule.yml`).
+      - Updated `actions/cache` to v4.2.0 for optimized caching in Molecule workflows.
+      - Updated `actions/setup-go` to v5 in pre-commit workflows.
+      - Updated `actions/setup-python` to v5.4.0 in all workflows to maintain compatibility
+        with the latest Python releases.
+      - Updated `ttpforge/defaults/main.yml` to use cleaner per-user configuration
+        instead of global installs.
+      - Upgraded `actions/create-github-app-token` across workflows to v1.11.2 for
+        security and compatibility improvements.
+      release_summary: Major refactors to Molecule testing, improved automation workflows,
+        better role and playbook organization, and removal of deprecated Windows scenarios.
+      removed:
+      - Cleaned up unused permissions in `meta-sync-labels.yaml`, `meta-labeler.yaml`,
+        and `molecule.yaml` workflows.
+      - Removed `area/ansible-role` and `area/ansible-playbook` labels, replacing
+        them with more specific role/playbook labels.
+      - Removed hardcoded `build_user` assignment in `sliver/tasks/main.yml`, making
+        the process more dynamic.
+      - Removed redundant Rocky Linux 9 test images from `molecule.yml` in `atomic-red-team`,
+        `sliver`, and `ttpforge` playbooks.
+      - Removed redundant task definitions in `ttpforge` and modularized into `setup.yml`
+        and `ttpforge_get_user_home.yml`.
+      - Removed unnecessary `Vulnerable Windows Scenarios` section from `README.md`.
+    release_date: '2025-02-04'
