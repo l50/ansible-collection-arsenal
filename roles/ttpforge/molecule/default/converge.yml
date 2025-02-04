@@ -1,35 +1,31 @@
 ---
 - name: Converge
   hosts: all
+  gather_facts: true
   vars:
-    container_user: "{{ ansible_distribution | lower }}"
-    container_group: "{{ ansible_distribution | lower }}"
-    container_home: "/home/{{ container_user }}"
-    container_shell: "/bin/bash"
-    ttpforge_asdf_plugins:
-      - name: golang
-        version: "1.23.5"
-        scope: "global"
+    test_username: "{{ ansible_distribution | lower }}"
+    test_usergroup: "{{ ansible_distribution | lower }}"
+    test_shell: "/bin/bash"
   tasks:
     - name: Create test user
       ansible.builtin.user:
-        name: "{{ container_user }}"
-        shell: /bin/bash
+        name: "{{ test_username }}"
+        shell: "{{ test_shell }}"
         create_home: true
       become: true
 
     - name: Set environment facts
       ansible.builtin.set_fact:
         ansible_env:
-          HOME: "{{ container_home }}"
+          HOME: "/home/{{ test_username }}"
 
     - name: Include role under test
       ansible.builtin.include_role:
         name: l50.arsenal.ttpforge
       vars:
-        ttpforge_username: "{{ container_user }}"
-        ttpforge_usergroup: "{{ container_group }}"
-        ttpforge_shell: "{{ container_shell }}"
+        ttpforge_username: "{{ test_username }}"
+        ttpforge_usergroup: "{{ test_usergroup }}"
+        ttpforge_shell: "{{ test_shell }}"
         ttpforge_asdf_plugins:
           - name: golang
             version: "1.23.5"

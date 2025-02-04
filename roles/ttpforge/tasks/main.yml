@@ -5,14 +5,14 @@
   vars:
     package_management_common_install_packages: "{{ ttpforge_common_install_packages }}"
 
-- name: Check if .bash_profile exists for ({{ ttpforge_username }})
+- name: Check if .bash_profile exists for ttpforge user
   ansible.builtin.stat:
     path: "/home/{{ ttpforge_username }}/.bash_profile"
   register: bash_profile_stat
   become: true
   become_user: "{{ ttpforge_username }}"
 
-- name: Ensure .bash_profile exists for ({{ ttpforge_username }})
+- name: Ensure .bash_profile exists for ttpforge user
   ansible.builtin.file:
     path: "/home/{{ ttpforge_username }}/.bash_profile"
     state: touch
@@ -24,12 +24,12 @@
   # Only create if it does not exist already
   when: not bash_profile_stat.stat.exists
 
-- name: Check if asdf is installed for ({{ ttpforge_username }})
+- name: Check if asdf is installed for ttpforge user
   ansible.builtin.stat:
     path: "/home/{{ ttpforge_username }}/.asdf"
   register: asdf_installed
 
-- name: Install asdf (and go) for ({{ ttpforge_username }})
+- name: Install asdf (and go) for ttpforge user
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.asdf
   vars:

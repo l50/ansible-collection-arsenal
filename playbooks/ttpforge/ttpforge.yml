@@ -6,7 +6,10 @@
       ansible.builtin.include_role:
         name: l50.arsenal.ttpforge
       vars:
-        asdf_plugins:
+        ttpforge_username: "{{ ansible_distribution | lower }}"
+        ttpforge_usergroup: "{{ ansible_distribution | lower }}"
+        ttpforge_shell: "/bin/bash"
+        ttpforge_asdf_plugins:
           - name: golang
             version: "1.23.5"
             scope: "global"
