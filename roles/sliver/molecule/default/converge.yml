@@ -2,9 +2,9 @@
 - name: Converge
   hosts: all
   vars:
-    test_username: "sliver"
-    test_usergroup: "{{ sliver_username }}"
-    test_shell: "/bin/bash"
+    sliver_username: "sliver"
+    sliver_usergroup: "{{ sliver_username }}"
+    sliver_shell: "/bin/bash"
   tasks:
     - name: Include default variables
       ansible.builtin.include_vars:
@@ -19,9 +19,9 @@
         name: l50.arsenal.sliver
       vars:
         sliver_users:
-          - username: "{{ test_username }}"
-            usergroup: "{{ test_usergroup }}"
-            shell: "{{ test_shell }}"
+          - username: "{{ sliver_username }}"
+            usergroup: "{{ sliver_usergroup }}"
+            shell: "{{ sliver_shell }}"
             sudo: false
             asdf_plugins:
               - name: golang
