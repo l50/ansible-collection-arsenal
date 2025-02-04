@@ -5,41 +5,40 @@
   vars:
     package_management_common_install_packages: "{{ ttpforge_common_install_packages }}"
 
-- name: Check if .bash_profile exists for each ttpforge user
+- name: Check if .bash_profile exists for ({{ ttpforge_username }})
   ansible.builtin.stat:
-    path: "/home/{{ item.username }}/.bash_profile"
+    path: "/home/{{ ttpforge_username }}/.bash_profile"
   register: bash_profile_stat
   become: true
-  become_user: "{{ item.username }}"
-  loop: "{{ ttpforge_users }}"
+  become_user: "{{ ttpforge_username }}"
 
-- name: Ensure .bash_profile exists for each ttpforge user
+- name: Ensure .bash_profile exists for ({{ ttpforge_username }})
   ansible.builtin.file:
-    path: "/home/{{ item.username }}/.bash_profile"
+    path: "/home/{{ ttpforge_username }}/.bash_profile"
     state: touch
-    owner: "{{ item.username }}"
-    group: "{{ item.usergroup }}"
+    owner: "{{ ttpforge_username }}"
+    group: "{{ ttpforge_usergroup }}"
     mode: '0644'
   become: true
-  become_user: "{{ item.username }}"
-  when: not bash_profile_stat.results | selectattr('invocation.module_args.path', 'equalto', '/home/' + item.username + '/.bash_profile') | map(attribute='stat.exists') | first | default(false)
-  loop: "{{ ttpforge_users }}"
+  become_user: "{{ ttpforge_username }}"
+  # Only create if it does not exist already
+  when: not bash_profile_stat.stat.exists
 
-- name: Check if asdf is installed
+- name: Check if asdf is installed for ({{ ttpforge_username }})
   ansible.builtin.stat:
-    path: "/home/{{ ttpforge_users[0].username }}/.asdf"
+    path: "/home/{{ ttpforge_username }}/.asdf"
   register: asdf_installed
 
-- name: Install asdf and go for ttpforge users
+- name: Install asdf (and go) for ({{ ttpforge_username }})
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.asdf
   vars:
-    asdf_username: "{{ ttpforge_users[0].username }}"
-    asdf_usergroup: "{{ ttpforge_users[0].usergroup }}"
-    asdf_shell: "{{ ttpforge_users[0].shell }}"
-    asdf_plugins: "{{ ttpforge_users[0].asdf_plugins }}"
-    asdf_user_home: "/home/{{ ttpforge_users[0].username }}"
-    asdf_dir: "/home/{{ ttpforge_users[0].username }}/.asdf"
+    asdf_username: "{{ ttpforge_username }}"
+    asdf_usergroup: "{{ ttpforge_usergroup }}"
+    asdf_shell: "{{ ttpforge_shell }}"
+    asdf_plugins: "{{ ttpforge_asdf_plugins }}"
+    asdf_user_home: "/home/{{ ttpforge_username }}"
+    asdf_dir: "/home/{{ ttpforge_username }}/.asdf"
   when: not asdf_installed.stat.exists
 
 - name: Include TTPForge setup tasks

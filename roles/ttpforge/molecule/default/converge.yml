@@ -2,23 +2,20 @@
 - name: Converge
   hosts: all
   vars:
-    container_user: "ttpforge"
+    container_user: "{{ ansible_distribution | lower }}"
+    container_group: "{{ ansible_distribution | lower }}"
     container_home: "/home/{{ container_user }}"
+    container_shell: "/bin/bash"
+    ttpforge_asdf_plugins:
+      - name: golang
+        version: "1.23.5"
+        scope: "global"
   tasks:
     - name: Create test user
       ansible.builtin.user:
         name: "{{ container_user }}"
         shell: /bin/bash
         create_home: true
-      become: true
-
-    - name: Ensure correct ownership of home directory
-      ansible.builtin.file:
-        path: "{{ container_home }}"
-        owner: "{{ container_user }}"
-        group: "{{ container_user }}"
-        mode: '0755'
-        state: directory
       become: true
 
     - name: Set environment facts
@@ -31,8 +28,8 @@
         name: l50.arsenal.ttpforge
       vars:
         ttpforge_username: "{{ container_user }}"
-        ttpforge_usergroup: "{{ container_user }}"
-        ttpforge_shell: "/bin/bash"
+        ttpforge_usergroup: "{{ container_group }}"
+        ttpforge_shell: "{{ container_shell }}"
         ttpforge_asdf_plugins:
           - name: golang
             version: "1.23.5"

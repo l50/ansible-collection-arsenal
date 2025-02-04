@@ -1,4 +1,10 @@
 ---
 ttpforge_common_install_packages:
   - build-essential
+  - g++
+  - gcc
   - git
+  - make
+  - unzip
+  - wget
+  - zip

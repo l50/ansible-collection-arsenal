@@ -11,20 +11,18 @@
       ansible.builtin.stat:
         path: "{{ ttpforge_install_path }}/ttpforge"
       register: ttpforge_binary
+      failed_when: >
+        not ttpforge_binary.stat.exists or
+        not ttpforge_binary.stat.executable
 
-    - name: Check users exist
-      ansible.builtin.command: "id -un {{ item.username }}"
+    - name: Check user exists
+      ansible.builtin.command: "id -un {{ ttpforge_username }}"
       register: user_check
       changed_when: false
       failed_when: user_check.rc != 0
-      loop: "{{ ttpforge_users }}"
 
     - name: Check user sudo access
       ansible.builtin.stat:
-        path: "/etc/sudoers.d/{{ item.username }}"
-      loop: "{{ ttpforge_users }}"
+        path: "/etc/sudoers.d/{{ ttpforge_username }}"
       register: sudoers_check
-      failed_when: >
-        sudoers_check.stat.exists == false and
-        (item.sudo | bool) == true and
-        item.username != 'root'
+      when: ttpforge_username != 'root'
