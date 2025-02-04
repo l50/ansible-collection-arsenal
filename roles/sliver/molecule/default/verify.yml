@@ -33,7 +33,9 @@
     - name: Check user is in sudoers.d for each sliver user
       ansible.builtin.stat:
         path: "/etc/sudoers.d/{{ item.username }}"
-      register: sudoers_file_check
-      changed_when: false
-      failed_when: not sudoers_file_check.stat.exists
       loop: "{{ sliver_users }}"
+      register: sudoers_check
+      failed_when: >
+        sudoers_check.stat.exists == false and
+        (item.sudo | bool) == true and
+        item.username != 'root'

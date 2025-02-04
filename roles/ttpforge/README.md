@@ -39,7 +39,8 @@ Tactics, Techniques, and Procedures (TTPs).
               usergroup: "ttpforge",
               shell: "/bin/bash",
               sudo: true,
-              plugins: [{ name: "golang", version: "1.22.0", scope: "global" }],
+              asdf_plugins:
+                [{ name: "golang", version: "1.22.0", scope: "global" }],
             },
           ],
       }

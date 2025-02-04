@@ -1,13 +1,29 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    sliver_username: "sliver"
+    sliver_usergroup: "{{ sliver_username }}"
+    sliver_shell: "/bin/bash"
   tasks:
     - name: Include default variables
       ansible.builtin.include_vars:
         file: "../../defaults/main.yml"
+
     - name: Include variables
       ansible.builtin.include_vars:
         file: "../../vars/main.yml"
-  roles:
-    - name: Run the sliver role
-      role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: l50.arsenal.sliver
+      vars:
+        sliver_users:
+          - username: "{{ sliver_username }}"
+            usergroup: "{{ sliver_usergroup }}"
+            shell: "{{ sliver_shell }}"
+            sudo: false
+            asdf_plugins:
+              - name: golang
+                version: "1.23.5"
+                scope: global

@@ -1,12 +1,15 @@
 ---
 - name: TTPForge
   hosts: all
-  roles:
-    - name: Create ttpforge role user (if not already present)
-      role: cowdogmoo.workstation.user_setup
-
-    - name: Install asdf and go
-      role: cowdogmoo.workstation.asdf
-
+  tasks:
     - name: Install TTPForge
-      role: l50.arsenal.ttpforge
+      ansible.builtin.include_role:
+        name: l50.arsenal.ttpforge
+      vars:
+        ttpforge_username: "{{ ansible_distribution | lower }}"
+        ttpforge_usergroup: "{{ ansible_distribution | lower }}"
+        ttpforge_shell: "/bin/bash"
+        ttpforge_asdf_plugins:
+          - name: golang
+            version: "1.23.5"
+            scope: "global"

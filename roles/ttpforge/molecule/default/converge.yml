@@ -1,36 +1,32 @@
 ---
 - name: Converge
   hosts: all
-  tasks:
-    - name: Include default variables
-      ansible.builtin.include_vars:
-        file: "../../defaults/main.yml"
-    - name: Include variables
-      ansible.builtin.include_vars:
-        file: "../../vars/main.yml"
+  gather_facts: true
   vars:
-    ttpforge_default_username: "{{ ansible_distribution | lower }}"
-    ttpforge_default_group: "{{ ansible_distribution | lower }}"
-    asdf_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
-        sudo: true
-        shell: /bin/bash
-        plugins:
+    test_username: "{{ ansible_distribution | lower }}"
+    test_usergroup: "{{ ansible_distribution | lower }}"
+    test_shell: "/bin/bash"
+  tasks:
+    - name: Create test user
+      ansible.builtin.user:
+        name: "{{ test_username }}"
+        shell: "{{ test_shell }}"
+        create_home: true
+      become: true
+
+    - name: Set environment facts
+      ansible.builtin.set_fact:
+        ansible_env:
+          HOME: "/home/{{ test_username }}"
+
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: l50.arsenal.ttpforge
+      vars:
+        ttpforge_username: "{{ test_username }}"
+        ttpforge_usergroup: "{{ test_usergroup }}"
+        ttpforge_shell: "{{ test_shell }}"
+        ttpforge_asdf_plugins:
           - name: golang
-            version: "1.22.4"
+            version: "1.23.5"
             scope: "global"
-    user_setup_default_users:
-      - username: "{{ ansible_env.USER if ansible_distribution == 'MacOSX' else ttpforge_default_username }}"
-        usergroup: "{{ 'staff' if ansible_distribution == 'MacOSX' else ttpforge_default_group }}"
-        sudo: true
-        shell: /bin/bash
-  roles:
-    - name: Create ttpforge role user (if not already present)
-      role: cowdogmoo.workstation.user_setup
-
-    - name: Install asdf and go
-      role: cowdogmoo.workstation.asdf
-
-    - name: Run the ttpforge role
-      role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"

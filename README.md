@@ -14,7 +14,7 @@ that I employ regularly.
 
 ## Installation
 
-Install the Workstation collection from Ansible Galaxy:
+Install the Arsenal collection:
 
 ```bash
 ansible-galaxy collection install git+https://github.com/l50/ansible-collection-arsenal.git,main
@@ -36,11 +36,6 @@ Tactics, Techniques, and Procedures (TTPs).
 ### Attack Box
 
 Creates an attack box for penetration testing and red teaming.
-
-### Vulnerable Windows Scenarios
-
-Sets up vulnerable Windows scenarios for use in training and testing of
-cybersecurity tools and techniques.
 
 ## Usage
 

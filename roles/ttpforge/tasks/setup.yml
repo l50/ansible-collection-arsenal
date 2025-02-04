@@ -1,0 +1,111 @@
+---
+- name: Configure Git to allow ttpforge repository as a safe directory
+  community.general.git_config:
+    name: safe.directory
+    scope: global
+    value: "{{ ttpforge_install_path }}"
+  become: true
+
+- name: Clone ttpforge repo
+  ansible.builtin.git:
+    repo: 'https://github.com/facebookincubator/ttpforge.git'
+    dest: "{{ ttpforge_install_path }}"
+    version: main
+    depth: 1
+    force: true
+    update: true
+  become: true
+
+- name: Check current ownership of {{ ttpforge_install_path }}
+  ansible.builtin.stat:
+    path: "{{ ttpforge_install_path }}"
+  register: ttpforge_dir_stat
+  become: true
+
+- name: Ensure correct ownership of the ttpforge repository
+  ansible.builtin.file:
+    path: "{{ ttpforge_install_path }}"
+    owner: "{{ ttpforge_username }}"
+    group: "{{ ttpforge_usergroup }}"
+    recurse: true
+  become: true
+  when: >
+    ttpforge_dir_stat.stat.exists and
+    (ttpforge_dir_stat.stat.pw_name != ttpforge_username or
+     ttpforge_dir_stat.stat.gr_name != ttpforge_usergroup)
+
+- name: Set up Go version in ttpforge directory
+  ansible.builtin.copy:
+    dest: "{{ ttpforge_install_path }}/.tool-versions"
+    content: "golang {{ ttpforge_asdf_plugins[0].version }}"
+    owner: "{{ ttpforge_username }}"
+    group: "{{ ttpforge_usergroup }}"
+    mode: '0644'
+  when: ttpforge_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
+
+- name: Add ttpforge_install_path to $PATH
+  ansible.builtin.lineinfile:
+    path: "/home/{{ ttpforge_username }}/.bash_profile"
+    line: "export PATH=$PATH:{{ ttpforge_install_path }}"
+    insertafter: EOF
+    regexp: "^export PATH=.*:{{ ttpforge_install_path }}.*$"
+  become: true
+  become_user: "{{ ttpforge_username }}"
+
+- name: Check if ttpforge binary exists
+  ansible.builtin.stat:
+    path: "{{ ttpforge_install_path }}/ttpforge"
+  register: ttpforge_binary_stat
+
+- name: Check golang installation directory permissions
+  ansible.builtin.stat:
+    path: "/home/{{ ttpforge_username }}/.asdf/installs/golang/{{ ttpforge_asdf_plugins[0].version }}"
+  register: golang_dir_stat
+  become: true
+
+- name: Ensure golang installation directory exists with correct permissions
+  ansible.builtin.file:
+    path: "/home/{{ ttpforge_username }}/.asdf/installs/golang/{{ ttpforge_asdf_plugins[0].version }}"
+    state: directory
+    owner: "{{ ttpforge_username }}"
+    group: "{{ ttpforge_usergroup }}"
+    mode: '0755'
+    recurse: true
+  become: true
+  when: >
+    not golang_dir_stat.stat.exists or
+    (golang_dir_stat.stat.exists and
+     (golang_dir_stat.stat.pw_name != ttpforge_username or
+      golang_dir_stat.stat.gr_name != ttpforge_usergroup))
+  register: golang_perms_result
+  changed_when: golang_perms_result.changed
+
+- name: Compile ttpforge
+  ansible.builtin.shell: |
+    . ~/.bashrc
+    asdf reshim golang
+    go build -buildvcs=false -o {{ ttpforge_install_path }}/ttpforge
+  args:
+    chdir: "{{ ttpforge_install_path }}"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ ttpforge_username }}"
+  environment:
+    HOME: "/home/{{ ttpforge_username }}"
+    ASDF_DIR: "/home/{{ ttpforge_username }}/.asdf"
+    PATH: "/home/{{ ttpforge_username }}/.asdf/shims:/home/{{ ttpforge_username }}/.asdf/bin:/usr/local/bin:/usr/bin:/bin"
+  when: not ttpforge_binary_stat.stat.exists
+  tags:
+    - molecule-idempotence-notest
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+- name: Check if ttpforge has been initialized
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.ttpforge"
+  register: ttpforge_initialized_stat
+
+- name: Initialize ttpforge
+  ansible.builtin.command:
+    cmd: "{{ ttpforge_install_path }}/ttpforge init"
+  when: not ttpforge_initialized_stat.stat.exists
+  changed_when: false

@@ -4,11 +4,11 @@ sliver_setup_systemd: false
 
 # Users to setup with sliver
 sliver_users:
-  - username: sliver
-    usergroup: sliver
-    shell: "/bin/bash"
+  - username: "{{ ansible_user_id | default(ansible_user, true) | default('sliver') }}"
+    usergroup: "{{ (ansible_facts['os_family'] == 'Darwin') | ternary('staff', asdf_username | default('sliver')) }}"
+    shell: zsh
     sudo: true
-    plugins:
+    asdf_plugins:
       - name: golang
-        version: "1.22.0"
-        scope: "global"
+        version: "1.23.5"
+        scope: global

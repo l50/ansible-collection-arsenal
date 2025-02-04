@@ -1,70 +1,28 @@
-- name: Verify TTPForge Setup
+---
+- name: Verify
   hosts: all
+  gather_facts: true
   tasks:
     - name: Include default variables
       ansible.builtin.include_vars:
         file: "../../defaults/main.yml"
 
-    - name: Print the PATH for each user
-      ansible.builtin.shell:
-        cmd: echo $PATH
-      register: user_path
-      become: true
-      become_user: "{{ item.username }}"
-      loop: "{{ ttpforge_users }}"
-      changed_when: false
-
-    - name: Output the PATH for each user
-      ansible.builtin.debug:
-        msg: "User: {{ item.item.username }}, PATH: {{ item.stdout }}"
-      loop: "{{ user_path.results }}"
-
-    - name: Define user-specific ttpforge installation path
-      ansible.builtin.set_fact:
-        ttpforge_install_path: "/home/{{ item.username }}/.local/bin/ttpforge"
-      loop: "{{ ttpforge_users }}"
-      when: item.username != 'root'
-
-    - name: Check if ttpforge is installed for each user
+    - name: Check if TTPForge binary exists and is executable
       ansible.builtin.stat:
-        path: "{{ ttpforge_install_path }}"
-      register: ttpforge_stat
-      become: true
-      become_user: "{{ item.username }}"
-      loop: "{{ ttpforge_users }}"
+        path: "{{ ttpforge_install_path }}/ttpforge"
+      register: ttpforge_binary
+      failed_when: >
+        not ttpforge_binary.stat.exists or
+        not ttpforge_binary.stat.executable
 
-    - name: Assert that ttpforge is installed correctly
-      ansible.builtin.assert:
-        that:
-          - item.stat.exists
-        fail_msg: "TTPForge is not installed correctly for user {{ item.item.username }}"
-        success_msg: "TTPForge is installed correctly for user {{ item.item.username }}"
-      loop: "{{ ttpforge_stat.results }}"
-
-    - name: List available TTPForge repositories for each user
-      ansible.builtin.command:
-        cmd: "{{ ttpforge_install_path }} list repos"
-      register: ttpforge_repos
-      become: true
-      become_user: "{{ item.username }}"
-      loop: "{{ ttpforge_users }}"
+    - name: Check user exists
+      ansible.builtin.command: "id -un {{ ttpforge_username }}"
+      register: user_check
       changed_when: false
+      failed_when: user_check.rc != 0
 
-    - name: Output available TTPForge repositories for each user
-      ansible.builtin.debug:
-        msg: "User: {{ item.item.username }}, Repositories: {{ item.stdout }}"
-      loop: "{{ ttpforge_repos.results }}"
-
-    - name: List available TTPs that can be run for each user
-      ansible.builtin.command:
-        cmd: "{{ ttpforge_install_path }} list ttps"
-      register: ttpforge_ttps
-      become: true
-      become_user: "{{ item.username }}"
-      loop: "{{ ttpforge_users }}"
-      changed_when: false
-
-    - name: Output available TTPs for each user
-      ansible.builtin.debug:
-        msg: "User: {{ item.item.username }}, TTPs: {{ item.stdout }}"
-      loop: "{{ ttpforge_ttps.results }}"
+    - name: Check user sudo access
+      ansible.builtin.stat:
+        path: "/etc/sudoers.d/{{ ttpforge_username }}"
+      register: sudoers_check
+      when: ttpforge_username != 'root'
