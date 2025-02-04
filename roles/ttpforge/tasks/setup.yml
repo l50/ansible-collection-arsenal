@@ -1,0 +1,79 @@
+---
+- name: Configure Git to allow ttpforge repository as a safe directory
+  community.general.git_config:
+    name: safe.directory
+    scope: global
+    value: "{{ ttpforge_install_path }}"
+  become: true
+
+- name: Clone ttpforge repo
+  ansible.builtin.git:
+    repo: 'https://github.com/facebookincubator/ttpforge.git'
+    dest: "{{ ttpforge_install_path }}"
+    version: main
+    depth: 1
+    force: true
+    update: true
+  become: true
+
+- name: Check current ttpforge repository ownership
+  ansible.builtin.stat:
+    path: "{{ ttpforge_install_path }}"
+  register: ttpforge_dir_stat
+
+- name: Ensure correct ownership of the ttpforge repository
+  ansible.builtin.file:
+    path: "{{ ttpforge_install_path }}"
+    owner: "{{ ttpforge_username }}"
+    group: "{{ ttpforge_usergroup }}"
+    recurse: true
+  become: true
+  when: >
+    ttpforge_dir_stat.stat.exists and
+    (ttpforge_dir_stat.stat.pw_name != ttpforge_username or
+     ttpforge_dir_stat.stat.gr_name != ttpforge_usergroup)
+
+- name: Set up Go version in ttpforge directory
+  ansible.builtin.copy:
+    dest: "{{ ttpforge_install_path }}/.tool-versions"
+    content: "golang {{ ttpforge_asdf_plugins[0].version }}"
+    owner: "{{ ttpforge_username }}"
+    group: "{{ ttpforge_usergroup }}"
+    mode: '0644'
+  when: ttpforge_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
+
+- name: Check if ttpforge binary exists
+  ansible.builtin.stat:
+    path: "{{ ttpforge_install_path }}/ttpforge"
+  register: ttpforge_binary_stat
+
+- name: Compile ttpforge
+  ansible.builtin.shell: |
+    . ~/.bashrc
+    asdf reshim golang
+    go build -buildvcs=false -o {{ ttpforge_install_path }}/ttpforge
+  args:
+    chdir: "{{ ttpforge_install_path }}"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ ttpforge_users[0].username }}"
+  environment:
+    HOME: "/home/{{ ttpforge_users[0].username }}"
+    ASDF_DIR: "/home/{{ ttpforge_users[0].username }}/.asdf"
+    PATH: "/home/{{ ttpforge_users[0].username }}/.asdf/shims:/home/{{ ttpforge_users[0].username }}/.asdf/bin:/usr/local/bin:/usr/bin:/bin"
+  when: not ttpforge_binary_stat.stat.exists
+  changed_when: false
+  register: compile_result
+  async: 3600
+  poll: 30
+
+- name: Check if ttpforge has been initialized
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.ttpforge"
+  register: ttpforge_initialized_stat
+
+- name: Initialize ttpforge
+  ansible.builtin.command:
+    cmd: "{{ ttpforge_install_path }}/ttpforge init"
+  when: not ttpforge_initialized_stat.stat.exists
+  changed_when: false

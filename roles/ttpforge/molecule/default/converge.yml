@@ -2,19 +2,8 @@
 - name: Converge
   hosts: all
   vars:
-    container_user: "{{ ansible_distribution | lower }}"
+    container_user: "ttpforge"
     container_home: "/home/{{ container_user }}"
-    ttpforge_default_username: "{{ container_user }}"
-    ttpforge_default_group: "{{ container_user }}"
-    asdf_users:
-      - username: "{{ container_user }}"
-        usergroup: "{{ container_user }}"
-        sudo: true
-        shell: /bin/bash
-        plugins:
-          - name: golang
-            version: "1.22.4"
-            scope: "global"
   tasks:
     - name: Create test user
       ansible.builtin.user:
@@ -23,25 +12,28 @@
         create_home: true
       become: true
 
-    - name: Set home directory fact
+    - name: Ensure correct ownership of home directory
+      ansible.builtin.file:
+        path: "{{ container_home }}"
+        owner: "{{ container_user }}"
+        group: "{{ container_user }}"
+        mode: '0755'
+        state: directory
+      become: true
+
+    - name: Set environment facts
       ansible.builtin.set_fact:
         ansible_env:
           HOME: "{{ container_home }}"
-
-    - name: Include default variables
-      ansible.builtin.include_vars:
-        file: "../../defaults/main.yml"
-
-    - name: Include variables
-      ansible.builtin.include_vars:
-        file: "../../vars/main.yml"
 
     - name: Include role under test
       ansible.builtin.include_role:
         name: l50.arsenal.ttpforge
       vars:
-        asdf_username: "{{ container_user }}"
-        asdf_plugins:
+        ttpforge_username: "{{ container_user }}"
+        ttpforge_usergroup: "{{ container_user }}"
+        ttpforge_shell: "/bin/bash"
+        ttpforge_asdf_plugins:
           - name: golang
             version: "1.23.5"
             scope: "global"

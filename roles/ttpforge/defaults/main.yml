@@ -1,20 +1,15 @@
+# defaults/main.yml
 ---
-# Path to the ttpforge repository (defaults to a globally accessible path)
-ttpforge_repo_path: /opt/ttpforge
-
-# Install ttpforge for all users on the system (this is for a system-wide install)
-ttpforge_global_install: false
-
-# Default users to install ttpforge for (modify as needed for a per-user install)
+ttpforge_install_path: /opt/ttpforge
 ttpforge_users:
-  - username: "{{ ansible_env.USER if ansible_os_family == 'Darwin' else 'Administrator' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
-    usergroup: "{{ 'staff' if ansible_os_family == 'Darwin' else 'Administrators' if ansible_os_family == 'Windows' else ansible_distribution | lower }}"
+  - username: "{{ ansible_user_id | default(ansible_user, true) | default('ttpforge') }}"
+    usergroup: "{{ (ansible_facts['os_family'] == 'Darwin') | ternary('staff', asdf_username | default('ttpforge')) }}"
+    shell: zsh
     sudo: true
-    shell: "{{ '/bin/zsh' if ansible_os_family == 'Darwin' else 'powershell' if ansible_os_family == 'Windows' else '/bin/bash' }}"
     asdf_plugins:
       - name: golang
-        version: "1.23.1"
-        scope: "global"
+        version: "1.23.5"
+        scope: global
       - name: python
-        version: "3.12.6"
-        scope: "global"
+        version: "3.13.1"
+        scope: global
