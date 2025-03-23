@@ -1,12 +1,14 @@
 ---
 name: Molecule Test
 on:
+  merge_group:
   pull_request:
     branches:
       - main
     types:
       - opened
       - synchronize
+      - reopened
   push:
     branches:
       - main
@@ -26,10 +28,11 @@ on:
         default: ''
         type: string
 
-# Cancel any in-progress job when a new workflow is triggered
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only cancel in-progress runs for PRs, not for main branch or scheduled runs
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && ! contains(github.event.pull_request.labels.*.name, 'renovate') }}
+  # Use different group keys based on the event type
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && ! contains(github.event.pull_request.labels.*.name, 'renovate') && github.event.pull_request.number || github.ref }}
 
 env:
   ANSIBLE_FORCE_COLOR: "1"
@@ -45,9 +48,9 @@ env:
 
 # Permissions block for GitHub App
 permissions:
+  actions: write
   contents: write
-  packages: read
-  statuses: write
+  issues: write
   pull-requests: write
 
 jobs:
@@ -122,7 +125,7 @@ jobs:
           cache-dependency-path: '${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}'
 
       - name: Cache Ansible collections
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
@@ -223,7 +226,7 @@ jobs:
           cache-dependency-path: '${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}'
 
       - name: Cache Ansible collections
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
@@ -250,10 +253,8 @@ jobs:
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
         shell: bash
-        env:
-          ANSIBLE_CONFIG: ${{ env.COLLECTION_PATH }}/ansible.cfg
         run: |
-          set -e
+          set -ex
           molecule --version
           molecule list
 
@@ -334,7 +335,7 @@ jobs:
           cache-dependency-path: '${{ env.COLLECTION_PATH }}/${{ env.REQUIREMENTS_FILE }}'
 
       - name: Cache Ansible collections
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ~/.ansible/collections
           key: ${{ runner.os }}-ansible-${{ hashFiles('**/requirements.yml') }}
@@ -363,6 +364,8 @@ jobs:
         shell: bash
         env:
           ANSIBLE_CONFIG: ${{ env.COLLECTION_PATH }}/ansible.cfg
+          ANSIBLE_ROLES_PATH: ${{ env.COLLECTION_PATH }}/roles
+          MOLECULE_NO_LOG: "false"
         run: |
           set -e
           molecule --version
