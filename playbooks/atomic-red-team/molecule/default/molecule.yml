@@ -32,6 +32,8 @@ platforms:
 
 provisioner:
   name: ansible
+  env:
+    ANSIBLE_ROLES_PATH: "../../roles:~/.ansible/roles:/etc/ansible/roles:$HOME/.ansible/roles"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
   # Uncomment for verbose output
