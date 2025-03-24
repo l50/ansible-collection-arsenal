@@ -250,9 +250,23 @@ jobs:
           ansible-galaxy collection build
           ansible-galaxy collection install l50-arsenal-*.tar.gz --force
 
+      - name: Install role for atomic-red-team playbook
+        working-directory: ${{ env.COLLECTION_PATH }}
+        shell: bash
+        run: |
+          # Check if we're testing the atomic-red-team playbook and install the required role
+          if [[ "${{ matrix.path }}" == "playbooks/atomic-red-team" || "${{ env.PLAYBOOK }}" == "atomic-red-team" ]]; then
+            echo "Installing l50.ansible_atomic_red_team role from GitHub"
+            ansible-galaxy install git+https://github.com/l50/ansible-atomic-red-team.git,main
+          fi
+
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
         shell: bash
+        env:
+          ANSIBLE_CONFIG: ${{ env.COLLECTION_PATH }}/ansible.cfg
+          ANSIBLE_ROLES_PATH: ${{ env.COLLECTION_PATH }}/roles:~/.ansible/roles
+          MOLECULE_NO_LOG: "false"
         run: |
           set -ex
           molecule --version
