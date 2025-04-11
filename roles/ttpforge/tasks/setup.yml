@@ -57,34 +57,102 @@
     path: "{{ ttpforge_install_path }}/ttpforge"
   register: ttpforge_binary_stat
 
-- name: Check golang installation directory permissions
-  ansible.builtin.stat:
-    path: "/home/{{ ttpforge_username }}/.asdf/installs/golang/{{ ttpforge_asdf_plugins[0].version }}"
-  register: golang_dir_stat
-  become: true
+- name: Ensure golang is installed for user
+  ansible.builtin.shell: |
+    export ASDF_DATA_DIR="/home/{{ ttpforge_username }}/.asdf"
+    export PATH="/usr/local/bin:$PATH"
 
-- name: Ensure golang installation directory exists with correct permissions
-  ansible.builtin.file:
-    path: "/home/{{ ttpforge_username }}/.asdf/installs/golang/{{ ttpforge_asdf_plugins[0].version }}"
-    state: directory
-    owner: "{{ ttpforge_username }}"
-    group: "{{ ttpforge_usergroup }}"
-    mode: '0755'
-    recurse: true
+    # Uninstall golang first if it exists
+    asdf uninstall golang {{ ttpforge_asdf_plugins[0].version }} || true
+
+    # Install golang version
+    asdf install golang {{ ttpforge_asdf_plugins[0].version }}
+
+    # Set the golang version
+    asdf set --home golang {{ ttpforge_asdf_plugins[0].version }}
+
+    # Reshim to ensure shims are created
+    asdf reshim golang
+  args:
+    executable: /bin/bash
   become: true
-  when: >
-    not golang_dir_stat.stat.exists or
-    (golang_dir_stat.stat.exists and
-     (golang_dir_stat.stat.pw_name != ttpforge_username or
-      golang_dir_stat.stat.gr_name != ttpforge_usergroup))
-  register: golang_perms_result
-  changed_when: golang_perms_result.changed
+  become_user: "{{ ttpforge_username }}"
+  environment:
+    HOME: "/home/{{ ttpforge_username }}"
+    USER: "{{ ttpforge_username }}"
+    ASDF_DATA_DIR: "/home/{{ ttpforge_username }}/.asdf"
+  when: not ttpforge_binary_stat.stat.exists
+  changed_when: false
+
+- name: Find golang directory structure
+  ansible.builtin.shell: |
+    set -o pipefail
+    find "/home/{{ ttpforge_username }}/.asdf/installs/golang" -type d | sort
+  register: golang_dir_structure
+  become: true
+  when: not ttpforge_binary_stat.stat.exists
+  changed_when: false
+
+- name: Show golang directory structure
+  ansible.builtin.debug:
+    var: golang_dir_structure
+  when: not ttpforge_binary_stat.stat.exists
+
+- name: Find go executables
+  ansible.builtin.shell: |
+    set -o pipefail
+    find "/home/{{ ttpforge_username }}/.asdf/installs/golang" -name go -type f -executable
+  register: go_executables
+  become: true
+  when: not ttpforge_binary_stat.stat.exists
+  changed_when: false
+
+- name: Show go executables
+  ansible.builtin.debug:
+    var: go_executables
+  when: not ttpforge_binary_stat.stat.exists
 
 - name: Compile ttpforge
   ansible.builtin.shell: |
-    . ~/.bashrc
+    set -o pipefail
+    # Check asdf is available and working
+    export ASDF_DATA_DIR="/home/{{ ttpforge_username }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    asdf --version
+
+    # Reshim and verify golang version
     asdf reshim golang
-    go build -buildvcs=false -o {{ ttpforge_install_path }}/ttpforge
+    asdf current golang
+
+    # Try to find go binary using multiple approaches
+    GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ ttpforge_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
+
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "Could not find go binary in standard location, checking alternative paths..."
+      GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang" -name go -type f -executable | head -1)
+    fi
+
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "Still could not find go binary, checking shims directory..."
+      if [ -x "${ASDF_DATA_DIR}/shims/go" ]; then
+        GO_BIN_PATH="${ASDF_DATA_DIR}/shims/go"
+      fi
+    fi
+
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "ERROR: Could not find go executable anywhere"
+      exit 1
+    fi
+
+    echo "Found Go binary at: ${GO_BIN_PATH}"
+
+    # Verify Go works
+    echo "Running Go version check:"
+    "$GO_BIN_PATH" version
+
+    # Build the ttpforge binary using the direct path to Go
+    echo "Building ttpforge binary:"
+    "$GO_BIN_PATH" build -buildvcs=false -o {{ ttpforge_install_path }}/ttpforge
   args:
     chdir: "{{ ttpforge_install_path }}"
     executable: /bin/bash
@@ -92,12 +160,19 @@
   become_user: "{{ ttpforge_username }}"
   environment:
     HOME: "/home/{{ ttpforge_username }}"
-    ASDF_DIR: "/home/{{ ttpforge_username }}/.asdf"
-    PATH: "/home/{{ ttpforge_username }}/.asdf/shims:/home/{{ ttpforge_username }}/.asdf/bin:/usr/local/bin:/usr/bin:/bin"
+    USER: "{{ ttpforge_username }}"
+    ASDF_DATA_DIR: "/home/{{ ttpforge_username }}/.asdf"
+    PATH: "/usr/local/bin:/home/{{ ttpforge_username }}/.asdf/shims:/usr/bin:/bin"
+    GO111MODULE: "on"
+    GOPATH: "/home/{{ ttpforge_username }}/go"
   when: not ttpforge_binary_stat.stat.exists
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+  register: compile_result
+  failed_when:
+    - compile_result.rc != 0
+    - "'No executable go found' not in compile_result.stderr"
 
 - name: Check if ttpforge has been initialized
   ansible.builtin.stat:

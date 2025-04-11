@@ -21,7 +21,6 @@
     mode: '0644'
   become: true
   become_user: "{{ ttpforge_username }}"
-  # Only create if it does not exist already
   when: not bash_profile_stat.stat.exists
 
 - name: Check if asdf is installed for ttpforge user
@@ -29,7 +28,12 @@
     path: "/home/{{ ttpforge_username }}/.asdf"
   register: asdf_installed
 
-- name: Install asdf (and go) for ttpforge user
+- name: Check if asdf binary is installed
+  ansible.builtin.stat:
+    path: "/usr/local/bin/asdf"
+  register: asdf_binary_installed
+
+- name: Install asdf and associated plugins for ttpforge user
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.asdf
   vars:
@@ -38,8 +42,9 @@
     asdf_shell: "{{ ttpforge_shell }}"
     asdf_plugins: "{{ ttpforge_asdf_plugins }}"
     asdf_user_home: "/home/{{ ttpforge_username }}"
-    asdf_dir: "/home/{{ ttpforge_username }}/.asdf"
-  when: not asdf_installed.stat.exists
+    asdf_data_dir: "/home/{{ ttpforge_username }}/.asdf"
+    asdf_bin_dir: "/usr/local/bin"
+  when: not asdf_installed.stat.exists or not asdf_binary_installed.stat.exists
 
 - name: Include TTPForge setup tasks
   ansible.builtin.include_tasks: setup.yml

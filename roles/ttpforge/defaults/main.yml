@@ -3,10 +3,11 @@ ttpforge_install_path: /opt/ttpforge
 ttpforge_username: "{{ ansible_distribution | lower }}"
 ttpforge_usergroup: "{{ ansible_distribution | lower }}"
 ttpforge_shell: /bin/bash
+
 ttpforge_asdf_plugins:
   - name: golang
     version: "1.23.5"
-    scope: global
+    scope: "global"
   - name: python
     version: "3.13.1"
-    scope: global
+    scope: "global"
