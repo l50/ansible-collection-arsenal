@@ -88,6 +88,8 @@
   ansible.builtin.shell: |
     set -o pipefail
     find "/home/{{ ttpforge_username }}/.asdf/installs/golang" -type d | sort
+  args:
+    executable: /bin/bash
   register: golang_dir_structure
   become: true
   when: not ttpforge_binary_stat.stat.exists
@@ -102,6 +104,8 @@
   ansible.builtin.shell: |
     set -o pipefail
     find "/home/{{ ttpforge_username }}/.asdf/installs/golang" -name go -type f -executable
+  args:
+    executable: /bin/bash
   register: go_executables
   become: true
   when: not ttpforge_binary_stat.stat.exists
