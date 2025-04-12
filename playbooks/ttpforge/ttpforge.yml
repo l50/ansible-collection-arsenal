@@ -1,10 +1,12 @@
 ---
 - name: TTPForge
   hosts: all
-  tasks:
+  roles:
+    - name: Setup users on workstation
+      role: cowdogmoo.workstation.user_setup
+
     - name: Install TTPForge
-      ansible.builtin.include_role:
-        name: l50.arsenal.ttpforge
+      role: l50.arsenal.ttpforge
       vars:
         ttpforge_username: "{{ ansible_distribution | lower }}"
         ttpforge_usergroup: "{{ ansible_distribution | lower }}"
