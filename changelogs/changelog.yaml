@@ -135,3 +135,31 @@ releases:
         and `ttpforge_get_user_home.yml`.
       - Removed unnecessary `Vulnerable Windows Scenarios` section from `README.md`.
     release_date: '2025-02-04'
+  1.0.4:
+    changes:
+      added:
+      - Added dynamic `go` binary detection via multiple fallback mechanisms.
+      - Added missing items to gitignore.
+      - Bumped max-parallel to 4 for playbook tests.
+      - Ensured environment variables like `GOPATH` and `GO111MODULE` are set.
+      - Implemented robust Go install logic with direct asdf shell commands.
+      - Improved compilation step to use explicitly detected `go` binary.
+      - Modernized ttpforge playbook.
+      - Switched `cowdogmoo.workstation` to Git-based source in `requirements.yml`.
+      - Validated directory structure and executable presence post-install.
+      - Verified both ASDF binary and data directory presence before installing.
+      changed:
+      - Differentiated group keys in workflow based on event type for better control
+        of workflow execution.
+      - Refactored `ttpforge` compilation to avoid reliance on shell rc files.
+      - Replaced old manual directory permission check with automated rebuild logic.
+      - Updated `molecule.yaml` concurrency logic to only cancel in-progress jobs
+        for non-Renovate PRs.
+      - Updated all ASDF references to use `asdf_data_dir` and `asdf_bin_dir`.
+      release_summary: Improved TTPForge role with robust ASDF and Go setup, modernized
+        playbooks, fixed shell errors, and updated multiple dependencies across the
+        collection.
+      removed:
+      - Removed inline comment about `bash_profile` creation being conditional.
+      - Removed old system package.
+    release_date: '2025-04-11'

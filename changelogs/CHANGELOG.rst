@@ -1,8 +1,45 @@
 ==============================================
-Arsenal Ansible Collection 1.0.3 Release Notes
+Arsenal Ansible Collection 1.0.4 Release Notes
 ==============================================
 
 .. contents:: Topics
+
+v1.0.4
+======
+
+Release Summary
+---------------
+
+Improved TTPForge role with robust ASDF and Go setup, modernized playbooks, fixed shell errors, and updated multiple dependencies across the collection.
+
+Added
+-----
+
+- Added dynamic `go` binary detection via multiple fallback mechanisms.
+- Added missing items to gitignore.
+- Bumped max-parallel to 4 for playbook tests.
+- Ensured environment variables like `GOPATH` and `GO111MODULE` are set.
+- Implemented robust Go install logic with direct asdf shell commands.
+- Improved compilation step to use explicitly detected `go` binary.
+- Modernized ttpforge playbook.
+- Switched `cowdogmoo.workstation` to Git-based source in `requirements.yml`.
+- Validated directory structure and executable presence post-install.
+- Verified both ASDF binary and data directory presence before installing.
+
+Changed
+-------
+
+- Differentiated group keys in workflow based on event type for better control of workflow execution.
+- Refactored `ttpforge` compilation to avoid reliance on shell rc files.
+- Replaced old manual directory permission check with automated rebuild logic.
+- Updated `molecule.yaml` concurrency logic to only cancel in-progress jobs for non-Renovate PRs.
+- Updated all ASDF references to use `asdf_data_dir` and `asdf_bin_dir`.
+
+Removed
+-------
+
+- Removed inline comment about `bash_profile` creation being conditional.
+- Removed old system package.
 
 v1.0.3
 ======
