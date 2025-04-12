@@ -35,7 +35,6 @@ sliver_debian_packages:
   - nasm
   - ncurses-dev
   - openssl
-  - packaging-dev
   - postgresql
   - postgresql-contrib
   - postgresql-client
