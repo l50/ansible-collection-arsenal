@@ -87,6 +87,7 @@
 - name: Compile ttpforge
   ansible.builtin.shell: |
     set -o pipefail
+
     # Check asdf is available and working
     export ASDF_DATA_DIR="/home/{{ ttpforge_username }}/.asdf"
     export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
@@ -96,7 +97,7 @@
     asdf reshim golang
     asdf current golang
 
-    # Try to find go binary using multiple approaches
+    # Ensure go binary is available
     GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ ttpforge_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
 
     if [ -z "$GO_BIN_PATH" ]; then

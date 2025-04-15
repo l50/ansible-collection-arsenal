@@ -6,6 +6,7 @@
     test_username: "{{ ansible_distribution | lower }}"
     test_usergroup: "{{ ansible_distribution | lower }}"
     test_shell: "/bin/bash"
+
   tasks:
     - name: Create test user
       ansible.builtin.user:
@@ -28,5 +29,5 @@
         ttpforge_shell: "{{ test_shell }}"
         ttpforge_asdf_plugins:
           - name: golang
-            version: "1.23.5"
+            version: "1.24.0"
             scope: "global"
