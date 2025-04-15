@@ -6,7 +6,7 @@ ttpforge_shell: /bin/bash
 
 ttpforge_asdf_plugins:
   - name: golang
-    version: "1.23.5"
+    version: "1.24.0"
     scope: "global"
   - name: python
     version: "3.13.1"
