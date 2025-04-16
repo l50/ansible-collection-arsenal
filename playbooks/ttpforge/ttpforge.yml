@@ -7,11 +7,34 @@
 
     - name: Install TTPForge
       role: l50.arsenal.ttpforge
-      vars:
-        ttpforge_username: "{{ ansible_distribution | lower }}"
-        ttpforge_usergroup: "{{ ansible_distribution | lower }}"
-        ttpforge_shell: "/bin/bash"
-        ttpforge_asdf_plugins:
-          - name: golang
-            version: "1.23.5"
-            scope: "global"
+      # vars:
+      #   ttpforge_username: >-
+      #     {%- if ansible_os_family == 'Darwin' -%}
+      #     {{ ansible_user_id }}
+      #     {%- else -%}
+      #     {{ ansible_distribution | lower }}
+      #     {%- endif -%}
+
+      #   ttpforge_usergroup: >-
+      #     {%- if ansible_os_family == 'Darwin' -%}
+      #     staff
+      #     {%- elif ansible_os_family == 'Debian' or ansible_os_family == 'RedHat' -%}
+      #     {{ ansible_user_id }}
+      #     {%- else -%}
+      #     {{ ansible_distribution | lower }}
+      #     {%- endif -%}
+
+      #   ttpforge_shell: >-
+      #     {%- if ansible_os_family == 'Darwin' -%}
+      #     /bin/zsh
+      #     {%- else -%}
+      #     /bin/bash
+      #     {%- endif -%}
+
+      #   ttpforge_asdf_plugins:
+      #     - name: golang
+      #       version: "1.23.5"
+      #       scope: "global"
+      #     - name: python
+      #       version: "3.13.1"
+      #       scope: "global"

@@ -7,7 +7,7 @@
     test_usergroup: "{{ ansible_distribution | lower }}"
     test_shell: "/bin/bash"
 
-  tasks:
+  pre_tasks:
     - name: Create test user
       ansible.builtin.user:
         name: "{{ test_username }}"
@@ -20,9 +20,8 @@
         ansible_env:
           HOME: "/home/{{ test_username }}"
 
-    - name: Include role under test
-      ansible.builtin.include_role:
-        name: l50.arsenal.ttpforge
+  roles:
+    - role: l50.arsenal.ttpforge
       vars:
         ttpforge_username: "{{ test_username }}"
         ttpforge_usergroup: "{{ test_usergroup }}"
