@@ -3,29 +3,13 @@
   hosts: all
   gather_facts: true
   vars:
-    test_username: "{{ ansible_distribution | lower }}"
-    test_usergroup: "{{ ansible_distribution | lower }}"
-    test_shell: "/bin/bash"
-
-  pre_tasks:
-    - name: Create test user
-      ansible.builtin.user:
-        name: "{{ test_username }}"
-        shell: "{{ test_shell }}"
-        create_home: true
-      become: true
-
-    - name: Set environment facts
-      ansible.builtin.set_fact:
-        ansible_env:
-          HOME: "/home/{{ test_username }}"
+    sliver_username: "sliver"
+    sliver_usergroup: "sliver"
+    sliver_shell: "/bin/bash"
 
   roles:
     - role: l50.arsenal.sliver
       vars:
-        sliver_username: "{{ test_username }}"
-        sliver_usergroup: "{{ test_usergroup }}"
-        sliver_shell: "{{ test_shell }}"
         sliver_asdf_plugins:
           - name: golang
             version: "1.24.0"
