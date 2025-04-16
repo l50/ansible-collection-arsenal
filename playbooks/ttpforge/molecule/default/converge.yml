@@ -2,22 +2,6 @@
 - name: Converge
   hosts: all
   gather_facts: true
-  vars:
-    test_username: "{{ ansible_distribution | lower }}"
-    test_usergroup: "{{ ansible_distribution | lower }}"
-    test_shell: "/bin/bash"
-  tasks:
-    - name: Create test user
-      ansible.builtin.user:
-        name: "{{ test_username }}"
-        shell: "{{ test_shell }}"
-        create_home: true
-      become: true
-
-    - name: Set environment facts
-      ansible.builtin.set_fact:
-        ansible_env:
-          HOME: "/home/{{ test_username }}"
 
 - name: Import playbook for testing
   ansible.builtin.import_playbook: ../../ttpforge.yml
