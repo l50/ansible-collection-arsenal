@@ -1,29 +1,32 @@
 ---
 - name: Converge
   hosts: all
+  gather_facts: true
   vars:
-    sliver_username: "sliver"
-    sliver_usergroup: "{{ sliver_username }}"
-    sliver_shell: "/bin/bash"
-  tasks:
-    - name: Include default variables
-      ansible.builtin.include_vars:
-        file: "../../defaults/main.yml"
+    test_username: "{{ ansible_distribution | lower }}"
+    test_usergroup: "{{ ansible_distribution | lower }}"
+    test_shell: "/bin/bash"
 
-    - name: Include variables
-      ansible.builtin.include_vars:
-        file: "../../vars/main.yml"
+  pre_tasks:
+    - name: Create test user
+      ansible.builtin.user:
+        name: "{{ test_username }}"
+        shell: "{{ test_shell }}"
+        create_home: true
+      become: true
 
-    - name: Include role under test
-      ansible.builtin.include_role:
-        name: l50.arsenal.sliver
+    - name: Set environment facts
+      ansible.builtin.set_fact:
+        ansible_env:
+          HOME: "/home/{{ test_username }}"
+
+  roles:
+    - role: l50.arsenal.sliver
       vars:
-        sliver_users:
-          - username: "{{ sliver_username }}"
-            usergroup: "{{ sliver_usergroup }}"
-            shell: "{{ sliver_shell }}"
-            sudo: false
-            asdf_plugins:
-              - name: golang
-                version: "1.23.5"
-                scope: global
+        sliver_username: "{{ test_username }}"
+        sliver_usergroup: "{{ test_usergroup }}"
+        sliver_shell: "{{ test_shell }}"
+        sliver_asdf_plugins:
+          - name: golang
+            version: "1.24.0"
+            scope: "global"

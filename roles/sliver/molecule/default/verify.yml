@@ -11,31 +11,23 @@
       ansible.builtin.stat:
         path: "{{ sliver_install_path }}/sliver-server"
       register: sliver_server
+      failed_when: >
+        not sliver_server.stat.exists or
+        not sliver_server.stat.executable
 
     - name: Check if Sliver client is installed
       ansible.builtin.stat:
         path: "{{ sliver_install_path }}/sliver-client"
       register: sliver_client
 
-    - name: Assert that Sliver server and client are installed
-      ansible.builtin.assert:
-        that:
-          - sliver_server.stat.exists
-          - sliver_client.stat.exists
-
-    - name: Check user exists for each sliver user
-      ansible.builtin.command: "id -un {{ item.username }}"
+    - name: Check user exists
+      ansible.builtin.command: "id -un {{ sliver_username }}"
       register: user_check
       changed_when: false
       failed_when: user_check.rc != 0
-      loop: "{{ sliver_users }}"
 
-    - name: Check user is in sudoers.d for each sliver user
+    - name: Check user sudo access
       ansible.builtin.stat:
-        path: "/etc/sudoers.d/{{ item.username }}"
-      loop: "{{ sliver_users }}"
+        path: "/etc/sudoers.d/{{ sliver_username }}"
       register: sudoers_check
-      failed_when: >
-        sudoers_check.stat.exists == false and
-        (item.sudo | bool) == true and
-        item.username != 'root'
+      when: sliver_username != 'root'

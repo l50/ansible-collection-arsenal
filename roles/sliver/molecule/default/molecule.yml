@@ -34,10 +34,9 @@ platforms:
 
 provisioner:
   name: ansible
+  config_file: ${MOLECULE_PROJECT_DIRECTORY}/../../ansible.cfg
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
-  env:
-    ANSIBLE_CALLBACK_PLUGINS: "${MOLECULE_SCENARIO_DIRECTORY}/callback_plugins"
   # Uncomment for verbose output
   # env:
   #   ANSIBLE_VERBOSITY: 3

@@ -20,7 +20,6 @@ galaxy_info:
   galaxy_tags:
     - c2
     - offsec
-
 dependencies:
   - role: cowdogmoo.workstation.package_management
   - role: cowdogmoo.workstation.asdf
