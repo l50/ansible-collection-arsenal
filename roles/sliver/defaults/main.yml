@@ -4,13 +4,7 @@ sliver_setup_systemd: false
 
 sliver_username: "sliver"
 sliver_usergroup: "sliver"
-sliver_shell: >-
-  {% if ansible_os_family == 'Darwin' %}
-  /bin/zsh
-  {% else %}
-  /bin/bash
-  {% endif %}
-
+sliver_shell: "{{ '/bin/zsh' if ansible_os_family == 'Darwin' else '/bin/bash' }}"
 sliver_asdf_plugins:
   - name: golang
     version: "1.24.0"
