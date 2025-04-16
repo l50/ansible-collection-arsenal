@@ -1,0 +1,164 @@
+---
+- name: Configure Git to allow sliver_install_path as a safe directory
+  community.general.git_config:
+    name: safe.directory
+    scope: global
+    value: "{{ sliver_install_path }}"
+  become: true
+
+- name: Clone Sliver repo
+  ansible.builtin.git:
+    repo: 'https://github.com/bishopfox/sliver.git'
+    dest: "{{ sliver_install_path }}"
+    version: master
+    depth: 1
+    force: true
+    update: true
+  become: true
+
+- name: Check current ownership of {{ sliver_install_path }}
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}"
+  register: sliver_dir_stat
+  become: true
+
+- name: Ensure correct ownership of the Sliver repository
+  ansible.builtin.file:
+    path: "{{ sliver_install_path }}"
+    owner: "{{ sliver_username }}"
+    group: "{{ sliver_usergroup }}"
+    recurse: true
+  become: true
+  when: >
+    sliver_dir_stat.stat.exists and
+    (sliver_dir_stat.stat.pw_name != sliver_username or
+     sliver_dir_stat.stat.gr_name != sliver_usergroup)
+
+- name: Set up Go version in Sliver directory
+  ansible.builtin.copy:
+    dest: "{{ sliver_install_path }}/.tool-versions"
+    content: "golang {{ sliver_asdf_plugins[0].version }}"
+    owner: "{{ sliver_username }}"
+    group: "{{ sliver_usergroup }}"
+    mode: '0644'
+  when: sliver_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
+
+- name: Add sliver_install_path to $PATH
+  ansible.builtin.lineinfile:
+    path: "{{ sliver_user_home }}/.bash_profile"
+    line: "export PATH=$PATH:{{ sliver_install_path }}"
+    insertafter: EOF
+    regexp: "^export PATH=.*:{{ sliver_install_path }}.*$"
+  become: true
+  become_user: "{{ sliver_username }}"
+
+- name: Check if Sliver server exists
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/sliver-server"
+  register: sliver_server_stat
+  become: true
+
+- name: Ensure golang is installed for user
+  ansible.builtin.shell: |
+    export ASDF_DATA_DIR="/home/{{ sliver_username }}/.asdf"
+    export PATH="/usr/local/bin:$PATH"
+    asdf uninstall golang {{ sliver_asdf_plugins[0].version }} || true
+    asdf install golang {{ sliver_asdf_plugins[0].version }}
+    asdf set --home golang {{ sliver_asdf_plugins[0].version }}
+    asdf reshim golang
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ sliver_username }}"
+  environment:
+    HOME: "{{ sliver_user_home }}"
+    USER: "{{ sliver_username }}"
+    ASDF_DATA_DIR: "{{ sliver_user_home }}/.asdf"
+  when: not sliver_server_stat.stat.exists
+  changed_when: false
+
+- name: Compile Sliver
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="/home/{{ sliver_username }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    asdf --version
+    asdf reshim golang
+    asdf current golang
+    GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ sliver_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "Could not find go binary in standard location, checking alternative paths..."
+      GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang" -name go -type f -executable | head -1)
+    fi
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "Still could not find go binary, checking shims directory..."
+      if [ -x "${ASDF_DATA_DIR}/shims/go" ]; then
+        GO_BIN_PATH="${ASDF_DATA_DIR}/shims/go"
+      fi
+    fi
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "ERROR: Could not find go executable anywhere"
+      exit 1
+    fi
+    echo "Found Go binary at: ${GO_BIN_PATH}"
+    echo "Running Go version check:"
+    "$GO_BIN_PATH" version
+    cd {{ sliver_install_path }}
+    echo "Building sliver binary:"
+    {{ 'make' if ansible_distribution == 'Kali GNU/Linux' else 'gmake' }} -j{{ ansible_processor_vcpus | default(2) }}
+  args:
+    chdir: "{{ sliver_install_path }}"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ sliver_username }}"
+  environment:
+    HOME: "{{ sliver_user_home }}"
+    USER: "{{ sliver_username }}"
+    ASDF_DATA_DIR: "{{ sliver_user_home }}/.asdf"
+    PATH: "/usr/local/bin:{{ sliver_user_home }}/.asdf/shims:/usr/bin:/bin"
+    GO111MODULE: "on"
+    GOPATH: "{{ sliver_user_home }}/go"
+    CURL_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
+    GIT_SSL_CAINFO: "/etc/ssl/certs/ca-certificates.crt"
+    SSL_CERT_FILE: "/etc/ssl/certs/ca-certificates.crt"
+  when: not sliver_server_stat.stat.exists
+  register: compile_result
+  failed_when:
+    - compile_result.rc != 0
+    - "'No executable go found' not in compile_result.stderr"
+  tags:
+    - molecule-idempotence-notest
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+- name: Check if Sliver server unpacked
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/configs/server"
+  become: true
+  become_user: "{{ sliver_username }}"
+  register: sliver_server_unpacked_stat
+
+- name: Unpack Sliver server
+  ansible.builtin.command:
+    cmd: "{{ sliver_install_path }}/sliver-server unpack --force"
+  become: true
+  become_user: "{{ sliver_username }}"
+  when: not sliver_server_unpacked_stat.stat.exists
+  changed_when: "'Unpacking complete' in unpack_result.stdout"
+  register: unpack_result
+  environment:
+    HOME: "/home/{{ sliver_username }}"
+    USER: "{{ sliver_username }}"
+    ASDF_DATA_DIR: "/home/{{ sliver_username }}/.asdf"
+    PATH: "/usr/local/bin:/home/{{ sliver_username }}/.asdf/shims:/usr/bin:/bin"
+
+- name: Generate operator config
+  ansible.builtin.shell:
+    cmd: |
+      {{ sliver_install_path }}/sliver-server operator --name {{ sliver_username }} \
+      --lhost localhost --save "{{ sliver_install_path }}/sliver-client/configs"
+      chown -R {{ sliver_username }}:"{{ sliver_usergroup }}" "{{ sliver_install_path }}/sliver-client"
+  become: true
+  args:
+    executable: /bin/bash
+  changed_when: "'configs saved' in result.stdout"
+  register: result

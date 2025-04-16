@@ -1,3 +1,4 @@
+---
 - name: Configure systemd service for Sliver
   ansible.builtin.copy:
     dest: /etc/systemd/system/sliver.service
@@ -6,14 +7,12 @@
       Description=Sliver
       After=network.target
       StartLimitIntervalSec=0
-
       [Service]
       Type=simple
       Restart=on-failure
       RestartSec=3
-      User={{ sliver_user.username }}
+      User={{ sliver_username }}
       ExecStart={{ sliver_install_path }}/sliver-server daemon
-
       [Install]
       WantedBy=multi-user.target
     mode: '0600'
