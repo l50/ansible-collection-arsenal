@@ -2,10 +2,6 @@
 - name: Converge
   hosts: all
   gather_facts: true
-  vars:
-    sliver_username: "sliver"
-    sliver_usergroup: "sliver"
-    sliver_shell: "/bin/bash"
 
   roles:
     - role: l50.arsenal.sliver

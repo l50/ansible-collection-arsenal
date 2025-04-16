@@ -2,6 +2,7 @@
 - name: Verify
   hosts: all
   gather_facts: true
+
   tasks:
     - name: Include default variables
       ansible.builtin.include_vars:
@@ -20,7 +21,7 @@
         path: "{{ sliver_install_path }}/sliver-client"
       register: sliver_client
 
-    - name: Check user exists
+    - name: Check sliver user exists
       ansible.builtin.command: "id -un {{ sliver_username }}"
       register: user_check
       changed_when: false

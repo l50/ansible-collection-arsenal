@@ -2,24 +2,8 @@
 sliver_install_path: /opt/sliver
 sliver_setup_systemd: false
 
-sliver_username: >-
-  {% if ansible_os_family == 'Darwin' %}
-  {{ ansible_user_id }}
-  {% else %}
-  {{ ansible_distribution | lower }}
-  {% endif %}
-
-sliver_usergroup: >-
-  {% if ansible_os_family == 'Darwin' %}
-  staff
-  {% elif ansible_os_family == 'Debian' %}
-  {{ ansible_user_id }}
-  {% elif ansible_os_family == 'RedHat' %}
-  {{ ansible_user_id }}
-  {% else %}
-  {{ ansible_distribution | lower }}
-  {% endif %}
-
+sliver_username: "sliver"
+sliver_usergroup: "sliver"
 sliver_shell: >-
   {% if ansible_os_family == 'Darwin' %}
   /bin/zsh
