@@ -1,12 +1,14 @@
 ---
 name: Pre-Commit
 on:
+  merge_group:
   pull_request:
     branches:
       - main
     types:
       - opened
       - synchronize
+      - reopened
   push:
     branches:
       - main
