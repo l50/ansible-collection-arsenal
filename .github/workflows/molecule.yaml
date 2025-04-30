@@ -146,8 +146,8 @@ jobs:
         working-directory: ${{ env.COLLECTION_PATH }}
         shell: bash
         run: |
-          ansible-galaxy collection build
-          ansible-galaxy collection install l50-arsenal-*.tar.gz --force
+          ansible-galaxy collection build --force
+          ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
 
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
@@ -247,8 +247,8 @@ jobs:
         working-directory: ${{ env.COLLECTION_PATH }}
         shell: bash
         run: |
-          ansible-galaxy collection build
-          ansible-galaxy collection install l50-arsenal-*.tar.gz --force
+          ansible-galaxy collection build --force
+          ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
 
       - name: Install role for atomic-red-team playbook
         working-directory: ${{ env.COLLECTION_PATH }}
@@ -378,8 +378,8 @@ jobs:
         working-directory: ${{ env.COLLECTION_PATH }}
         shell: bash
         run: |
-          ansible-galaxy collection build
-          ansible-galaxy collection install l50-arsenal-*.tar.gz --force
+          ansible-galaxy collection build --force
+          ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
 
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
