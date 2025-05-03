@@ -65,10 +65,12 @@
   color: "CC6699" # Dusty Rose
   description: >-
     Changes made to attack_box role
+
 - name: role/sliver
   color: "9933CC" # Purple
   description: >-
     Changes made to sliver role
+
 - name: role/ttpforge
   color: "FF3366" # Hot Pink
   description: >-
@@ -79,14 +81,17 @@
   color: "FF66CC" # Bright Pink
   description: >-
     Changes made to atomic-red-team playbook
+
 - name: playbook/attack_box
   color: "CC3366" # Ruby Red
   description: >-
     Changes made to attack_box playbook
+
 - name: playbook/sliver
   color: "3399FF" # Bright Blue
   description: >-
     Changes made to sliver playbook
+
 - name: playbook/ttpforge
   color: "CC6699" # Dusty Rose
   description: >-
