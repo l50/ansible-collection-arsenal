@@ -123,6 +123,10 @@
     echo "Running Go version check:"
     "$GO_BIN_PATH" version
 
+    # Run go mod tidy to update dependencies
+    echo "Running go mod tidy to update dependencies:"
+    "$GO_BIN_PATH" mod tidy
+
     # Build the ttpforge binary using the direct path to Go
     echo "Building ttpforge binary:"
     "$GO_BIN_PATH" build -buildvcs=false -o {{ ttpforge_install_path }}/ttpforge
