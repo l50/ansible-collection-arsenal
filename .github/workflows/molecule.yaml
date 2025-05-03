@@ -257,16 +257,11 @@ jobs:
           # Install the role directly with explicit path
           ansible-galaxy role install l50.ansible_atomic_red_team --force
 
-          # Create a symbolic link in the collection roles directory if needed
+          # Create a symbolic link in the collection roles directory
           mkdir -p ${{ env.COLLECTION_PATH }}/roles/
           if [ ! -d "${{ env.COLLECTION_PATH }}/roles/l50.ansible_atomic_red_team" ]; then
             ln -sf ~/.ansible/roles/l50.ansible_atomic_red_team ${{ env.COLLECTION_PATH }}/roles/
           fi
-
-          # Verify installation locations
-          echo "Role locations:"
-          find ~/.ansible/roles -name "ansible_atomic_red_team" -o -name "l50.ansible_atomic_red_team"
-          find ${{ env.COLLECTION_PATH }}/roles -name "ansible_atomic_red_team" -o -name "l50.ansible_atomic_red_team"
 
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
