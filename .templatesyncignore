@@ -1,0 +1,9 @@
+.github/renovate-bot.json5
+README.md
+galaxy.yml
+ansible.cfg
+meta/runtime.yml
+changelogs/*
+playbooks/**/*
+plugins/**/*
+roles/**/*

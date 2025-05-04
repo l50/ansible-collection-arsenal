@@ -1,0 +1,8 @@
+---
+user_setup_default_username: "{{ ansible_distribution | lower }}"
+user_setup_default_group: "{{ ansible_distribution | lower }}"
+user_setup_default_users:
+  - username: "{{ ansible_env.USER if ansible_os_family == 'Darwin' else 'Administrator' if ansible_os_family == 'Windows' else user_setup_default_username }}"
+    usergroup: "{{ 'staff' if ansible_os_family == 'Darwin' else 'Administrators' if ansible_os_family == 'Windows' else user_setup_default_group }}"
+    sudo: true
+    shell: "{{ 'powershell' if ansible_os_family == 'Windows' else (ansible_env.SHELL | default('/bin/bash')).strip() | regex_replace('\\n', '') }}"

@@ -1,0 +1,27 @@
+---
+- name: Include tasks to get user home directory
+  ansible.builtin.include_tasks: zsh_setup_get_user_home.yml
+
+- name: Install required packages for zsh
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.package_management
+  vars:
+    package_management_common_install_packages: "{{ zsh_setup_common_install_packages }}"
+
+- name: Ensure user group exists
+  ansible.builtin.group:
+    name: "{{ zsh_setup_usergroup }}"
+    state: present
+  when: getent_passwd.failed | default(false)
+
+- name: Ensure user exists
+  ansible.builtin.user:
+    name: "{{ zsh_setup_username }}"
+    group: "{{ zsh_setup_usergroup }}"
+    shell: "{{ zsh_setup_shell }}"
+    home: "{{ zsh_setup_user_home }}"
+    state: present
+  when: getent_passwd.failed | default(false)
+
+- name: Include common tasks
+  ansible.builtin.include_tasks: common.yml

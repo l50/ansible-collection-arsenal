@@ -1,0 +1,6 @@
+---
+asdf_version: "0.16.7"
+asdf_arch: "{{ 'arm64' if ansible_architecture in ['aarch64', 'arm64'] else 'amd64' if ansible_architecture == 'x86_64' else '386' }}"
+asdf_os: "{{ 'darwin' if ansible_system == 'Darwin' else 'linux' }}"
+asdf_download_url: "https://github.com/asdf-vm/asdf/releases/download/v{{ asdf_version }}/asdf-v{{ asdf_version }}-{{ asdf_os }}-{{ asdf_arch }}.tar.gz"
+asdf_checksum_url: "{{ asdf_download_url }}.md5"

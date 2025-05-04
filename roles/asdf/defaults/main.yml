@@ -1,0 +1,40 @@
+---
+asdf_username: "{{ ansible_user_id | default(ansible_user) }}"
+asdf_usergroup: "{{ (ansible_facts['os_family'] == 'Darwin') | ternary('staff', asdf_username) }}"
+asdf_user_home: >-
+  {{ (ansible_facts['os_family'] == 'Darwin') | ternary(ansible_env.HOME,
+     (asdf_username == 'root') | ternary('/root', '/home/' + asdf_username)) }}
+
+asdf_bin_dir: "{{ (ansible_facts['os_family'] == 'Darwin') | ternary('/usr/local/bin', '/usr/local/bin') }}"
+asdf_data_dir: "{{ asdf_user_home }}/.asdf"
+
+asdf_shells:
+  - "/usr/bin/zsh"
+  - "/bin/zsh"
+  - "/usr/bin/bash"
+  - "/bin/bash"
+
+asdf_shell: "{{ '/bin/zsh' if ansible_distribution == 'MacOSX' else '/bin/bash' }}"
+
+asdf_plugins:
+  - name: golang
+    version: "1.24.0"
+    scope: "global"
+  - name: python
+    version: "3.13.3"
+    scope: "global"
+  - name: ruby
+    version: "3.4.2"
+    scope: "global"
+  - name: helm
+    version: "3.17.3"
+    scope: "global"
+  - name: kubectl
+    version: "1.33.0"
+    scope: "global"
+  - name: packer
+    version: "1.12.0"
+    scope: "global"
+  - name: awscli
+    version: "2.24.0"
+    scope: "global"

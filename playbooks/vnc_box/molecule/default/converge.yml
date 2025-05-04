@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+
+- name: Run the vnc_box playbook
+  ansible.builtin.import_playbook: ../../vnc_box.yml

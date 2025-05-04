@@ -1,0 +1,7 @@
+---
+zsh_setup_common_install_packages:
+  - zsh
+  - zsh-autosuggestions
+
+# Oh My ZSH install script URL
+zsh_setup_omz_install_script_url: "https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh"

@@ -1,0 +1,73 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  vars:
+    container_user: "{{ ansible_distribution | lower }}"
+    container_home: "/home/{{ container_user }}"
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        file: "../../vars/main.yml"
+
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Set zsh setup username
+      ansible.builtin.set_fact:
+        zsh_setup_username: "{{ container_user }}"
+        zsh_setup_usergroup: "{{ container_user }}"
+        zsh_setup_shell: "/bin/zsh"
+
+    - name: Include tasks to get user home directory
+      ansible.builtin.include_tasks: ../../tasks/zsh_setup_get_user_home.yml
+
+    - name: Check if sudo is passwordless for current user
+      ansible.builtin.command: "sudo -n true"
+      register: sudo_check
+      ignore_errors: true
+      changed_when: false
+      when: ansible_facts['os_family'] != 'Darwin'
+
+    - name: Assert sudo is passwordless (Linux only)
+      ansible.builtin.assert:
+        that:
+          - sudo_check.rc == 0
+        msg: "Passwordless sudo is not configured for the current user"
+      when: ansible_facts['os_family'] != 'Darwin'
+
+    - name: Confirm $HOME/.oh-my-zsh directory exists
+      ansible.builtin.stat:
+        path: "{{ zsh_setup_user_home }}/.oh-my-zsh"
+      register: oh_my_zsh_test
+
+    - name: Assert $HOME/.oh-my-zsh directory
+      ansible.builtin.assert:
+        that:
+          - "oh_my_zsh_test.stat.exists"
+          - "oh_my_zsh_test.stat.mode == '0755'"
+        msg: "$HOME/.oh-my-zsh directory check failed for {{ zsh_setup_username }}"
+
+    - name: Confirm omz-installer.sh is removed
+      ansible.builtin.stat:
+        path: "{{ zsh_setup_user_home }}/omz-installer.sh"
+      register: zsh_installer_test
+
+    - name: Assert omz-installer.sh removal
+      ansible.builtin.assert:
+        that:
+          - "not zsh_installer_test.stat.exists"
+        msg: "zsh-installer.sh removal check failed for {{ zsh_setup_username }}"
+
+    - name: Confirm $HOME/.zshrc file exists
+      ansible.builtin.stat:
+        path: "{{ zsh_setup_user_home }}/.zshrc"
+      register: zshrc_test
+
+    - name: Assert $HOME/.zshrc file
+      ansible.builtin.assert:
+        that:
+          - "zshrc_test.stat.exists"
+          - "zshrc_test.stat.mode == '0644'"
+        msg: "$HOME/.zshrc file check failed for {{ zsh_setup_username }}"

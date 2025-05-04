@@ -1,0 +1,65 @@
+---
+# Common packages to be installed on all systems
+package_management_common_install_packages:
+  - autoconf
+  - bash
+  - bison
+  - ca-certificates
+  - colordiff
+  - file
+  - gcc
+  - git
+  - less
+  - make
+  - net-tools
+  - procps
+  - python3
+  - rsync
+  - sudo
+  - terminator
+  - tmux
+  - tree
+  - tzdata
+  - unzip
+  - vim
+  - wget
+
+# Conditional assignment for Chromium package based on distribution
+package_management_chromium_package: "{{ 'chromium-browser' if ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('20.04', '>=') else 'chromium' }}"
+
+# Debian-specific packages
+package_management_debian_specific_packages:
+  - build-essential
+  - "{{ package_management_chromium_package }}"
+  - curl
+  - inetutils-ping
+  - libdb-dev
+  - libffi-dev
+  - libgdbm-dev
+  - libgdbm6
+  - libncurses5-dev
+  - libreadline6-dev
+  - libssl-dev
+  - libyaml-dev
+  - locales
+  - software-properties-common
+  - zlib1g-dev
+
+# RedHat-specific packages
+package_management_redhat_specific_packages:
+  - bzip2-devel
+  - chromium
+  - epel-release
+  - gcc
+  - gcc-c++
+  - libffi-devel
+  - libtool
+  - openssl-devel
+  - readline-devel
+  - sqlite-devel
+  - zlib-devel
+
+package_management_install_packages: >
+  {{ package_management_common_install_packages +
+     (package_management_debian_specific_packages if ansible_os_family == 'Debian' else []) +
+     (package_management_redhat_specific_packages if ansible_os_family == 'RedHat' else []) }}

@@ -1,0 +1,236 @@
+---
+- name: Verify VNC Setup Role
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables for VNC setup role
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+      when: vnc_setup_users is not defined
+
+    - name: Include variables for VNC setup role
+      ansible.builtin.include_vars:
+        file: "../../vars/main.yml"
+      when: vnc_setup_common_install_packages is not defined
+
+    # System Checks
+    - name: Check if systemd is present
+      ansible.builtin.command: systemctl --version
+      ignore_errors: true
+      register: systemd_check
+      changed_when: false
+
+    - name: Set fact for systemd presence
+      ansible.builtin.set_fact:
+        is_systemd_present: "{{ systemd_check.rc == 0 }}"
+
+    - name: Check if vncpwd utility exists
+      ansible.builtin.stat:
+        path: "{{ vnc_setup_vncpwd_path }}"
+      register: vncpwd_stat
+
+    - name: Assert vncpwd utility exists
+      ansible.builtin.assert:
+        that:
+          - vncpwd_stat.stat.exists
+          - vncpwd_stat.stat.executable
+        msg: "vncpwd utility not found or not executable at {{ vnc_setup_vncpwd_path }}"
+
+    # Package Checks
+    - name: Verify required packages are installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      check_mode: true
+      register: package_check
+      loop: "{{ vnc_setup_common_install_packages }}"
+      failed_when: package_check.changed
+
+    # OS-specific package checks
+    - name: Verify Debian-specific packages are installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      check_mode: true
+      register: debian_package_check
+      loop: "{{ vnc_setup_debian_specific_packages }}"
+      failed_when: debian_package_check.changed
+      when: ansible_os_family == "Debian"
+
+    - name: Verify RedHat-specific packages are installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      check_mode: true
+      register: redhat_package_check
+      loop: "{{ vnc_setup_redhat_specific_packages }}"
+      failed_when: redhat_package_check.changed
+      when: ansible_os_family == "RedHat"
+
+    # User Configuration Checks
+    - name: Check user VNC directories
+      ansible.builtin.stat:
+        path: "/home/{{ item.username }}/.vnc"
+      with_items: "{{ vnc_setup_users }}"
+      register: vnc_user_dirs
+
+    - name: Assert user VNC directories exist with correct permissions
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - (item.stat.isdir or (item.stat.islnk and item.stat.lnk_source is defined))
+          - item.stat.pw_name == item.item.username
+          - (item.stat.isdir and item.stat.mode == '0700') or (item.stat.islnk)
+        msg: "VNC directory for {{ item.item.username }} does not exist or has incorrect permissions"
+      with_items: "{{ vnc_user_dirs.results }}"
+
+    - name: Check xstartup files
+      ansible.builtin.stat:
+        path: "/home/{{ item.username }}/.vnc/xstartup"
+      with_items: "{{ vnc_setup_users }}"
+      register: xstartup_files
+
+    - name: Assert xstartup files exist with correct permissions
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isreg
+          - item.stat.executable
+          - item.stat.pw_name == item.item.username
+        msg: "xstartup file for {{ item.item.username }} does not exist or has incorrect permissions"
+      with_items: "{{ xstartup_files.results }}"
+
+    # Password Checks (moved from password_config.yml)
+    - name: Check VNC password files
+      ansible.builtin.stat:
+        path: "/home/{{ item.username }}/.vnc/passwd"
+      with_items: "{{ vnc_setup_users }}"
+      register: passwd_files
+
+    - name: Assert password files exist with correct permissions
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isreg
+          - item.stat.mode == '0600'
+          - item.stat.pw_name == item.item.username
+        msg: "Password file for {{ item.item.username }} does not exist or has incorrect permissions"
+      with_items: "{{ passwd_files.results }}"
+
+    # Systemd Configuration Checks (moved from systemd.yml)
+    - name: Check VNC systemd user directories
+      ansible.builtin.stat:
+        path: "/home/{{ item.username }}/.config/systemd/user"
+      with_items: "{{ vnc_setup_users }}"
+      register: systemd_user_dirs
+      when: is_systemd_present | bool and vnc_setup_systemd | bool
+
+    - name: Assert systemd user directories exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isdir
+        msg: "Systemd user directory for {{ item.item.username }} does not exist"
+      with_items: "{{ systemd_user_dirs.results }}"
+      when: is_systemd_present | bool and vnc_setup_systemd | bool and systemd_user_dirs is defined
+
+    - name: Check VNC systemd service files
+      ansible.builtin.stat:
+        path: "/home/{{ item.username }}/.config/systemd/user/vncserver.service"
+      with_items: "{{ vnc_setup_users }}"
+      register: vnc_systemd_service
+      when: is_systemd_present | bool and vnc_setup_systemd | bool
+
+    - name: Assert VNC systemd service files exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isreg
+          - item.stat.mode == '0744'
+          - item.stat.pw_name == item.item.username
+        msg: "VNC systemd service file for {{ item.item.username }} does not exist or has incorrect permissions"
+      with_items: "{{ vnc_systemd_service.results }}"
+      when: is_systemd_present | bool and vnc_setup_systemd | bool and vnc_systemd_service is defined
+
+    # Shell Configuration Checks
+    - name: Check if profile.d start_vnc script exists
+      ansible.builtin.stat:
+        path: "/etc/profile.d/start_vnc.sh"
+      register: start_vnc_script
+
+    - name: Assert start_vnc script exists and is executable
+      ansible.builtin.assert:
+        that:
+          - start_vnc_script.stat.exists
+          - start_vnc_script.stat.isreg
+          - start_vnc_script.stat.executable
+        msg: "start_vnc.sh script does not exist or is not executable"
+
+    # Runtime Directory Checks
+    - name: Check XDG_RUNTIME_DIR script
+      ansible.builtin.stat:
+        path: "/etc/profile.d/xdg_runtime_dir.sh"
+      register: xdg_runtime_script
+      when: is_systemd_present | bool and vnc_setup_systemd | bool
+
+    - name: Assert XDG_RUNTIME_DIR script exists
+      ansible.builtin.assert:
+        that:
+          - xdg_runtime_script.stat.exists
+          - xdg_runtime_script.stat.isreg
+          - xdg_runtime_script.stat.executable
+        msg: "XDG_RUNTIME_DIR script does not exist or is not executable"
+      when: is_systemd_present | bool and vnc_setup_systemd | bool and xdg_runtime_script is defined
+
+    # Process Verification (moved from service.yml)
+    - name: Get uids of users
+      ansible.builtin.command: id -u {{ item.username }}
+      loop: "{{ vnc_setup_users }}"
+      check_mode: false
+      changed_when: false
+      register: uids
+
+    - name: Create uid_results from uids
+      ansible.builtin.set_fact:
+        uid_results: "{{ uid_results | default([]) + [item.stdout] }}"
+      loop: "{{ uids.results }}"
+
+    - name: Check for VNC processes
+      ansible.builtin.shell: "pgrep -f 'Xvnc :{{ item.vnc_num }}' || pgrep -f 'Xtigervnc :{{ item.vnc_num }}' || true"
+      register: vnc_processes
+      loop: "{{ vnc_setup_users }}"
+      changed_when: false
+      check_mode: false
+
+    - name: Assert VNC processes are running
+      ansible.builtin.assert:
+        that:
+          - item.stdout != ""
+        msg: "VNC process for {{ item.item.username }} (display :{{ item.item.vnc_num }}) is not running"
+      loop: "{{ vnc_processes.results }}"
+
+    # Port Checks (moved from service.yml)
+    - name: Check VNC ports
+      ansible.builtin.wait_for:
+        port: "{{ 5900 + item.vnc_num }}"
+        state: started
+        timeout: 3
+        host: localhost
+      loop: "{{ vnc_setup_users }}"
+      register: port_check
+      ignore_errors: true
+
+    - name: Assert VNC ports are listening
+      ansible.builtin.assert:
+        that:
+          - not item.failed
+        msg: "VNC port {{ 5900 + item.item.vnc_num }} for {{ item.item.username }} is not listening"
+      loop: "{{ port_check.results }}"
+
+    # Final Summary
+    - name: Display VNC service status summary
+      ansible.builtin.debug:
+        msg: "✓ VNC setup verification completed successfully for all users"
+      when:
+        - vnc_processes.results | selectattr('stdout', 'eq', '') | list | length == 0
+        - port_check.results | selectattr('failed', 'defined') | selectattr('failed', 'eq', true) | list | length == 0
