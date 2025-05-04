@@ -9,7 +9,7 @@ collections:
   - name: ansible.windows
     version: 3.0.0
   - name: community.docker
-    version: 4.5.2
+    version: 4.6.0
   - name: community.general
     version: 10.6.0
   - name: https://github.com/CowDogMoo/ansible-collection-workstation.git
