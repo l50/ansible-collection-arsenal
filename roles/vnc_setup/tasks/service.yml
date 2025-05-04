@@ -1,0 +1,40 @@
+---
+- name: Clean up existing VNC sessions
+  ansible.builtin.import_tasks: cleanup.yml
+  when: not is_systemd_present | bool or not vnc_setup_systemd | bool
+
+- name: Start VNC directly when systemd failed or is unavailable
+  when: >
+    not is_systemd_present | bool or
+    not vnc_setup_systemd | bool or
+    systemd_vnc_start_failed | default(false) | bool
+  block:
+    - name: Check if VNC is already running for each user (broader check)
+      become: true
+      become_user: "{{ item.username }}"
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          pgrep -u {{ item.username }} -f 'X(vnc|tigervnc).*:{{ item.vnc_num }}' || true
+      args:
+        executable: /bin/bash
+      loop: "{{ vnc_setup_users_uid.result | default(vnc_setup_users) }}"
+      register: vnc_running_check
+      changed_when: false
+
+    - name: Set fact for when VNC needs to be restarted
+      ansible.builtin.set_fact:
+        vnc_needs_restart: "{{ vnc_needs_restart | default(false) | bool or service_file_updated.changed | default(false) | bool or start_vnc_script_updated.changed | default(false) | bool }}"
+
+    - name: Start VNC service directly for each user
+      become: true
+      become_user: "{{ item.0.username }}"
+      ansible.builtin.shell: |
+        /usr/bin/vncserver -kill :{{ item.0.vnc_num }} > /dev/null 2>&1 || true
+        /usr/bin/vncserver :{{ item.0.vnc_num }} -localhost {{ vnc_setup_client_options }} -depth {{ vnc_setup_depth }}
+      loop: "{{ vnc_setup_users_uid.result | default(vnc_setup_users) | zip(vnc_running_check.results) | list }}"
+      when: >
+        (item.1.rc != 0 or vnc_needs_restart | bool) and
+        (systemd_vnc_start_failed | default(false) | bool)
+      register: vnc_start_result
+      changed_when: item.1.rc != 0 or vnc_needs_restart | bool

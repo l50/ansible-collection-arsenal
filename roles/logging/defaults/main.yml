@@ -1,0 +1,15 @@
+---
+logging_directories:
+  - path: "/var/log/ansible"
+
+logging_log_rotation_config:
+  path: "/var/log/ansible/*.log"
+  rotate: 4
+  frequency: "weekly"
+  compress: true
+  missingok: true
+  notifempty: true
+  create: true
+  dateext: true
+  owner: "root"
+  group: "root"

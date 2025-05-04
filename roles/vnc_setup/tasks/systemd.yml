@@ -1,0 +1,167 @@
+---
+- name: Clean up existing VNC sessions
+  ansible.builtin.import_tasks: cleanup.yml
+
+- name: Ensure required systemd services are running
+  become: true
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - dbus
+    - systemd-logind
+
+- name: Configure user runtime directories
+  block:
+    - name: Create tmpfiles.d configuration
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/tmpfiles.d/user-runtime-dir.conf
+        content: |
+          D /run/user/1000 0700 1000 1000 -
+        mode: 0644
+
+    - name: Apply tmpfiles configuration
+      become: true
+      ansible.builtin.command: systemd-tmpfiles --create
+      register: tmpfiles_result
+      changed_when: tmpfiles_result.rc == 0 and tmpfiles_result.stdout != ''
+
+    - name: Ensure user runtime directories exist
+      become: true
+      ansible.builtin.file:
+        path: "/run/user/{{ item.uid }}"
+        state: directory
+        owner: "{{ item.username }}"
+        group: "{{ item.usergroup | default(item.username) }}"
+        mode: 0700
+      loop: "{{ vnc_setup_users_uid.result }}"
+
+    - name: Create XDG_RUNTIME_DIR script in /etc/profile.d
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/profile.d/xdg_runtime_dir.sh
+        content: |
+          export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+          if [ ! -d "$XDG_RUNTIME_DIR" ]; then
+            mkdir -p $XDG_RUNTIME_DIR
+            chmod 0700 $XDG_RUNTIME_DIR
+          fi
+        mode: 0755
+
+    - name: Ensure dconf directory exists in runtime dir
+      become: true
+      ansible.builtin.file:
+        path: "/run/user/{{ item.uid }}/dconf"
+        state: directory
+        owner: "{{ item.username }}"
+        group: "{{ item.usergroup | default(item.username) }}"
+        mode: 0700
+      loop: "{{ vnc_setup_users_uid.result }}"
+
+- name: Configure systemd services for VNC
+  block:
+    - name: Enable persistent services for all users
+      become: true
+      ansible.builtin.command: loginctl enable-linger {{ item.username }}
+      loop: "{{ vnc_setup_users }}"
+      register: loginctl_result
+      changed_when: loginctl_result.rc == 0 and loginctl_result.stdout != "" and "already enabled" not in loginctl_result.stdout
+
+    - name: Create systemd directories
+      become: true
+      ansible.builtin.file:
+        path: "/home/{{ item.username }}/.config/systemd/user"
+        state: directory
+        mode: 0744
+        owner: "{{ item.username }}"
+        group: "{{ item.usergroup | default(item.username) }}"
+      loop: "{{ vnc_setup_users }}"
+
+    - name: Update per-user systemd service files
+      become: true
+      ansible.builtin.template:
+        src: vncserver.j2
+        dest: "/home/{{ item.username }}/.config/systemd/user/vncserver.service"
+        mode: 0744
+        owner: "{{ item.username }}"
+        group: "{{ item.usergroup | default(item.username) }}"
+      loop: "{{ vnc_setup_users }}"
+      register: service_file_updated
+      notify: "Reload user systemd daemon"
+
+    - name: Add start_vnc script to profile.d
+      become: true
+      ansible.builtin.template:
+        src: start_vnc.sh.j2
+        dest: "/etc/profile.d/start_vnc.sh"
+        mode: 0755
+      register: start_vnc_script_updated
+
+- name: Check VNC service status
+  become: true
+  become_user: "{{ item.username }}"
+  ansible.builtin.command: systemctl --user is-active vncserver.service
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ item.uid }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ item.uid }}/bus"
+  loop: "{{ vnc_setup_users_uid.result }}"
+  register: vnc_service_status
+  changed_when: false
+  failed_when: false
+  # noqa: command-instead-of-module
+
+- name: Stop VNC service if running and configs changed
+  become: true
+  become_user: "{{ item.0.username }}"
+  ansible.builtin.systemd:
+    name: vncserver.service
+    state: stopped
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ item.0.uid }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ item.0.uid }}/bus"
+  loop: "{{ vnc_setup_users_uid.result | zip(vnc_service_status.results) | list }}"
+  when:
+    - item.1.rc == 0  # Service is active (rc=0 for is-active)
+    - (service_file_updated.changed or start_vnc_script_updated.changed)
+  failed_when: false
+
+- name: Start VNC service with systemd
+  block:
+    - name: Start VNC service with systemd
+      become: true
+      become_user: "{{ item.0.username }}"
+      ansible.builtin.systemd:
+        name: vncserver.service
+        state: started
+        enabled: true
+        scope: user
+        daemon_reload: "{{ service_file_updated.changed }}"
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ item.0.uid }}"
+        DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ item.0.uid }}/bus"
+      loop: "{{ vnc_setup_users_uid.result | zip(vnc_service_status.results) | list }}"
+      when: item.1.rc != 0 or service_file_updated.changed or start_vnc_script_updated.changed
+      register: systemd_vnc_start
+
+    - name: Check if VNC started successfully with systemd
+      become: true
+      become_user: "{{ item.username }}"
+      ansible.builtin.command:
+        cmd: "pgrep -u {{ item.username }} -f 'Xvnc :{{ item.vnc_num }}'"
+      loop: "{{ vnc_setup_users_uid.result | default(vnc_setup_users) }}"
+      register: vnc_started_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set fact for systemd start success
+      ansible.builtin.set_fact:
+        systemd_vnc_start_failed: true
+      when: vnc_started_check.results | selectattr('rc', 'eq', 1) | list | length > 0
+
+  rescue:
+    - name: Set fallback flag when systemd task fails
+      ansible.builtin.set_fact:
+        systemd_vnc_start_failed: true

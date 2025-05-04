@@ -1,0 +1,36 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Check if common packages are installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      register: package_status
+      with_items: "{{ package_management_common_install_packages }}"
+      failed_when: package_status is failed
+      changed_when: false
+
+    - name: Assert all common packages are installed
+      ansible.builtin.assert:
+        that: "item.changed == false"
+        fail_msg: "{{ item.item }} is not installed"
+        success_msg: "{{ item.item }} is installed"
+      loop: "{{ package_status.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Check if distribution-specific packages are installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      register: distro_package_status
+      with_items: "{{ package_management_install_packages }}"
+      when: ansible_os_family in ['Debian', 'RedHat'] and ansible_distribution != 'Kali'
+      failed_when: distro_package_status is failed
+      changed_when: false

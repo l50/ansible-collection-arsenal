@@ -1,0 +1,19 @@
+---
+- name: Ensure logging directories exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  loop: "{{ logging_directories }}"
+
+- name: Setup log rotation
+  become: true
+  ansible.builtin.template:
+    src: logrotate.j2
+    dest: "/etc/logrotate.d/{{ logging_log_rotation_config.path.split('/')[-1].split('.')[0] }}"
+    mode: "0644"
+  vars:
+    log_rotation_config: "{{ logging_log_rotation_config }}"

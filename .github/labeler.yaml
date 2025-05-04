@@ -50,31 +50,35 @@ area/plugins:
       - any-glob-to-any-file: "plugins/**/*"
 
 # Individual roles
-role/attack_box:
+role/asdf:
   - changed-files:
-      - any-glob-to-any-file: "roles/attack_box/**/*"
+      - any-glob-to-any-file: "roles/asdf/**/*"
 
-role/sliver:
+role/logging:
   - changed-files:
-      - any-glob-to-any-file: "roles/sliver/**/*"
+      - any-glob-to-any-file: "roles/logging/**/*"
 
-role/ttpforge:
+role/package_management:
   - changed-files:
-      - any-glob-to-any-file: "roles/ttpforge/**/*"
+      - any-glob-to-any-file: "roles/package_management/**/*"
+
+role/user_setup:
+  - changed-files:
+      - any-glob-to-any-file: "roles/user_setup/**/*"
+
+role/vnc_setup:
+  - changed-files:
+      - any-glob-to-any-file: "roles/vnc_setup/**/*"
+
+role/zsh_setup:
+  - changed-files:
+      - any-glob-to-any-file: "roles/zsh_setup/**/*"
 
 # Individual playbooks
-playbook/atomic-red-team:
+playbook/workstation:
   - changed-files:
-      - any-glob-to-any-file: "playbooks/atomic-red-team/**/*"
+      - any-glob-to-any-file: "playbooks/workstation/**/*"
 
-playbook/attack_box:
+playbook/vnc_box:
   - changed-files:
-      - any-glob-to-any-file: "playbooks/attack_box/**/*"
-
-playbook/sliver:
-  - changed-files:
-      - any-glob-to-any-file: "playbooks/sliver/**/*"
-
-playbook/ttpforge:
-  - changed-files:
-      - any-glob-to-any-file: "playbooks/ttpforge/**/*"
+      - any-glob-to-any-file: "playbooks/vnc_box/**/*"

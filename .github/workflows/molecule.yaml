@@ -36,9 +36,9 @@ concurrency:
 
 env:
   ANSIBLE_FORCE_COLOR: "1"
-  COLLECTION_NAMESPACE: l50
-  COLLECTION_NAME: arsenal
-  COLLECTION_PATH: ansible_collections/l50/arsenal
+  COLLECTION_NAMESPACE: cowdogmoo
+  COLLECTION_NAME: workstation
+  COLLECTION_PATH: ansible_collections/cowdogmoo/workstation
   REQUIREMENTS_FILE: .hooks/requirements.txt
   PY_COLORS: "1"
   PYTHON_VERSION: "3.12.6"
@@ -147,7 +147,7 @@ jobs:
         shell: bash
         run: |
           ansible-galaxy collection build --force
-          ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
+          ansible-galaxy collection install cowdogmoo-workstation-*.tar.gz -p ~/.ansible/collections --force --pre
 
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
@@ -248,28 +248,13 @@ jobs:
         shell: bash
         run: |
           ansible-galaxy collection build --force
-          ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
-
-      - name: Install role for atomic-red-team playbook
-        working-directory: ${{ env.COLLECTION_PATH }}
-        shell: bash
-        run: |
-          # Install the role directly with explicit path
-          ansible-galaxy role install l50.ansible_atomic_red_team --force
-
-          # Create a symbolic link in the collection roles directory
-          mkdir -p ${{ env.COLLECTION_PATH }}/roles/
-          if [ ! -d "${{ env.COLLECTION_PATH }}/roles/l50.ansible_atomic_red_team" ]; then
-            ln -sf ~/.ansible/roles/l50.ansible_atomic_red_team ${{ env.COLLECTION_PATH }}/roles/
-          fi
+          ansible-galaxy collection install cowdogmoo-workstation-*.tar.gz -p ~/.ansible/collections --force --pre
 
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}
         shell: bash
-        env:
-          ANSIBLE_CONFIG: ${{ env.COLLECTION_PATH }}/ansible.cfg
         run: |
-          set -e
+          set -ex
           molecule --version
           molecule list
 
@@ -306,20 +291,22 @@ jobs:
       max-parallel: 3
       matrix:
         include:
-          - name: "Role Test - attack_box"
-            path: "roles/attack_box"
-          - name: "Role Test - sliver"
-            path: "roles/sliver"
-          - name: "Role Test - ttpforge"
-            path: "roles/ttpforge"
-          - name: "Playbook Test - atomic-red-team"
-            path: "playbooks/atomic-red-team"
-          - name: "Playbook Test - attack_box"
-            path: "playbooks/attack_box"
-          - name: "Playbook Test - sliver"
-            path: "playbooks/sliver"
-          - name: "Playbook Test - ttpforge"
-            path: "playbooks/ttpforge"
+          - name: "Role Test - asdf"
+            path: "roles/asdf"
+          - name: "Role Test - user_setup"
+            path: "roles/user_setup"
+          - name: "Role Test - package_management"
+            path: "roles/package_management"
+          - name: "Role Test - vnc_setup"
+            path: "roles/vnc_setup"
+          - name: "Role Test - zsh_setup"
+            path: "roles/zsh_setup"
+          - name: "Role Test - logging"
+            path: "roles/logging"
+          - name: "Playbook Test - workstation"
+            path: "playbooks/workstation"
+          - name: "Playbook Test - vnc_box"
+            path: "playbooks/vnc_box"
 
     steps:
       - name: Install Act dependencies
@@ -372,7 +359,7 @@ jobs:
         shell: bash
         run: |
           ansible-galaxy collection build --force
-          ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
+          ansible-galaxy collection install cowdogmoo-workstation-*.tar.gz -p ~/.ansible/collections --force --pre
 
       - name: Run molecule test
         working-directory: ${{ env.COLLECTION_PATH }}/${{ matrix.path }}

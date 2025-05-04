@@ -1,0 +1,40 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Include user setup variables
+      ansible.builtin.include_vars:
+        file: "../../vars/main.yml"
+
+    - name: Check user exists
+      ansible.builtin.command: "id -un {{ item.username | trim }}"
+      register: user_check
+      changed_when: false
+      failed_when: user_check.rc != 0
+      loop: "{{ user_setup_default_users }}"
+      loop_control:
+        label: "{{ item.username | trim }}"
+
+    - name: Check user is in sudoers.d
+      ansible.builtin.stat:
+        path: "/etc/sudoers.d/{{ item.username | trim }}"
+      register: sudoers_file_check
+      changed_when: false
+      failed_when: not sudoers_file_check.stat.exists
+      loop: "{{ user_setup_default_users }}"
+      when: item.sudo
+      loop_control:
+        label: "{{ item.username | trim }}"
+
+    - name: Assert user creation
+      ansible.builtin.assert:
+        that:
+          - item.username | trim in (user_check.results | map(attribute='stdout') | list)
+      loop: "{{ user_setup_default_users }}"
+      loop_control:
+        label: "{{ item.username | trim }}"
