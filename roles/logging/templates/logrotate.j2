@@ -1,0 +1,12 @@
+---
+{{ log_rotation_config.path }} {
+    rotate {{ log_rotation_config.rotate }}
+    {{ log_rotation_config.frequency }}
+    {% if log_rotation_config.compress %}compress{% endif %}
+    {% if log_rotation_config.missingok %}missingok{% endif %}
+    {% if log_rotation_config.notifempty %}notifempty{% endif %}
+    {% if log_rotation_config.create %}
+    create 0644 {{ log_rotation_config.owner }} {{ log_rotation_config.group }}
+    {% endif %}
+    {% if log_rotation_config.dateext %}dateext{% endif %}
+}

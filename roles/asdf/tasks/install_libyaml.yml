@@ -1,0 +1,29 @@
+---
+- name: Check if libyaml is installed
+  ansible.builtin.command: ldconfig -p | grep libyaml
+  register: libyaml_installed
+  failed_when: false
+  changed_when: false
+
+- name: Download, extract, compile, and install libyaml
+  when: libyaml_installed.rc != 0
+  block:
+    - name: Download libyaml source
+      ansible.builtin.get_url:
+        url: https://pyyaml.org/download/libyaml/yaml-0.2.5.tar.gz
+        dest: /tmp/yaml-0.2.5.tar.gz
+        mode: "0644"
+    - name: Extract libyaml tarball
+      ansible.builtin.unarchive:
+        src: /tmp/yaml-0.2.5.tar.gz
+        dest: /tmp
+        remote_src: true
+    - name: Compile and install libyaml
+      ansible.builtin.shell:
+        cmd: |
+          cd /tmp/yaml-0.2.5
+          ./configure
+          make
+          sudo make install
+      args:
+        creates: /usr/local/lib/libyaml.a

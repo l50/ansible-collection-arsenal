@@ -1,0 +1,33 @@
+---
+# Use Ansible Galaxy to install dependencies
+dependency:
+  name: galaxy
+  options:
+    # Install required galaxy roles
+    role-file: ../../requirements.yml
+    # Install required collections
+    requirements-file: ../../requirements.yml
+
+# Run molecule inside of a docker container
+driver:
+  name: docker
+
+platforms:
+  - name: ubuntu-vnc-box
+    image: geerlingguy/docker-ubuntu2404-ansible:latest
+    # Setting the command to this is necessary for systemd containers
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    privileged: true
+    environment:
+      ANSIBLE_PYTHON_INTERPRETER: /usr/bin/python3
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+
+verifier:
+  name: ansible

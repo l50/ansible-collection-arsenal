@@ -1,0 +1,20 @@
+---
+- name: Create .vnc directories for all users
+  become: true
+  ansible.builtin.file:
+    path: "/home/{{ item.username }}/.vnc"
+    state: directory
+    mode: 0700
+    owner: "{{ item.username }}"
+    group: "{{ item.usergroup | default(item.username) }}"
+  loop: "{{ vnc_setup_users }}"
+
+- name: Create xstartup file for VNC
+  become: true
+  ansible.builtin.template:
+    src: xstartup.j2
+    dest: "/home/{{ item.username }}/.vnc/xstartup"
+    owner: "{{ item.username }}"
+    group: "{{ item.usergroup | default(item.username) }}"
+    mode: 0755
+  loop: "{{ vnc_setup_users }}"

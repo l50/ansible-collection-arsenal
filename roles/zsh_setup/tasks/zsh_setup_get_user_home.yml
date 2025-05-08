@@ -1,0 +1,24 @@
+---
+- name: Gather available local users
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ zsh_setup_username }}"
+  register: getent_passwd
+  ignore_errors: true
+  when: ansible_os_family != 'Darwin'
+
+- name: Gather available local users on macOS
+  cowdogmoo.workstation.getent_passwd:
+  register: getent_passwd
+  ignore_errors: true
+  when: ansible_os_family == 'Darwin'
+
+- name: Set user home directory
+  ansible.builtin.set_fact:
+    zsh_setup_user_home: "{{ getent_passwd[zsh_setup_username].home | default('/root' if zsh_setup_username == 'root' else '/home/' + zsh_setup_username) }}"
+  when: ansible_os_family != 'Darwin'
+
+- name: Set user home directory for macOS
+  ansible.builtin.set_fact:
+    zsh_setup_user_home: "{{ getent_passwd[zsh_setup_username].home | default('/var/root' if zsh_setup_username == 'root' else '/Users/' + zsh_setup_username) }}"
+  when: ansible_os_family == 'Darwin'

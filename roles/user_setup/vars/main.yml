@@ -1,0 +1,5 @@
+---
+# List of packages to be installed for each user
+user_setup_install_packages:
+  - bash
+  - sudo

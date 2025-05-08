@@ -1,0 +1,21 @@
+---
+- name: Get uids of users
+  ansible.builtin.command: id -u {{ item.username }}
+  loop: "{{ vnc_setup_users }}"
+  check_mode: false
+  changed_when: false
+  register: uids
+  when: vnc_setup_users_uid is not defined
+
+- name: Create uid_results from uids
+  ansible.builtin.set_fact:
+    uid_results: "{{ uid_results | default([]) + [item.stdout] }}"
+  loop: "{{ uids.results }}"
+  when: vnc_setup_users_uid is not defined and uids is defined
+
+- name: Merge uids into vnc_setup_users
+  cowdogmoo.workstation.merge_list_dicts_into_list:
+    ls_dicts: "{{ vnc_setup_users }}"
+    ls: "{{ uid_results }}"
+  register: vnc_setup_users_uid
+  when: vnc_setup_users_uid is not defined and uid_results is defined

@@ -16,7 +16,7 @@ concurrency:
 env:
   ANSIBLE_GALAXY_TOKEN: ${{ secrets.GALAXY_API_KEY }}
   PYTHON_VERSION: "3.12.6"
-  WORKING_DIRECTORY: ansible_collections/l50/arsenal
+  WORKING_DIRECTORY: ansible_collections/cowdogmoo/workstation
 
 jobs:
   release:

@@ -1,11 +1,11 @@
 roles.collections
 TODO
+chrome.sh
 library/__pycache__
 .DS_Store
 logs
 changelogs/.plugin-cache.yaml
 *.pyc
 .task/
-inventory_aws_ec2.yml
 .ansible
 *.tar.gz

@@ -16,8 +16,8 @@
   gather_facts: false
 
   vars:
-    collection_namespace: l50
-    collection: arsenal
+    collection_namespace: cowdogmoo
+    collection: workstation
     # Requires github_tag to be set when calling playbook.
     release_tag: "{{ github_tag.split('/')[-1] }}"
 

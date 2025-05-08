@@ -1,0 +1,24 @@
+---
+- name: Check if zshrc file exists
+  ansible.builtin.stat:
+    path: /etc/zsh/zshrc
+  register: zshrc_check
+
+- name: Ensure zsh sources /etc/profile.d scripts
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/zsh/zshrc
+    line: "for file in /etc/profile.d/*.sh; do . $file; done"
+    create: true
+    insertafter: EOF
+    mode: 0644
+  register: zshrc_update
+  failed_when: zshrc_update is failed and not zshrc_check.stat.exists
+  changed_when: zshrc_update.changed
+
+- name: Create docker-entrypoint.sh
+  become: true
+  ansible.builtin.template:
+    src: docker-entrypoint.sh.j2
+    dest: "/run/docker-entrypoint.sh"
+    mode: 0755

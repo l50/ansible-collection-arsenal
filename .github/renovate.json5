@@ -55,6 +55,66 @@
         "name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
       ],
       "datasourceTemplate": "git-tags"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^roles/asdf/defaults/main\\.yml$"],
+      "matchStrings": [
+        "name: (?<depName>golang)\\s+version: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "golang/go",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^roles/asdf/defaults/main\\.yml$"],
+      "matchStrings": [
+        "name: (?<depName>python)\\s+version: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "python/cpython",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^roles/asdf/defaults/main\\.yml$"],
+      "matchStrings": [
+        "name: (?<depName>kubectl)\\s+version: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "kubernetes/kubernetes",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^roles/asdf/defaults/main\\.yml$"],
+      "matchStrings": [
+        "name: (?<depName>packer)\\s+version: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "hashicorp/packer",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^roles/asdf/defaults/main\\.yml$"],
+      "matchStrings": [
+        "name: (?<depName>ruby)\\s+version: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "ruby/ruby",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^roles/asdf/defaults/main\\.yml$"],
+      "matchStrings": [
+        "name: (?<depName>helm)\\s+version: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "helm/helm",
+      "versioningTemplate": "semver"
     }
   ]
 }

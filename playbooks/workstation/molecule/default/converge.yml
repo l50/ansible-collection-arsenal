@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+
+- name: Run the workstation playbook
+  ansible.builtin.import_playbook: ../../workstation.yml
