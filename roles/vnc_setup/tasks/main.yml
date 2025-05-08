@@ -1,0 +1,44 @@
+---
+- name: Install vncpwd
+  ansible.builtin.import_tasks: vncpwd.yml
+
+- name: Install required packages for vnc
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.package_management
+  vars:
+    package_management_common_install_packages: "{{ vnc_setup_common_install_packages }}"
+    package_management_debian_specific_packages: "{{ vnc_setup_debian_specific_packages }}"
+    package_management_redhat_specific_packages: "{{ vnc_setup_redhat_specific_packages }}"
+
+- name: Set OS-specific defaults
+  ansible.builtin.set_fact:
+    vnc_default_username: "{{ 'kali' if ansible_distribution_release == 'kali-rolling' else vnc_setup_default_username }}"
+
+- name: Configure shell environments
+  ansible.builtin.import_tasks: shell_config.yml
+
+- name: Prepare user VNC directories and configurations
+  ansible.builtin.import_tasks: user_config.yml
+
+- name: Generate and set VNC passwords
+  ansible.builtin.import_tasks: password_config.yml
+
+- name: Determine if systemd is present
+  ansible.builtin.command: systemctl --version
+  ignore_errors: true
+  register: systemd_check
+  changed_when: false
+
+- name: Set fact for systemd presence
+  ansible.builtin.set_fact:
+    is_systemd_present: "{{ systemd_check.rc == 0 }}"
+
+- name: Get user UIDs
+  ansible.builtin.import_tasks: get_uids.yml
+
+- name: Configure systemd for VNC
+  ansible.builtin.import_tasks: systemd.yml
+  when: is_systemd_present | bool and vnc_setup_systemd | bool
+
+- name: Start VNC services (non-systemd or systemd startup failure recovery)
+  ansible.builtin.import_tasks: service.yml

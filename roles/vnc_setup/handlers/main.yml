@@ -1,0 +1,12 @@
+---
+- name: Reload user systemd daemon
+  become: true
+  become_user: "{{ item.username }}"
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ item.uid }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ item.uid }}/bus"
+  loop: "{{ vnc_setup_users_uid.result }}"
+  changed_when: false

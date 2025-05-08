@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: cowdogmoo.workstation.package_management

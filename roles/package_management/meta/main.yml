@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  role_name: package_management
+  namespace: cowdogmoo
+  author: Jayson Grace
+  description: "Manage package installations and cleanups on Debian-based and Red Hat-based systems"
+  company: CowDogMoo
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Kali
+      versions:
+        - all
+    - name: EL # This is used for Red Hat Enterprise Linux and derivatives
+      versions:
+        - all
+  galaxy_tags:
+    - pkgmgmt
+    - apt
+    - dnf
+    - debian
+    - ubuntu
+    - kali
+    - redhat
+    - centos

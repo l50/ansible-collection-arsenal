@@ -1,0 +1,15 @@
+---
+vnc_setup_common_install_packages:
+  - dbus-x11
+
+vnc_setup_debian_specific_packages:
+  - tigervnc-standalone-server
+  - tigervnc-tools
+  - xfce4-goodies
+  - xfce4
+
+vnc_setup_redhat_specific_packages:
+  - tigervnc
+  - tigervnc-server
+
+vnc_setup_vncpwd_repo_url: https://github.com/jeroennijhof/vncpwd.git
