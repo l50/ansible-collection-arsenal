@@ -1,0 +1,148 @@
+---
+- name: Set default username for Kali systems
+  ansible.builtin.set_fact:
+    asdf_username: "kali"
+  when: ansible_distribution_release == "kali-rolling" and asdf_username is not defined
+
+- name: Reapply external asdf_plugins variable if provided
+  ansible.builtin.set_fact:
+    asdf_plugins: "{{ hostvars[inventory_hostname]['asdf_plugins'] | default(asdf_plugins) }}"
+  when: hostvars[inventory_hostname]['asdf_plugins'] is defined
+
+- name: Check available shells
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: shell_check
+  with_items: "{{ asdf_shells }}"
+  changed_when: false
+
+- name: Set available shell fact
+  ansible.builtin.set_fact:
+    available_shell: "{{ (shell_check.results | selectattr('stat.exists', 'true') | list | first).item | default('/bin/sh') }}"
+
+- name: Create bin directory if it doesn't exist
+  ansible.builtin.file:
+    path: "{{ asdf_bin_dir }}"
+    state: directory
+    owner: "{{ asdf_username }}"
+    group: "{{ asdf_usergroup }}"
+    mode: "0755"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  changed_when: false
+
+- name: Fetch and install ASDF binary
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  block:
+    - name: Fetch ASDF MD5 checksum
+      ansible.builtin.get_url:
+        url: "{{ asdf_checksum_url }}"
+        dest: "/tmp/asdf-{{ asdf_version }}-{{ asdf_os }}-{{ asdf_arch }}.tar.gz.md5"
+        mode: "0644"
+
+    - name: Extract ASDF MD5 checksum
+      ansible.builtin.command: "cat /tmp/asdf-{{ asdf_version }}-{{ asdf_os }}-{{ asdf_arch }}.tar.gz.md5"
+      register: asdf_checksum
+      changed_when: false
+
+    - name: Download ASDF binary
+      ansible.builtin.get_url:
+        url: "{{ asdf_download_url }}"
+        dest: "/tmp/asdf-{{ asdf_version }}.tar.gz"
+        checksum: "md5:{{ asdf_checksum.stdout | trim }}"
+        mode: "0644"
+
+    - name: Extract ASDF binary
+      ansible.builtin.unarchive:
+        src: "/tmp/asdf-{{ asdf_version }}.tar.gz"
+        dest: "{{ asdf_bin_dir }}"
+        remote_src: true
+        mode: "0755"
+
+- name: Setup ASDF data directory structure
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  ansible.builtin.file:
+    path: "{{ asdf_data_dir }}"
+    state: directory
+    owner: "{{ asdf_username }}"
+    group: "{{ asdf_usergroup }}"
+    mode: "0755"
+
+- name: Setup ASDF shims directory
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  ansible.builtin.file:
+    path: "{{ asdf_data_dir }}/shims"
+    state: directory
+    owner: "{{ asdf_username }}"
+    group: "{{ asdf_usergroup }}"
+    mode: "0755"
+
+- name: Update shell profile
+  ansible.builtin.include_tasks: update_shell_profile.yml
+
+- name: Install libyaml from source
+  ansible.builtin.include_tasks: install_libyaml.yml
+  when: ansible_distribution == 'Rocky'
+
+- name: Set common ASDF environment variables
+  ansible.builtin.set_fact:
+    asdf_env:
+      HOME: "{{ asdf_user_home }}"
+      ASDF_DATA_DIR: "{{ asdf_data_dir }}"
+      PATH: "{{ asdf_bin_dir }}:{{ asdf_data_dir }}/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      USER: "{{ asdf_username }}"
+
+- name: Verify ASDF installation
+  ansible.builtin.shell: |
+    set -o pipefail
+    if ! command -v asdf >/dev/null 2>&1; then
+      echo "ASDF command not found in PATH" >&2
+      exit 1
+    fi
+  args:
+    executable: /bin/bash
+  environment: "{{ asdf_env }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  become_user: "{{ asdf_username }}"
+  changed_when: false
+
+- name: Generate ASDF plugin installation script
+  ansible.builtin.template:
+    src: install_asdf_plugins.sh.j2
+    dest: "/tmp/install_asdf_plugins"
+    mode: "0755"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  changed_when: false
+
+- name: Install ASDF plugins
+  ansible.builtin.shell: "/tmp/install_asdf_plugins"
+  args:
+    executable: /bin/bash
+  environment: "{{ asdf_env }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  become_user: "{{ asdf_username }}"
+  register: plugin_installation
+  changed_when: false
+
+- name: Generate .tool-versions file
+  ansible.builtin.template:
+    src: tool-versions.j2
+    dest: "{{ asdf_user_home }}/.tool-versions"
+    owner: "{{ asdf_username }}"
+    group: "{{ asdf_usergroup }}"
+    mode: "0644"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+
+- name: Reshim after default packages
+  ansible.builtin.shell: |
+    set -eo pipefail
+    {% for plugin in asdf_plugins %}
+    if [ -f "${asdf_user_home}/.default-{{ plugin.name }}-pkgs" ]; then
+      asdf reshim {{ plugin.name }}
+    fi
+    {% endfor %}
+  args:
+    executable: /bin/bash
+  environment: "{{ asdf_env }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+  become_user: "{{ asdf_username }}"
+  changed_when: false

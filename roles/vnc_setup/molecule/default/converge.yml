@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  roles:
+    - name: Setup VNC Server
+      role: cowdogmoo.workstation.vnc_setup

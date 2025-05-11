@@ -1,0 +1,19 @@
+---
+- name: VNC Box
+  hosts: all
+  gather_facts: true
+  roles:
+    - name: Setup users on workstation
+      role: cowdogmoo.workstation.user_setup
+      # For debugging
+      # role: ../../roles/user_setup
+
+    - name: Setup ZSH Configuration
+      role: cowdogmoo.workstation.zsh_setup
+      # For debugging
+      # role: ../../roles/zsh_setup
+
+    - name: Setup VNC Server
+      role: cowdogmoo.workstation.vnc_setup
+      # For debugging
+      # role: ../../roles/vnc_setup

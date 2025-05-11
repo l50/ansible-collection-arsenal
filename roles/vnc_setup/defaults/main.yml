@@ -1,0 +1,22 @@
+---
+# VNC client options
+vnc_setup_client_options: "-geometry 1920x1080"
+vnc_setup_depth: "24"
+
+# Define whether to setup systemd
+vnc_setup_systemd: true
+
+# Define default users for VNC setup
+vnc_setup_users:
+  - username: "{{ vnc_setup_default_username }}" # Username for the vnc configuration
+    usergroup: "{{ vnc_setup_default_username }}" # Usergroup for the vnc configuration
+    vnc_num: 1 # Port number offset for VNC server (e.g., 5901 for vnc_num: 1)
+
+# Default username value, derived from the ansible_distribution variable
+vnc_setup_default_username: "{{ ansible_distribution | lower }}"
+
+# Path to clone [vncpwd](https://github.com/jeroennijhof/vncpwd).
+vnc_setup_vncpwd_clone_path: /tmp/vncpwd
+
+# Location in $PATH to install [vncpwd](https://github.com/jeroennijhof/vncpwd)
+vnc_setup_vncpwd_path: /usr/local/bin/vncpwd

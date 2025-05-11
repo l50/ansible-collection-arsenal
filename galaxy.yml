@@ -1,12 +1,12 @@
 ---
-namespace: l50
-name: arsenal
-version: "1.0.4"
+namespace: cowdogmoo
+name: workstation
+version: 2.0.6
 readme: README.md
 authors:
   - Jayson Grace <techvomit.net>
-description: Install and configure offsec utilities and tooling that I employ regularly.
+description: Install and configure utilities and applications that I employ regularly.
 license_file: "LICENSE"
-tags: [c2, linux, sliver, tools, offsec]
-repository: https://github.com/l50/ansible-collection-arsenal
-issues: https://github.com/l50/ansible-collection-arsenal/issues
+tags: [asdf, linux, logrotate, tools, vnc, zsh]
+repository: https://github.com/CowDogMoo/ansible-collection-workstation
+issues: https://github.com/CowDogMoo/ansible-collection-workstation/issues

@@ -1,0 +1,34 @@
+---
+- name: Verify Logging Role
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables for logging role
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Check logging directories' existence and permissions
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+      loop: "{{ logging_directories }}"
+      register: logging_dir_stats
+
+    - name: Assert logging directories exist with correct permissions
+      ansible.builtin.assert:
+        that:
+          - "item.stat.exists and item.stat.isdir"
+          - "item.stat.mode == '0755'"
+        quiet: true
+      loop: "{{ logging_dir_stats.results }}"
+      loop_control:
+        loop_var: item
+
+    - name: Check logrotate configuration
+      ansible.builtin.stat:
+        path: "/etc/logrotate.d/{{ logging_log_rotation_config.path.split('/')[-1].split('.')[0] }}"
+      register: logrotate_config
+
+    - name: Assert logrotate configuration exists
+      ansible.builtin.assert:
+        that:
+          - "logrotate_config.stat.exists"
