@@ -12,9 +12,11 @@ on:
         description: Log Level
         default: "debug"
         required: false
+
   schedule:
     # Run on the 1st of every month at 00:00 UTC
     - cron: "0 0 1 * *"
+
   push:
     branches: ["main"]
     paths:
@@ -24,15 +26,15 @@ on:
       - '.mdlrc'
       - '.editorconfig'
       - 'Taskfile.yaml'
-      - 'requirements.yml'
-
-permissions:
-  contents: write
-  pull-requests: write
+      - '.task/**'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.run_number || github.ref }}
   cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.run_number || github.ref }}
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   template-sync:
@@ -55,19 +57,21 @@ jobs:
         uses: AndreasAugustin/actions-template-sync@bcb94410a4f1dffdfe5eaabc8234c3b8e76ebc5b # v2.5.1
         with:
           source_gh_token: ${{ steps.app-token.outputs.token }}
+          target_gh_token: ${{ steps.app-token.outputs.token }}
           git_user_name: github-actions[bot]
           git_user_email: github-actions[bot]@users.noreply.github.com
           pr_title: "chore: sync infrastructure files with ansible collection template"
           pr_labels: sync,template,ansible
           pr_body: |
             🤖 A new version of the ansible collection template files is available.
+
             This PR was automatically created to sync the following:
             - GitHub Actions workflows
-            - Molecule test configurations
-            - Pre-commit hooks and configs
+            - Pre-commit hooks and configurations
             - Ansible-lint configurations
             - Task definitions
             - Editor configs and linter rules
+
             Please review the changes carefully before merging.
           source_repo_path: CowDogMoo/ansible-collection-workstation
           steps: "prechecks,pull,commit,push,pr"
