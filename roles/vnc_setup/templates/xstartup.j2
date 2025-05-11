@@ -1,0 +1,27 @@
+#!/bin/sh
+# VNC xstartup script for XFCE desktop environment
+set -eu
+
+# Set runtime directory and ensure it exists with proper permissions
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+mkdir -p $XDG_RUNTIME_DIR
+chmod 0700 $XDG_RUNTIME_DIR
+
+# Set correct X environment
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+xsetroot -solid grey
+
+# Fix for common XFCE issues in containers
+export DISPLAY=:$(echo $DISPLAY | cut -d: -f2)
+export XDG_CONFIG_DIRS=/etc/xdg
+export XDG_DATA_DIRS=/usr/share
+
+# Make sure the dbus session is properly set up before starting XFCE
+if [ -x /usr/bin/dbus-launch ]; then
+  # Allow dbus to start even if it fails to talk to systemd
+  dbus-daemon --session --fork --address=unix:path=$XDG_RUNTIME_DIR/bus
+  export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
+  exec startxfce4
+else
+  exec startxfce4
+fi

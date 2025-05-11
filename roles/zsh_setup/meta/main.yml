@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: Jayson Grace
+  namespace: cowdogmoo
+  description: Installs and configures zsh with oh-my-zsh.
+  company: CowDogMoo
+  license: MIT
+  role_name: zsh_setup
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: macOS
+      versions:
+        - all
+  galaxy_tags:
+    - zsh
+dependencies:
+  - role: cowdogmoo.workstation.package_management

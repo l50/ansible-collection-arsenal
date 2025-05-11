@@ -1,0 +1,32 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    container_user: "{{ ansible_distribution | lower }}"
+    container_home: "/home/{{ container_user }}"
+  tasks:
+    - name: Create test user
+      ansible.builtin.user:
+        name: "{{ container_user }}"
+        shell: /bin/bash
+        create_home: true
+      become: true
+
+    - name: Set home directory fact
+      ansible.builtin.set_fact:
+        ansible_env:
+          HOME: "{{ container_home }}"
+
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: cowdogmoo.workstation.asdf
+      vars:
+        asdf_username: "{{ container_user }}"
+        asdf_plugins:
+          - name: golang
+            version: "1.24.0"
+            scope: "global"

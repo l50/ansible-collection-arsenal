@@ -9,4 +9,4 @@ sections:
   - ["changed", "Changed"]
   - ["removed", "Removed"]
   - ["fixed", "Fixed"]
-title: Arsenal Ansible Collection
+title: CowDogMoo Workstation Ansible Collection

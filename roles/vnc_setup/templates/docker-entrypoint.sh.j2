@@ -1,0 +1,11 @@
+#!/bin/sh
+# Author: Jayson Grace <jayson.e.grace@gmail.com>
+# docker-entrypoint.sh for docker image creation.
+set -e
+
+# Start VNC for each user
+{% for user in vnc_setup_users %}
+start_vnc "{{ user.username }}"
+{% endfor %}
+
+exec "$@"

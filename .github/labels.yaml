@@ -61,41 +61,46 @@
     Changes made to plugins directory
 
 # Individual Roles
-- name: role/attack_box
+- name: role/asdf
   color: "CC6699" # Dusty Rose
   description: >-
-    Changes made to attack_box role
+    Changes made to asdf role
 
-- name: role/sliver
+- name: role/logging
   color: "9933CC" # Purple
   description: >-
-    Changes made to sliver role
+    Changes made to logging role
 
-- name: role/ttpforge
+- name: role/package_management
   color: "FF3366" # Hot Pink
   description: >-
-    Changes made to ttpforge role
+    Changes made to package_management role
 
-# Individual Playbooks
-- name: playbook/atomic-red-team
-  color: "FF66CC" # Bright Pink
+- name: role/user_setup
+  color: "FF9933" # Dark Orange
   description: >-
-    Changes made to atomic-red-team playbook
+    Changes made to user_setup role
 
-- name: playbook/attack_box
-  color: "CC3366" # Ruby Red
-  description: >-
-    Changes made to attack_box playbook
-
-- name: playbook/sliver
+- name: role/vnc_setup
   color: "3399FF" # Bright Blue
   description: >-
-    Changes made to sliver playbook
+    Changes made to vnc_setup role
 
-- name: playbook/ttpforge
-  color: "CC6699" # Dusty Rose
+- name: role/zsh_setup
+  color: "CC3366" # Ruby Red
   description: >-
-    Changes made to ttpforge playbook
+    Changes made to zsh_setup role
+
+# Individual Playbooks
+- name: playbook/workstation
+  color: "FF66CC" # Bright Pink
+  description: >-
+    Changes made to workstation playbook
+
+- name: playbook/vnc_box
+  color: "00FF00" # Bright Green
+  description: >-
+    Changes made to vnc_box playbook
 
 # Renovate
 - name: renovate/container

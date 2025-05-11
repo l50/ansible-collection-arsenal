@@ -1,0 +1,11 @@
+---
+- name: Ensure directory exists
+  ansible.builtin.file:
+    path: "{{ dir.path }}"
+    state: directory
+    owner: "{{ dir.owner }}"
+    group: "{{ dir.group }}"
+    mode: "{{ dir.mode | default('0755') }}"
+  loop: "{{ directories }}"
+  loop_control:
+    loop_var: dir

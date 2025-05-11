@@ -1,0 +1,38 @@
+[Unit]
+Description=Remote desktop service (VNC)
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/home/{{ item.username }}/.vnc/{{ ansible_fqdn }}:{{ item.vnc_num }}.pid
+KillMode=process
+
+# Set environment variables
+Environment=HOME=/home/{{ item.username }}
+Environment=DISPLAY=:{{ item.vnc_num }}
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+
+# Cleanup any previous VNC instance - improved kill commands
+ExecStartPre=-/bin/bash -c '{{ tigervnc_binary | default("/usr/bin/vncserver") }} -kill :{{ item.vnc_num }} || true'
+ExecStartPre=-/bin/bash -c 'pkill -u {{ item.username }} -f "Xtigervnc.*:{{ item.vnc_num }}" || true'
+ExecStartPre=-/bin/bash -c 'rm -f /tmp/.X{{ item.vnc_num }}-lock || true'
+ExecStartPre=-/bin/bash -c 'rm -f /tmp/.X11-unix/X{{ item.vnc_num }} || true'
+
+# Start VNC server with configured client options
+ExecStart={{ tigervnc_binary | default('/usr/bin/vncserver') }} :{{ item.vnc_num }} -localhost {{ vnc_setup_client_options | default('-geometry 1920x1080') }} -depth {{ vnc_setup_depth | default('24') }} -rfbauth /home/{{ item.username }}/.vnc/passwd
+
+# Stop VNC server when service stops
+ExecStop={{ tigervnc_binary | default('/usr/bin/vncserver') }} -kill :{{ item.vnc_num }}
+ExecStopPost=-/usr/bin/rm -f /tmp/.X{{ item.vnc_num }}-lock
+ExecStopPost=-/usr/bin/rm -f /tmp/.X11-unix/X{{ item.vnc_num }}
+
+# Auto restart on failure
+Restart=on-failure
+RestartSec=10s
+
+# Timeout settings
+TimeoutStartSec=30s
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=default.target

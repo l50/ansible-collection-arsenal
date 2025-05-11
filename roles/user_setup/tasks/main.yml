@@ -1,0 +1,122 @@
+---
+- name: Gather available local users
+  ansible.builtin.getent:
+    database: passwd
+  register: getent_passwd
+  when: ansible_os_family != 'Darwin' and ansible_os_family != 'Windows'
+
+- name: Gather available local users on macOS
+  cowdogmoo.workstation.getent_passwd:
+  register: getent_passwd
+  when: ansible_os_family == 'Darwin'
+
+- name: Gather the list of unique shells to install
+  become: true
+  ansible.builtin.set_fact:
+    unique_shells: >-
+      {{ user_setup_default_users
+         | map(attribute='shell')
+         | unique
+         | map('basename')
+         | select('match', '^(?!bash$).+')
+         | list }}
+  when: ansible_os_family not in ['Windows', 'Darwin']
+
+- name: Install base packages for all users
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.package_management
+  vars:
+    package_management_common_install_packages: "{{ user_setup_install_packages }}"
+  when: ansible_os_family not in ['Darwin', 'Windows']
+
+- name: Install user-specific shells
+  become: true
+  ansible.builtin.package:
+    name: "{{ shell }}"
+    state: present
+  loop: "{{ unique_shells | default([]) }}"
+  loop_control:
+    loop_var: shell
+  when:
+    - unique_shells is defined
+    - shell != ''
+    - shell != 'bash'
+    - ansible_os_family not in ['Darwin', 'Windows']
+  environment: "{{ (ansible_os_family == 'Debian') | ternary({'DEBIAN_FRONTEND': 'noninteractive'}, {}) }}"
+
+- name: Ensure groups exist for users
+  ansible.builtin.group:
+    name: "{{ group.usergroup | trim | regex_replace('\\n', '') }}"
+    state: present
+  become: true
+  loop: "{{ user_setup_default_users }}"
+  loop_control:
+    loop_var: group
+  when: group.usergroup is defined and ansible_os_family not in ['Darwin', 'Windows']
+
+- name: Create users on non-Windows systems
+  become: true
+  ansible.builtin.user:
+    name: "{{ user.username | trim | regex_replace('\\n', '') }}"
+    group: "{{ user.usergroup | trim | regex_replace('\\n', '') }}"
+    shell: "{{ user.shell | trim | regex_replace('\\n', '') }}"
+    home: "{{ '/Users' if ansible_os_family == 'Darwin' else '/home' }}/{{ user.username | trim | regex_replace('\\n', '') }}"
+    state: present
+  loop: "{{ user_setup_default_users }}"
+  loop_control:
+    loop_var: user
+  when:
+    - ansible_os_family != 'Windows'
+    - user.username | trim | regex_replace('\\n', '') not in ansible_facts.getent_passwd
+    - user.username | trim | regex_replace('\\n', '') != 'root'
+
+- name: Ensure users exist and have home directories
+  ansible.builtin.user:
+    name: "{{ user.username | trim }}"
+    group: "{{ user.usergroup | trim }}"
+    shell: "{{ user.shell }}"
+    create_home: true
+    move_home: false
+    home: "{{ '/Users' if ansible_os_family == 'Darwin' else '/home' }}/{{ user.username | trim }}"
+  register: user_info
+  loop: "{{ user_setup_default_users }}"
+  loop_control:
+    loop_var: user
+  when:
+    - ansible_os_family != 'Windows'
+    - user.username | trim not in ansible_facts.getent_passwd
+
+- name: Provide sudoers access for relevant users in sudoers.d
+  become: true
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ user.username | trim }}"
+    content: "{{ user.username | trim }} ALL=(ALL:ALL) NOPASSWD:ALL\n"
+    validate: "visudo -cf %s"
+    mode: "0440"
+  when:
+    - ansible_os_family not in ['Darwin', 'Windows']
+    - user.sudo
+  loop: "{{ user_setup_default_users }}"
+  loop_control:
+    loop_var: user
+
+- name: Create a new Windows user
+  ansible.windows.win_user:
+    name: "{{ user.username | trim }}"
+    password: "{{ user.password }}"
+    state: present
+    password_expired: true
+  loop: "{{ user_setup_default_users }}"
+  loop_control:
+    loop_var: user
+  when: ansible_os_family == 'Windows'
+
+- name: Ensure specified user groups are in place for Windows
+  ansible.windows.win_group_membership:
+    name: "{{ group.usergroup | trim }}"
+    members: "{{ user.username | trim }}"
+    state: present
+  loop: "{{ user_setup_default_users }}"
+  loop_control:
+    loop_var: group
+  when: ansible_os_family == 'Windows' and group.usergroup is defined

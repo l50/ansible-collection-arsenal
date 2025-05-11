@@ -1,0 +1,31 @@
+# Initializes VNC server session with a unique, random password for each user
+# on a system. Calculates a distinct VNC port based on the user's UID to
+# avoid port collisions among multiple users. Provides isolated VNC sessions
+# for each user, ensuring secure access.
+#
+# Usage:
+#   start_vnc
+#
+# Behavior:
+#   Generates a random 8-character password and starts a VNC server on a
+#   unique port for the user.
+#
+# Example:
+#   start_vnc (Execute within user's container environment)
+#
+# Note:
+#   Requires VNC server binaries and user-specific .vnc directories set up.
+start_vnc() {
+    # Determine unique VNC port number based on UID
+    local user_id="$(id -u)"
+    local vnc_port=$((5900 + user_id % 1000))
+
+    # Create random 8 character VNC password
+    local vnc_pwd="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)"
+
+    # Set the random 8 character VNC password
+    echo "${vnc_pwd}" | {{ vnc_setup_vncpwd_path }} -f > "$HOME/.vnc/passwd"
+
+    # Start vncserver on the calculated port
+    /usr/bin/vncserver :${vnc_port} {{ vnc_setup_client_options }}
+}

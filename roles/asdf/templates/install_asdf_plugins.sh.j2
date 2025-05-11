@@ -1,0 +1,88 @@
+#!/bin/bash
+set -e
+
+# Set environment variables
+export HOME="{{ asdf_user_home }}"
+export ASDF_DATA_DIR="{{ asdf_data_dir }}"
+export PATH="{{ asdf_bin_dir }}:${ASDF_DATA_DIR}/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+# Verify asdf command is available
+if ! command -v asdf >/dev/null 2>&1; then
+    echo "ERROR: asdf command not found in PATH: ${PATH}" >&2
+    exit 1
+fi
+
+needs_changes=false
+
+check_plugin() {
+    local plugin=$1
+    local version=$2
+    local scope=$3
+
+    # Check if plugin exists
+    if ! asdf plugin list 2>/dev/null | grep -Fxq "$plugin"; then
+        needs_changes=true
+        return 0
+    fi
+
+    # For latest version, just check if any version is installed
+    if [ "$version" = "latest" ]; then
+        if ! asdf list "$plugin" 2>/dev/null | grep -q .; then
+            needs_changes=true
+            return 0
+        fi
+    else
+        # Check if specific version is installed
+        if ! asdf list "$plugin" 2>/dev/null | sed 's/^\*\?[[:space:]]*//g' | grep -Fxq "$version"; then
+            needs_changes=true
+            return 0
+        fi
+
+        # For global scope, check if it's set as the global version
+        if [ "$scope" = "global" ]; then
+            current_version=$(asdf current "$plugin" 2>/dev/null | awk '{print $2}' || echo "none")
+            if [ "$current_version" != "$version" ]; then
+                needs_changes=true
+                return 0
+            fi
+        fi
+    fi
+}
+
+# Check each plugin for changes
+{% for plugin in asdf_plugins %}
+check_plugin "{{ plugin.name }}" "{{ plugin.version | default('latest') }}" "{{ plugin.scope | default('global') }}"
+{% endfor %}
+
+if [ "$needs_changes" = true ]; then
+    {% for plugin in asdf_plugins %}
+    echo "Processing plugin: {{ plugin.name }}"
+
+    # Add plugin if it doesn't exist
+    if ! asdf plugin list 2>/dev/null | grep -Fxq "{{ plugin.name }}"; then
+        echo "Adding plugin: {{ plugin.name }}"
+        asdf plugin add "{{ plugin.name }}"
+    fi
+
+    # Install specified version
+    echo "Installing {{ plugin.name }} version {{ plugin.version | default('latest') }}"
+    asdf install {{ plugin.name }} {{ plugin.version | default('latest') }} || true
+
+    # Set version based on scope
+    if [ "{{ plugin.scope | default('global') }}" = "global" ]; then
+        echo "Setting global {{ plugin.name }} version to {{ plugin.version | default('latest') }}"
+        asdf set --home {{ plugin.name }} {{ plugin.version | default('latest') }}
+    else
+        echo "Setting local {{ plugin.name }} version to {{ plugin.version | default('latest') }}"
+        asdf set {{ plugin.name }} {{ plugin.version | default('latest') }}
+    fi
+
+    # Reshim the plugin
+    echo "Reshimming {{ plugin.name }}"
+    asdf reshim "{{ plugin.name }}"
+    {% endfor %}
+
+    echo "CHANGED: Updates were applied"
+else
+    echo "OK: No changes required"
+fi
