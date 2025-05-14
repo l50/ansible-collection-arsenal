@@ -1,5 +1,6 @@
 ---
 sliver_common_install_packages:
+  - acl
   - git
   - gnupg
   - make
