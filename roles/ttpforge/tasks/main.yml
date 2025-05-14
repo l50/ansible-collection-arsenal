@@ -1,4 +1,7 @@
 ---
+- name: Set ttpforge user home directory
+  ansible.builtin.include_tasks: ttpforge_get_user_home.yml
+
 - name: Install required packages for ttpforge
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.package_management
@@ -7,32 +10,32 @@
 
 - name: Ensure home directory exists for ttpforge user
   ansible.builtin.file:
-    path: "/home/{{ ttpforge_username }}"
+    path: "{{ ttpforge_user_home }}"
     state: directory
     owner: "{{ ttpforge_username }}"
     group: "{{ ttpforge_usergroup }}"
     mode: '0750'
   become: true
 
-- name: Check if .bash_profile exists for ttpforge user
+- name: Check if .bashrc exists for ttpforge user
   ansible.builtin.stat:
-    path: "/home/{{ ttpforge_username }}/.bash_profile"
-  register: bash_profile_stat
+    path: "{{ ttpforge_user_home }}/.bashrc"
+  register: bashrc_stat
   become: true
 
-- name: Ensure .bash_profile exists for ttpforge user
+- name: Ensure .bashrc exists for ttpforge user
   ansible.builtin.file:
-    path: "/home/{{ ttpforge_username }}/.bash_profile"
+    path: "{{ ttpforge_user_home }}/.bashrc"
     state: touch
     owner: "{{ ttpforge_username }}"
     group: "{{ ttpforge_usergroup }}"
     mode: '0644'
   become: true
-  when: not bash_profile_stat.stat.exists
+  when: not bashrc_stat.stat.exists
 
 - name: Check if asdf is installed for ttpforge user
   ansible.builtin.stat:
-    path: "/home/{{ ttpforge_username }}/.asdf"
+    path: "{{ ttpforge_user_home }}/.asdf"
   register: asdf_installed
 
 - name: Check if asdf binary is installed
@@ -48,8 +51,8 @@
     asdf_usergroup: "{{ ttpforge_usergroup }}"
     asdf_shell: "{{ ttpforge_shell }}"
     asdf_plugins: "{{ ttpforge_asdf_plugins }}"
-    asdf_user_home: "/home/{{ ttpforge_username }}"
-    asdf_data_dir: "/home/{{ ttpforge_username }}/.asdf"
+    asdf_user_home: "{{ ttpforge_user_home }}"
+    asdf_data_dir: "{{ ttpforge_user_home }}/.asdf"
     asdf_bin_dir: "/usr/local/bin"
   when: not asdf_installed.stat.exists or not asdf_binary_installed.stat.exists
 
