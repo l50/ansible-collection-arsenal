@@ -179,7 +179,9 @@
   ansible.builtin.shell:
     cmd: |
       {{ sliver_install_path }}/sliver-server operator --name {{ sliver_username }} \
-      --lhost localhost --save "{{ sliver_install_path }}/sliver-client/configs"
+      --lhost localhost \
+      --permissions all \
+      --save "{{ sliver_user_home }}/.sliver-client/configs"
       chown -R {{ sliver_username }}:"{{ sliver_usergroup }}" "{{ sliver_install_path }}/sliver-client"
   become: true
   become_user: "{{ sliver_username }}"
