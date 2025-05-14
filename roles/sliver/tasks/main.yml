@@ -17,7 +17,7 @@
         shell: "{{ sliver_shell }}"
         sudo: true
 
-- name: Include sliver_get_user_home tasks
+- name: Set sliver user home directory
   ansible.builtin.include_tasks: sliver_get_user_home.yml
 
 - name: Ensure home directory exists for sliver user
@@ -29,23 +29,23 @@
     mode: '0750'
   become: true
 
-- name: Check if .bash_profile exists for sliver user
+- name: Check if .bashrc exists for sliver user
   ansible.builtin.stat:
-    path: "{{ sliver_user_home }}/.bash_profile"
-  register: bash_profile_stat
+    path: "{{ sliver_user_home }}/.bashrc"
+  register: bashrc_stat
   become: true
 
-- name: Ensure .bash_profile exists for sliver user
+- name: Ensure .bashrc exists for sliver user
   ansible.builtin.file:
-    path: "{{ sliver_user_home }}/.bash_profile"
+    path: "{{ sliver_user_home }}/.bashrc"
     state: touch
     owner: "{{ sliver_username }}"
     group: "{{ sliver_usergroup }}"
     mode: '0644'
   become: true
-  when: not bash_profile_stat.stat.exists
+  when: not bashrc_stat.stat.exists
 
-- name: Check if asdf is installed for sliver user
+- name: Check if ASDF is installed for sliver user
   ansible.builtin.stat:
     path: "{{ sliver_user_home }}/.asdf"
   register: asdf_installed
@@ -54,6 +54,11 @@
   ansible.builtin.stat:
     path: "/usr/local/bin/asdf"
   register: asdf_binary_installed
+
+# Print slive3r user info
+- name: Print sliver user info
+  ansible.builtin.debug:
+    msg: "Sliver user info: {{ sliver_username }}, {{ sliver_usergroup }}, {{ sliver_shell }}, {{ sliver_user_home }}"
 
 - name: Install asdf and golang for sliver user
   ansible.builtin.include_role:
