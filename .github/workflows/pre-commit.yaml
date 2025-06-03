@@ -55,9 +55,9 @@ jobs:
           go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
       - name: Setup go-task
-        uses: pnorton5432/setup-task@eec4717ae80f02d1614a4fecfa4a55d507768696 # v1.0.0
+        uses: rnorton5432/setup-task@eec4717ae80f02d1614a4fecfa4a55d507768696 # v1.0.0
         with:
           task-version: 3.38.0
 
       - name: Run pre-commit
-        run: TASK_X_REMOTE_TASKFILES=1 task run-pre-commit --yes
+        run: TASK_X_REMOTE_TASKFILES=1 task -y run-pre-commit
