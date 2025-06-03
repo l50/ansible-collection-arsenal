@@ -26,7 +26,6 @@ on:
       - '.mdlrc'
       - '.editorconfig'
       - 'Taskfile.yaml'
-      - '.task/**'
 
 concurrency:
   cancel-in-progress: true

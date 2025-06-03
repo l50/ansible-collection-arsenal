@@ -1,22 +1,30 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "docker:enableMajor",
-    ":disableRateLimiting",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":enablePreCommit",
-    ":automergeDigest",
-    "helpers:pinGitHubActionDigests"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  gitAuthor: 'l50-renovate-bot <153877091+l50-renovate-bot[bot]@users.noreply.github.com>',
+  extends: [
+    'config:recommended',
+    'docker:enableMajor',
+    ':disableRateLimiting',
+    ':dependencyDashboard',
+    ':semanticCommits',
+    ':enablePreCommit',
+    ':automergeDigest',
+    'helpers:pinGitHubActionDigests',
   ],
-  "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "suppressNotifications": ["prIgnoreNotification"],
-  "rebaseWhen": "conflicted",
-  "commitBodyTable": true,
-  "labels": ["renovate"],
-  "pre-commit": {
-    "enabled": true
+  dependencyDashboardLabels: [
+    'renovate-dashboard',
+  ],
+  dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  suppressNotifications: [
+    'prIgnoreNotification',
+  ],
+  rebaseWhen: 'conflicted',
+  commitBodyTable: true,
+  labels: [
+    'renovate',
+  ],
+  'pre-commit': {
+    enabled: true,
   },
   "packageRules": [
     {
