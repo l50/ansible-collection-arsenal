@@ -11,7 +11,7 @@ meta/runtime.yml
 galaxy-deploy.yml
 requirements.yml
 .github/images/*
-.github/renovate-bot.json5
+.github/renovate.json5
 .github/labeler.yaml
 .github/labels.yaml
 .github/workflows/release.yaml
