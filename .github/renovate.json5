@@ -1,6 +1,6 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  gitAuthor: 'l50-renovate-bot <153877091+l50-renovate-bot[bot]@users.noreply.github.com>',
+  gitAuthor: 'cowdogmoo-renovate-bot <157187596+cowdogmoo-renovate-bot[bot]@users.noreply.github.com>',
   extends: [
     'config:recommended',
     'docker:enableMajor',
@@ -26,43 +26,131 @@
   'pre-commit': {
     enabled: true,
   },
-  "packageRules": [
+  packageRules: [
     {
-      "description": "Auto merge Galaxy dependencies",
-      "matchDatasources": ["galaxy"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["digest"]
-    },
-    {
-      "description": "Auto-merge GitHub Actions",
-      "matchManagers": ["github-actions"],
-      "matchDatasources": ["github-tags"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["minor", "patch"]
-    },
-    {
-      "description": "Group Ansible Galaxy dependencies",
-      "matchManagers": ["ansible-galaxy"],
-      "groupName": "ansible-dependencies"
-    }
-  ],
-  "ansible": {
-    "fileMatch": [
-      "^requirements\\.yml$",
-      "^roles/[^/]+/meta/main\\.yml$",
-      "^galaxy\\.yml$"
-    ]
-  },
-  "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": ["(^|/)requirements\\.ya?ml$", "(^|/)galaxy\\.ya?ml$"],
-      "matchStrings": [
-        "name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
+      description: 'Auto merge Galaxy dependencies',
+      matchDatasources: [
+        'galaxy',
       ],
-      "datasourceTemplate": "git-tags"
-    }
-  ]
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'digest',
+      ],
+    },
+    {
+      description: 'Auto-merge GitHub Actions',
+      matchManagers: [
+        'github-actions',
+      ],
+      matchDatasources: [
+        'github-tags',
+      ],
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+    },
+    {
+      description: 'Group Ansible Galaxy dependencies',
+      matchManagers: [
+        'ansible-galaxy',
+      ],
+      groupName: 'ansible-dependencies',
+    },
+  ],
+  ansible: {
+    managerFilePatterns: [
+      '/^requirements\\.yml$/',
+      '/^roles/[^/]+/meta/main\\.yml$/',
+      '/^galaxy\\.yml$/',
+    ],
+  },
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)requirements\\.ya?ml$/',
+        '/(^|/)galaxy\\.ya?ml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)',
+      ],
+      datasourceTemplate: 'git-tags',
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^roles/asdf/defaults/main\\.yml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>golang)\\s+version: "(?<currentValue>[0-9.]+)"',
+      ],
+      datasourceTemplate: 'github-tags',
+      depNameTemplate: 'golang/go',
+      versioningTemplate: 'semver',
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^roles/asdf/defaults/main\\.yml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>python)\\s+version: "(?<currentValue>[0-9.]+)"',
+      ],
+      datasourceTemplate: 'github-tags',
+      depNameTemplate: 'python/cpython',
+      versioningTemplate: 'semver',
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^roles/asdf/defaults/main\\.yml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>kubectl)\\s+version: "(?<currentValue>[0-9.]+)"',
+      ],
+      datasourceTemplate: 'github-tags',
+      depNameTemplate: 'kubernetes/kubernetes',
+      versioningTemplate: 'semver',
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^roles/asdf/defaults/main\\.yml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>packer)\\s+version: "(?<currentValue>[0-9.]+)"',
+      ],
+      datasourceTemplate: 'github-tags',
+      depNameTemplate: 'hashicorp/packer',
+      versioningTemplate: 'semver',
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^roles/asdf/defaults/main\\.yml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>ruby)\\s+version: "(?<currentValue>[0-9.]+)"',
+      ],
+      datasourceTemplate: 'github-tags',
+      depNameTemplate: 'ruby/ruby',
+      versioningTemplate: 'semver',
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^roles/asdf/defaults/main\\.yml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>helm)\\s+version: "(?<currentValue>[0-9.]+)"',
+      ],
+      datasourceTemplate: 'github-tags',
+      depNameTemplate: 'helm/helm',
+      versioningTemplate: 'semver',
+    },
+  ],
 }
