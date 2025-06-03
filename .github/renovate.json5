@@ -26,43 +26,59 @@
   'pre-commit': {
     enabled: true,
   },
-  "packageRules": [
+  packageRules: [
     {
-      "description": "Auto merge Galaxy dependencies",
-      "matchDatasources": ["galaxy"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["digest"]
-    },
-    {
-      "description": "Auto-merge GitHub Actions",
-      "matchManagers": ["github-actions"],
-      "matchDatasources": ["github-tags"],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": ["minor", "patch"]
-    },
-    {
-      "description": "Group Ansible Galaxy dependencies",
-      "matchManagers": ["ansible-galaxy"],
-      "groupName": "ansible-dependencies"
-    }
-  ],
-  "ansible": {
-    "fileMatch": [
-      "^requirements\\.yml$",
-      "^roles/[^/]+/meta/main\\.yml$",
-      "^galaxy\\.yml$"
-    ]
-  },
-  "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": ["(^|/)requirements\\.ya?ml$", "(^|/)galaxy\\.ya?ml$"],
-      "matchStrings": [
-        "name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)"
+      description: 'Auto merge Galaxy dependencies',
+      matchDatasources: [
+        'galaxy',
       ],
-      "datasourceTemplate": "git-tags"
-    }
-  ]
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'digest',
+      ],
+    },
+    {
+      description: 'Auto-merge GitHub Actions',
+      matchManagers: [
+        'github-actions',
+      ],
+      matchDatasources: [
+        'github-tags',
+      ],
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+    },
+    {
+      description: 'Group Ansible Galaxy dependencies',
+      matchManagers: [
+        'ansible-galaxy',
+      ],
+      groupName: 'ansible-dependencies',
+    },
+  ],
+  ansible: {
+    managerFilePatterns: [
+      '/^requirements\\.yml$/',
+      '/^roles/[^/]+/meta/main\\.yml$/',
+      '/^galaxy\\.yml$/',
+    ],
+  },
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)requirements\\.ya?ml$/',
+        '/(^|/)galaxy\\.ya?ml$/',
+      ],
+      matchStrings: [
+        'name: (?<depName>[^\\s]+)\\n\\s+src: (?<packageName>[^\\s]+)\\n\\s+version: (?<currentValue>[^\\s]+)',
+      ],
+      datasourceTemplate: 'git-tags',
+    },
+  ],
 }
