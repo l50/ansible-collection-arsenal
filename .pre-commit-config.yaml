@@ -41,7 +41,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/ansible/ansible-lint
-    rev: v25.5.0
+    rev: v25.6.0
     hooks:
       - id: ansible-lint
         entry: ansible-lint -v --force-color -c .hooks/linters/ansible-lint.yaml
