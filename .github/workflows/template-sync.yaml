@@ -53,7 +53,7 @@ jobs:
           token: "${{ steps.app-token.outputs.token }}"
 
       - name: Template Sync
-        uses: AndreasAugustin/actions-template-sync@bcb94410a4f1dffdfe5eaabc8234c3b8e76ebc5b # v2.5.1
+        uses: AndreasAugustin/actions-template-sync@8ec19a5f2721ffb81ff809aa340ddf75e6a85ea6 # v2.5.2
         with:
           source_gh_token: ${{ steps.app-token.outputs.token }}
           target_gh_token: ${{ steps.app-token.outputs.token }}
