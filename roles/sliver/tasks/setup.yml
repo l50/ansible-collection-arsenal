@@ -175,17 +175,32 @@
     ASDF_DATA_DIR: "{{ sliver_user_home }}/.asdf"
     PATH: "/usr/local/bin:/{{ sliver_user_home }}/.asdf/shims:/usr/bin:/bin"
 
+- name: Ensure .sliver-client/configs directory exists
+  ansible.builtin.file:
+    path: "{{ sliver_user_home }}/.sliver-client/configs"
+    state: directory
+    owner: "{{ sliver_username }}"
+    group: "{{ sliver_usergroup }}"
+    mode: '0755'
+  become: true
+
 - name: Generate operator config
   ansible.builtin.shell:
     cmd: |
       {{ sliver_install_path }}/sliver-server operator --name {{ sliver_username }} \
       --lhost localhost \
       --permissions all \
-      --save "{{ sliver_user_home }}/.sliver-client/configs"
-      chown -R {{ sliver_username }}:"{{ sliver_usergroup }}" "{{ sliver_install_path }}/sliver-client"
+      --save {{ sliver_user_home }}/.sliver-client/configs
   become: true
   become_user: "{{ sliver_username }}"
   args:
     executable: /bin/bash
   changed_when: "'configs saved' in result.stdout"
   register: result
+
+- name: Set ownership of sliver-client binary
+  ansible.builtin.file:
+    path: "{{ sliver_install_path }}/sliver-client"
+    owner: "{{ sliver_username }}"
+    group: "{{ sliver_usergroup }}"
+  become: true

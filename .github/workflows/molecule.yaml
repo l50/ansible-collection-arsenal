@@ -201,7 +201,7 @@ jobs:
       - name: Install Act dependencies
         if: ${{ env.ACT }}
         run: |
-          apt-get update && apt-get install rsync sudo -y
+          apt-get -y update && apt-get install rsync sudo
 
       - name: Delete huge unnecessary tools folder
         if: env.ACT == ''
