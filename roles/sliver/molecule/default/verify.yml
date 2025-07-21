@@ -8,6 +8,9 @@
       ansible.builtin.include_vars:
         file: "../../defaults/main.yml"
 
+    - name: Set sliver user home directory
+      ansible.builtin.include_tasks: "../../tasks/sliver_get_user_home.yml"
+
     - name: Check if Sliver server is installed
       ansible.builtin.stat:
         path: "{{ sliver_install_path }}/sliver-server"
