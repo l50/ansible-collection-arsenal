@@ -37,7 +37,7 @@ for role_dir in roles/*/; do
 
     # Run docsible with custom template - let it do its thing
     cd "$role_dir"
-    if docsible --no-docsible --no-backup --comments --md-role-template "$REPO_ROOT/$TEMPLATE_PATH" > /dev/null 2>&1; then
+    if docsible --role . --no-docsible --no-backup --comments --md-role-template "$REPO_ROOT/$TEMPLATE_PATH" > /dev/null 2>&1; then
         cd "$REPO_ROOT"
 
         # Check if changed
@@ -70,7 +70,7 @@ find . -name ".docsible" -type f -delete 2> /dev/null || true
 # Exit
 if [ $FILES_MODIFIED -eq 1 ]; then
     echo -e "${YELLOW}Documentation updated with custom template. Review and commit.${NC}"
-    exit 0
+    exit 1
 else
     echo -e "${GREEN}All documentation up to date${NC}"
     exit 0

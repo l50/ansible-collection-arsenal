@@ -12,5 +12,6 @@
   "MD055": false,
   "MD056": false,
   "MD057": false,
-  "line-length": false
+  "line-length": false,
+  "no-multiple-blanks": false
 }
