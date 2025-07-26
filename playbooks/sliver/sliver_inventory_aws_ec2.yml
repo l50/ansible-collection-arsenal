@@ -7,7 +7,7 @@ hostnames:
   - tag:Name
 filters:
   "tag:Name":
-    - "packer-sliver"
+    - "sliver"
 keyed_groups:
   - key: tags.Name
     prefix: name_

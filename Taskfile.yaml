@@ -1,5 +1,8 @@
 ---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: "3"
+
+set: [pipefail]
 
 includes:
   ansible: "https://raw.githubusercontent.com/CowDogMoo/taskfile-templates/main/ansible/Taskfile.yaml"
@@ -9,14 +12,14 @@ includes:
 
 tasks:
   default:
-    desc: "Run all CI tasks"
+    desc: Run all CI tasks
     cmds:
       - task: ansible:lint-ansible
       - task: run-pre-commit
       - task: ansible:run-molecule-tests
 
   run-pre-commit:
-    desc: "Update, clear cache, and run pre-commit hooks"
+    desc: Update, clear cache, and run pre-commit hooks
     cmds:
       - task: pre-commit:update-hooks
       - task: pre-commit:clear-cache
