@@ -1,65 +1,100 @@
-# Ansible Role: TTPForge
+<!-- DOCSIBLE START -->
+# ttpforge
 
-This role installs and configures [TTPForge](https://github.com/facebookincubator/TTPForge),
-a Cybersecurity Framework for developing, automating, and executing attacker
-Tactics, Techniques, and Procedures (TTPs).
+## Description
+
+TTPForge is a Cybersecurity Framework for developing, automating, and executing
+attacker Tactics, Techniques, and Procedures (TTPs)
+
 
 ## Requirements
 
-- Ansible 2.14 or higher.
-- Access to package repositories for required software packages.
-
-## Role Variables
-
-| Variable                           | Default Value                       | Description                                           |
-| ---------------------------------- | ----------------------------------- | ----------------------------------------------------- |
-| `ttpforge_repo_path`               | `"{{ ansible_env.HOME }}/ttpforge"` | Path to clone the TTPForge repository.                |
-| `ttpforge_install_path`            | `"/usr/local/bin/ttpforge"`         | Path to install the TTPForge executable.              |
-| `ttpforge_go_path`                 | `"/usr/bin/go"`                     | Path to the Go executable for building TTPForge.      |
-| `ttpforge_common_install_packages` | See `vars/main.yml`                 | Common packages required for TTPForge.                |
-| `ttpforge_debian_packages`         | See `vars/main.yml`                 | Debian-specific packages required for TTPForge.       |
-| `ttpforge_el_packages`             | See `vars/main.yml`                 | EL (Enterprise Linux) specific packages for TTPForge. |
+- Ansible >= 2.14
 
 ## Dependencies
 
-- `cowdogmoo.workstation.package_management`
-- `cowdogmoo.workstation.asdf`
+- cowdogmoo.workstation.package_management
+- cowdogmoo.workstation.asdf
+
+## Role Variables
+
+### Default Variables (main.yml)
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `ttpforge_install_path` | str | `/opt/ttpforge` | No description |
+| `ttpforge_username` | str | `{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}` | No description |
+| `ttpforge_usergroup` | str | `{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}` | No description |
+| `ttpforge_shell` | str | `{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}` | No description |
+| `ttpforge_asdf_plugins` | list | `[]` | No description |
+| `ttpforge_asdf_plugins.0` | dict | `{}` | No description |
+| `ttpforge_asdf_plugins.1` | dict | `{}` | No description |
+
+### Role Variables (main.yml)
+
+| Variable | Type | Value | Description |
+|----------|------|-------|-------------|
+| `ttpforge_common_install_packages` | list | `[]` | No description |
+| `ttpforge_common_install_packages.0` | str | `build-essential` | No description |
+| `ttpforge_common_install_packages.1` | str | `g++` | No description |
+| `ttpforge_common_install_packages.2` | str | `gcc` | No description |
+| `ttpforge_common_install_packages.3` | str | `git` | No description |
+| `ttpforge_common_install_packages.4` | str | `make` | No description |
+| `ttpforge_common_install_packages.5` | str | `unzip` | No description |
+| `ttpforge_common_install_packages.6` | str | `wget` | No description |
+| `ttpforge_common_install_packages.7` | str | `zip` | No description |
+
+## Tasks
+
+### main.yml
+
+- **Set ttpforge user home directory** (ansible.builtin.include_tasks)
+- **Install required packages for ttpforge** (ansible.builtin.include_role)
+- **Ensure home directory exists for ttpforge user** (ansible.builtin.file)
+- **Check if .bashrc exists for ttpforge user** (ansible.builtin.stat)
+- **Ensure .bashrc exists for ttpforge user** (ansible.builtin.file) - Conditional
+- **Check if asdf is installed for ttpforge user** (ansible.builtin.stat)
+- **Check if asdf binary is installed** (ansible.builtin.stat)
+- **Install asdf and associated plugins for ttpforge user** (ansible.builtin.include_role) - Conditional
+- **Include TTPForge setup tasks** (ansible.builtin.include_tasks)
+
+### setup.yml
+
+- **Configure Git to allow ttpforge repository as a safe directory** (community.general.git_config)
+- **Clone ttpforge repo** (ansible.builtin.git)
+- **Check current ownership of {{ ttpforge_install_path }}** (ansible.builtin.stat)
+- **Ensure correct ownership of the ttpforge repository** (ansible.builtin.file) - Conditional
+- **Set up Go version in ttpforge directory** (ansible.builtin.copy) - Conditional
+- **Add ttpforge_install_path to $PATH** (ansible.builtin.lineinfile)
+- **Check if ttpforge binary exists** (ansible.builtin.stat)
+- **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
+- **Compile ttpforge** (ansible.builtin.shell) - Conditional
+- **Check if ttpforge has been initialized** (ansible.builtin.stat)
+- **Initialize ttpforge** (ansible.builtin.command) - Conditional
+
+### ttpforge_get_user_home.yml
+
+- **Gather available local users** (ansible.builtin.getent) - Conditional
+- **Set user home directory** (ansible.builtin.set_fact) - Conditional
+- **Set user home directory for macOS** (ansible.builtin.set_fact) - Conditional
 
 ## Example Playbook
 
 ```yaml
 - hosts: servers
   roles:
-    - {
-        role: cowdogmoo.workstation.ttpforge,
-        ttpforge_users:
-          [
-            {
-              username: "ttpforge",
-              usergroup: "ttpforge",
-              shell: "/bin/bash",
-              sudo: true,
-              asdf_plugins:
-                [{ name: "golang", version: "1.22.0", scope: "global" }],
-            },
-          ],
-      }
+    - ttpforge
 ```
-
-## Testing
-
-This role uses Molecule for testing. To run the tests:
-
-```bash
-molecule converge
-molecule verify
-molecule destroy
-```
-
-## License
-
-MIT
 
 ## Author Information
 
-This role was created by [Jayson Grace](https://github.com/l50).
+- **Author**: Jayson Grace
+- **Company**: techvomit
+- **License**: MIT
+
+## Platforms
+
+- Ubuntu: all
+- macOS: all
+- EL: all
+<!-- DOCSIBLE END -->

@@ -1,5 +1,6 @@
 ansible-core
 docker
+docsible==0.7.25
 molecule
 molecule-docker
 molecule-plugins[docker]
