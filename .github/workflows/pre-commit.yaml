@@ -62,4 +62,5 @@ jobs:
           task --version
 
       - name: Run pre-commit
-        run: task -y run-pre-commit
+        run: |
+          task -y run-pre-commit
