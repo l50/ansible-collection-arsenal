@@ -111,6 +111,7 @@ Install sliver c2
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
 - **Compile sliver** (ansible.builtin.shell) - Conditional
 - **Check if Sliver server unpacked** (ansible.builtin.stat)
+- **Check if Sliver server binary exists before unpacking** (ansible.builtin.stat)
 - **Unpack Sliver server** (ansible.builtin.command) - Conditional
 - **Ensure .sliver-client/configs directory exists** (ansible.builtin.file)
 - **Generate operator config** (ansible.builtin.shell)
