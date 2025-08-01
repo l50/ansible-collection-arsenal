@@ -86,7 +86,50 @@
 
 - name: Compile sliver
   ansible.builtin.shell: |
-    # ... (rest of the shell script remains the same)
+    set -o pipefail
+
+    # Check asdf is available and working
+    export ASDF_DATA_DIR="{{ sliver_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    asdf --version
+
+    # Reshim and verify golang version
+    asdf reshim golang
+    asdf current golang
+
+    # Ensure go binary is available
+    GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ sliver_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
+
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "Could not find go binary in standard location, checking alternative paths..."
+      GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang" -name go -type f -executable | head -1)
+    fi
+
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "Still could not find go binary, checking shims directory..."
+      if [ -x "${ASDF_DATA_DIR}/shims/go" ]; then
+        GO_BIN_PATH="${ASDF_DATA_DIR}/shims/go"
+      fi
+    fi
+
+    if [ -z "$GO_BIN_PATH" ]; then
+      echo "ERROR: Could not find go executable anywhere"
+      exit 1
+    fi
+
+    echo "Found Go binary at: ${GO_BIN_PATH}"
+
+    # Verify Go works
+    echo "Running Go version check:"
+    "$GO_BIN_PATH" version
+
+    # Run go mod tidy to update dependencies
+    echo "Running go mod tidy to update dependencies:"
+    "$GO_BIN_PATH" mod tidy
+
+    # Build the sliver binary using the direct path to Go
+    echo "Building sliver binary:"
+    {{ 'make' if ansible_distribution == 'Kali GNU/Linux' else 'gmake' }} -C {{ sliver_install_path }} -j{{ ansible_processor_vcpus | default(2) }}
   args:
     chdir: "{{ sliver_install_path }}"
     executable: /bin/bash
