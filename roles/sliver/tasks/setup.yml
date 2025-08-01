@@ -149,10 +149,10 @@
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
-  register: compile_result
+  register: sliver_compile_result
   failed_when:
-    - compile_result.rc != 0
-    - "'No executable go found' not in compile_result.stderr"
+    - sliver_compile_result.rc != 0
+    - "'No executable go found' not in sliver_compile_result.stderr"
 
 - name: Check if Sliver server unpacked
   ansible.builtin.stat:
@@ -161,14 +161,22 @@
   become_user: "{{ sliver_username }}"
   register: sliver_server_unpacked_stat
 
+- name: Check if Sliver server binary exists before unpacking
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/sliver-server"
+  become: true
+  register: sliver_server_exists_for_unpack
+
 - name: Unpack Sliver server
   ansible.builtin.command:
     cmd: "{{ sliver_install_path }}/sliver-server unpack --force"
   become: true
   become_user: "{{ sliver_username }}"
-  when: not sliver_server_unpacked_stat.stat.exists
-  changed_when: "'Unpacking complete' in unpack_result.stdout"
-  register: unpack_result
+  when:
+    - not sliver_server_unpacked_stat.stat.exists
+    - sliver_server_exists_for_unpack.stat.exists
+  changed_when: "'Unpacking complete' in sliver_unpack_result.stdout"
+  register: sliver_unpack_result
   environment:
     HOME: "{{ sliver_user_home }}"
     USER: "{{ sliver_username }}"
@@ -195,8 +203,8 @@
   become_user: "{{ sliver_username }}"
   args:
     executable: /bin/bash
-  changed_when: "'configs saved' in result.stdout"
-  register: result
+  changed_when: "'configs saved' in sliver_result.stdout"
+  register: sliver_result
 
 - name: Set ownership of sliver-client binary
   ansible.builtin.file:

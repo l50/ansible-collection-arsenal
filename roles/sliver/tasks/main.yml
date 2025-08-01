@@ -32,7 +32,7 @@
 - name: Check if .bashrc exists for sliver user
   ansible.builtin.stat:
     path: "{{ sliver_user_home }}/.bashrc"
-  register: bashrc_stat
+  register: sliver_bashrc_stat
   become: true
 
 - name: Ensure .bashrc exists for sliver user
@@ -43,19 +43,18 @@
     group: "{{ sliver_usergroup }}"
     mode: '0644'
   become: true
-  when: not bashrc_stat.stat.exists
+  when: not sliver_bashrc_stat.stat.exists
 
 - name: Check if ASDF is installed for sliver user
   ansible.builtin.stat:
     path: "{{ sliver_user_home }}/.asdf"
-  register: asdf_installed
+  register: sliver_asdf_installed
 
 - name: Check if asdf binary is installed
   ansible.builtin.stat:
     path: "/usr/local/bin/asdf"
-  register: asdf_binary_installed
+  register: sliver_asdf_binary_installed
 
-# Print slive3r user info
 - name: Print sliver user info
   ansible.builtin.debug:
     msg: "Sliver user info: {{ sliver_username }}, {{ sliver_usergroup }}, {{ sliver_shell }}, {{ sliver_user_home }}"
@@ -71,7 +70,7 @@
     asdf_user_home: "{{ sliver_user_home }}"
     asdf_data_dir: "{{ sliver_user_home }}/.asdf"
     asdf_bin_dir: "/usr/local/bin"
-  when: not asdf_installed.stat.exists or not asdf_binary_installed.stat.exists
+  when: not sliver_asdf_installed.stat.exists or not sliver_asdf_binary_installed.stat.exists
 
 - name: Include Sliver setup tasks
   ansible.builtin.include_tasks: setup.yml

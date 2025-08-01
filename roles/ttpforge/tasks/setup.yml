@@ -15,8 +15,8 @@
     force: true
     update: true
   become: true
-  register: git_clone_result
-  changed_when: git_clone_result.before != git_clone_result.after
+  register: ttpforge_git_clone_result
+  changed_when: ttpforge_git_clone_result.before != ttpforge_git_clone_result.after
 
 - name: Check current ownership of {{ ttpforge_install_path }}
   ansible.builtin.stat:
@@ -90,47 +90,31 @@
 - name: Compile ttpforge
   ansible.builtin.shell: |
     set -o pipefail
-
-    # Check asdf is available and working
     export ASDF_DATA_DIR="{{ ttpforge_user_home }}/.asdf"
     export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
     asdf --version
-
-    # Reshim and verify golang version
     asdf reshim golang
     asdf current golang
-
-    # Ensure go binary is available
     GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ ttpforge_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
-
     if [ -z "$GO_BIN_PATH" ]; then
       echo "Could not find go binary in standard location, checking alternative paths..."
       GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang" -name go -type f -executable | head -1)
     fi
-
     if [ -z "$GO_BIN_PATH" ]; then
       echo "Still could not find go binary, checking shims directory..."
       if [ -x "${ASDF_DATA_DIR}/shims/go" ]; then
         GO_BIN_PATH="${ASDF_DATA_DIR}/shims/go"
       fi
     fi
-
     if [ -z "$GO_BIN_PATH" ]; then
       echo "ERROR: Could not find go executable anywhere"
       exit 1
     fi
-
     echo "Found Go binary at: ${GO_BIN_PATH}"
-
-    # Verify Go works
     echo "Running Go version check:"
     "$GO_BIN_PATH" version
-
-    # Run go mod tidy to update dependencies
     echo "Running go mod tidy to update dependencies:"
     "$GO_BIN_PATH" mod tidy
-
-    # Build the ttpforge binary using the direct path to Go
     echo "Building ttpforge binary:"
     "$GO_BIN_PATH" build -buildvcs=false -o {{ ttpforge_install_path }}/ttpforge
   args:
@@ -149,10 +133,10 @@
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
-  register: compile_result
+  register: ttpforge_compile_result
   failed_when:
-    - compile_result.rc != 0
-    - "'No executable go found' not in compile_result.stderr"
+    - ttpforge_compile_result.rc != 0
+    - "'No executable go found' not in ttpforge_compile_result.stderr"
 
 - name: Check if ttpforge has been initialized
   ansible.builtin.stat:
