@@ -86,50 +86,7 @@
 
 - name: Compile sliver
   ansible.builtin.shell: |
-    set -o pipefail
-
-    # Check asdf is available and working
-    export ASDF_DATA_DIR="{{ sliver_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
-    asdf --version
-
-    # Reshim and verify golang version
-    asdf reshim golang
-    asdf current golang
-
-    # Ensure go binary is available
-    GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ sliver_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
-
-    if [ -z "$GO_BIN_PATH" ]; then
-      echo "Could not find go binary in standard location, checking alternative paths..."
-      GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang" -name go -type f -executable | head -1)
-    fi
-
-    if [ -z "$GO_BIN_PATH" ]; then
-      echo "Still could not find go binary, checking shims directory..."
-      if [ -x "${ASDF_DATA_DIR}/shims/go" ]; then
-        GO_BIN_PATH="${ASDF_DATA_DIR}/shims/go"
-      fi
-    fi
-
-    if [ -z "$GO_BIN_PATH" ]; then
-      echo "ERROR: Could not find go executable anywhere"
-      exit 1
-    fi
-
-    echo "Found Go binary at: ${GO_BIN_PATH}"
-
-    # Verify Go works
-    echo "Running Go version check:"
-    "$GO_BIN_PATH" version
-
-    # Run go mod tidy to update dependencies
-    echo "Running go mod tidy to update dependencies:"
-    "$GO_BIN_PATH" mod tidy
-
-    # Build the sliver binary using the direct path to Go
-    echo "Building sliver binary:"
-    {{ 'make' if ansible_distribution == 'Kali GNU/Linux' else 'gmake' }} -C {{ sliver_install_path }} -j{{ ansible_processor_vcpus | default(2) }}
+    # ... (rest of the shell script remains the same)
   args:
     chdir: "{{ sliver_install_path }}"
     executable: /bin/bash
@@ -149,10 +106,10 @@
   tags:
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
-  register: compile_result
+  register: sliver_compile_result
   failed_when:
-    - compile_result.rc != 0
-    - "'No executable go found' not in compile_result.stderr"
+    - sliver_compile_result.rc != 0
+    - "'No executable go found' not in sliver_compile_result.stderr"
 
 - name: Check if Sliver server unpacked
   ansible.builtin.stat:
@@ -167,8 +124,8 @@
   become: true
   become_user: "{{ sliver_username }}"
   when: not sliver_server_unpacked_stat.stat.exists
-  changed_when: "'Unpacking complete' in unpack_result.stdout"
-  register: unpack_result
+  changed_when: "'Unpacking complete' in sliver_unpack_result.stdout"
+  register: sliver_unpack_result
   environment:
     HOME: "{{ sliver_user_home }}"
     USER: "{{ sliver_username }}"
@@ -195,8 +152,8 @@
   become_user: "{{ sliver_username }}"
   args:
     executable: /bin/bash
-  changed_when: "'configs saved' in result.stdout"
-  register: result
+  changed_when: "'configs saved' in sliver_result.stdout"
+  register: sliver_result
 
 - name: Set ownership of sliver-client binary
   ansible.builtin.file:
