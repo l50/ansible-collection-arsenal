@@ -35,9 +35,9 @@ for role_dir in roles/*/; do
         cp "$readme" "$readme.bak"
     fi
 
-    # Run docsible with custom template - let it do its thing
+    # Run docsible with custom template
     cd "$role_dir"
-    if docsible --role . --no-docsible --no-backup --comments --md-role-template "$REPO_ROOT/$TEMPLATE_PATH" > /dev/null 2>&1; then
+    if output=$(docsible --role . --no-docsible --no-backup --comments --md-role-template "$REPO_ROOT/$TEMPLATE_PATH" 2>&1); then
         cd "$REPO_ROOT"
 
         # Check if changed
@@ -56,6 +56,7 @@ for role_dir in roles/*/; do
     else
         cd "$REPO_ROOT"
         echo -e "${RED}  Failed to generate docs${NC}"
+        echo -e "${RED}  Error: $output${NC}"
         # Restore original if it existed
         if [ -f "$readme.bak" ]; then
             mv "$readme.bak" "$readme"
