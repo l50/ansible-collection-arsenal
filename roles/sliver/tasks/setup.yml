@@ -118,12 +118,20 @@
   become_user: "{{ sliver_username }}"
   register: sliver_server_unpacked_stat
 
+- name: Check if Sliver server binary exists before unpacking
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/sliver-server"
+  become: true
+  register: sliver_server_exists_for_unpack
+
 - name: Unpack Sliver server
   ansible.builtin.command:
     cmd: "{{ sliver_install_path }}/sliver-server unpack --force"
   become: true
   become_user: "{{ sliver_username }}"
-  when: not sliver_server_unpacked_stat.stat.exists
+  when:
+    - not sliver_server_unpacked_stat.stat.exists
+    - sliver_server_exists_for_unpack.stat.exists
   changed_when: "'Unpacking complete' in sliver_unpack_result.stdout"
   register: sliver_unpack_result
   environment:
