@@ -20,7 +20,7 @@
 - name: Check if .bashrc exists for ttpforge user
   ansible.builtin.stat:
     path: "{{ ttpforge_user_home }}/.bashrc"
-  register: bashrc_stat
+  register: ttpforge_bashrc_stat
   become: true
 
 - name: Ensure .bashrc exists for ttpforge user
@@ -31,17 +31,17 @@
     group: "{{ ttpforge_usergroup }}"
     mode: '0644'
   become: true
-  when: not bashrc_stat.stat.exists
+  when: not ttpforge_bashrc_stat.stat.exists
 
 - name: Check if asdf is installed for ttpforge user
   ansible.builtin.stat:
     path: "{{ ttpforge_user_home }}/.asdf"
-  register: asdf_installed
+  register: ttpforge_asdf_installed
 
 - name: Check if asdf binary is installed
   ansible.builtin.stat:
     path: "/usr/local/bin/asdf"
-  register: asdf_binary_installed
+  register: ttpforge_asdf_binary_installed
 
 - name: Install asdf and associated plugins for ttpforge user
   ansible.builtin.include_role:
@@ -54,7 +54,7 @@
     asdf_user_home: "{{ ttpforge_user_home }}"
     asdf_data_dir: "{{ ttpforge_user_home }}/.asdf"
     asdf_bin_dir: "/usr/local/bin"
-  when: not asdf_installed.stat.exists or not asdf_binary_installed.stat.exists
+  when: not ttpforge_asdf_installed.stat.exists or not ttpforge_asdf_binary_installed.stat.exists
 
 - name: Include TTPForge setup tasks
   ansible.builtin.include_tasks: setup.yml
