@@ -62,4 +62,6 @@ jobs:
           task --version
 
       - name: Run pre-commit
-        run: task -y run-pre-commit
+        run: |
+          # Run all hooks except those that modify files
+          SKIP=docsible task -y run-pre-commit
