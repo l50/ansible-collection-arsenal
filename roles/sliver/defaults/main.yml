@@ -6,6 +6,7 @@ sliver_username: "sliver"
 sliver_usergroup: "sliver"
 sliver_shell: "{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}"
 sliver_asdf_plugins:
+  # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
   - name: golang
     version: "1.22.2"
     scope: "global"
