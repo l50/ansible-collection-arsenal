@@ -107,6 +107,7 @@ You can work with the changelog in two ways:
 #### Option 1: Run the complete changelog process in one command
 
 ```bash
+NEXT_VERSION=x.y.z
 export TASK_X_REMOTE_TASKFILES=1
 NEXT_VERSION=$NEXT_VERSION task -y ansible:gen-changelog
 ```

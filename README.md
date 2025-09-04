@@ -30,10 +30,18 @@ graph TD
 
 ## Installation
 
-Install the Arsenal collection:
+Install latest version of the Arsenal collection:
 
 ```bash
 ansible-galaxy collection install git+https://github.com/l50/ansible-collection-arsenal.git,main
+```
+
+Alternatively, you can build the collection locally and install it from
+the generated tarball:
+
+```bash
+ansible-galaxy collection build --force && \
+  ansible-galaxy collection install l50-arsenal-*.tar.gz -p ~/.ansible/collections --force --pre
 ```
 
 ## Roles
@@ -59,13 +67,30 @@ Include the roles from this collection in your playbook. Here's an example:
 
 ```yaml
 ---
-- name: Provision container
+- name: Provision system
   hosts: localhost
   roles:
     - l50.arsenal.sliver
     - l50.arsenal.ttpforge
     - l50.arsenal.attack_box
 ```
+
+## Development
+
+### Setting Up Development Environment
+
+To set up the development environment and install all required dependencies,
+including docsible for automatic documentation generation:
+
+```bash
+python3 -m pip install -r .hooks/requirements.txt
+```
+
+### Documentation Generation
+
+This project uses [docsible](https://github.com/docsible/docsible) to automatically
+generate documentation for Ansible roles. Documentation is generated automatically
+via pre-commit hooks when changes are made to role files.
 
 ## License
 

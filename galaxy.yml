@@ -1,7 +1,7 @@
 ---
 namespace: l50
 name: arsenal
-version: "1.0.4"
+version: "1.0.5"
 readme: README.md
 authors:
   - Jayson Grace <techvomit.net>
