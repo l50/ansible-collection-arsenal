@@ -8,3 +8,4 @@ changelogs/.plugin-cache.yaml
 .task/
 .ansible
 *.tar.gz
+*.log

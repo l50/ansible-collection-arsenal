@@ -1,6 +1,6 @@
 # Ansible Collection Release Process
 
-This document outlines the process for creating new releases of the Ansible collection.
+This document outlines the process for creating new releases of this Ansible collection.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ This document outlines the process for creating new releases of the Ansible coll
 
 ## Pre-Release Tasks
 
-Before creating a release, you should perform these preparation steps:
+Before creating a release, perform these preparation steps:
 
 1. **Run Molecule Tests**
 
@@ -61,7 +61,7 @@ Before creating a release, you should perform these preparation steps:
    task -y ansible:lint-ansible
    ```
 
-   This runs ansible-lint with the configuration file at .hooks/linters/ansible-lint.yaml.
+   This runs ansible-lint with the configuration file at `.hooks/linters/ansible-lint.yaml`.
 
 1. **Update Collection Dependencies and Versions**
 
@@ -108,7 +108,7 @@ You can work with the changelog in two ways:
 
 ```bash
 export TASK_X_REMOTE_TASKFILES=1
-NEXT_VERSION=1.0.0 task ansible:gen-changelog
+NEXT_VERSION=$NEXT_VERSION task -y ansible:gen-changelog
 ```
 
 This command will run all the necessary steps (linting and release generation).
@@ -126,7 +126,7 @@ Then generate the release:
 
 ```bash
 export TASK_X_REMOTE_TASKFILES=1
-NEXT_VERSION=1.0.0 task -y ansible:changelog-release
+NEXT_VERSION=$NEXT_VERSION task -y ansible:changelog-release
 ```
 
 **Required Variables:**
