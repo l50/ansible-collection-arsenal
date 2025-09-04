@@ -8,6 +8,22 @@
 This Ansible collection provides offsec tools, configurations, and utilities
 that I employ regularly.
 
+## Architecture Diagram
+
+```mermaid
+graph TD
+    Collection[Ansible Collection]
+    Collection --> Roles[🎭 Roles]
+    Roles --> R0[attack_box 🧪]
+    Roles --> R1[sliver 🧪]
+    Roles --> R2[ttpforge 🧪]
+    Collection --> Playbooks[📚 Playbooks]
+    Playbooks --> PB0[attack_box 🧪]
+    Playbooks --> PB1[sliver 🧪]
+    Playbooks --> PB2[atomic-red-team 🧪]
+    Playbooks --> PB3[ttpforge 🧪]
+```
+
 ## Requirements
 
 - Ansible 2.15 or higher

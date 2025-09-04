@@ -75,3 +75,12 @@ repos:
         always_run: true
         pass_filenames: false
         stages: [pre-commit]
+
+      - id: update-architecture-diagram
+        name: Update Architecture Diagram
+        entry: python .hooks/gen-arch-diagram.py
+        language: python
+        pass_filenames: false
+        always_run: false
+        files: ^(roles/|plugins/|playbooks/|\.github/workflows/).*
+        additional_dependencies: []
