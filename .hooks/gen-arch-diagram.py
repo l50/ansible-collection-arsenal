@@ -63,7 +63,7 @@ def generate_mermaid(structure):
 
     # Add roles
     if structure['roles']:
-        lines.append("    Collection --> Roles[🎭 Roles]")
+        lines.append("    Collection --> Roles[⚙️ Roles]")
         for i, role in enumerate(structure['roles']):
             role_label = role['name']
             if role['has_molecule']:
