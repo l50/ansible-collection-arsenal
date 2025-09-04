@@ -1,86 +1,86 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "gitAuthor": "l50-renovate-bot <153877091+l50-renovate-bot[bot]@users.noreply.github.com>",
-  "extends": [
-    "config:recommended",
-    "docker:enableMajor",
-    ":disableRateLimiting",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":enablePreCommit",
-    ":automergeDigest",
-    "helpers:pinGitHubActionDigests"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  gitAuthor: 'l50-renovate-bot <153877091+l50-renovate-bot[bot]@users.noreply.github.com>',
+  extends: [
+    'config:recommended',
+    'docker:enableMajor',
+    ':disableRateLimiting',
+    ':dependencyDashboard',
+    ':semanticCommits',
+    ':enablePreCommit',
+    ':automergeDigest',
+    'helpers:pinGitHubActionDigests',
   ],
-  "dependencyDashboardLabels": [
-    "renovate-dashboard"
+  dependencyDashboardLabels: [
+    'renovate-dashboard',
   ],
-  "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "suppressNotifications": [
-    "prIgnoreNotification"
+  dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  suppressNotifications: [
+    'prIgnoreNotification',
   ],
-  "rebaseWhen": "conflicted",
-  "commitBodyTable": true,
-  "labels": [
-    "renovate"
+  rebaseWhen: 'conflicted',
+  commitBodyTable: true,
+  labels: [
+    'renovate',
   ],
-  "pre-commit": {
-    "enabled": true
+  'pre-commit': {
+    enabled: true,
   },
-  "packageRules": [
+  packageRules: [
     {
-      "description": "Auto merge Galaxy dependencies",
-      "matchManagers": [
-        "ansible-galaxy"
+      description: 'Auto merge Galaxy dependencies',
+      matchManagers: [
+        'ansible-galaxy',
       ],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ]
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
     },
     {
-      "description": "Auto-merge GitHub Actions",
-      "matchManagers": [
-        "github-actions"
+      description: 'Auto-merge GitHub Actions',
+      matchManagers: [
+        'github-actions',
       ],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ]
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
     },
     {
-      "description": "Group Ansible Galaxy dependencies",
-      "matchManagers": [
-        "ansible-galaxy"
+      description: 'Group Ansible Galaxy dependencies',
+      matchManagers: [
+        'ansible-galaxy',
       ],
-      "groupName": "ansible-dependencies"
+      groupName: 'ansible-dependencies',
     },
     {
-      "description": "Auto-merge asdf plugin updates",
-      "matchManagers": [
-        "custom.regex"
+      description: 'Auto-merge asdf plugin updates',
+      matchManagers: [
+        'custom.regex',
       ],
-      "automerge": true,
-      "automergeType": "pr",
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ]
-    }
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+    },
   ],
-  "customManagers": [
+  customManagers: [
     {
-      "customType": "regex",
-      "description": "Update asdf plugin versions in Ansible roles",
-      "fileMatch": [
-        "^roles/.*/defaults/main\\.yml$"
+      customType: 'regex',
+      description: 'Update asdf plugin versions in Ansible roles',
+      managerFilePatterns: [
+        '/^roles/.*/defaults/main\\.yml$/',
       ],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[\\w-]+)(?: packageName=(?<packageName>[\\w-/]+))?(?: extractVersion=(?<extractVersion>[^\\s]+))?\\s*\\n\\s*- name:\\s*[\\w-]+\\s*\\n\\s*version:\\s*\"(?<currentValue>[0-9.]+)\""
-      ]
-    }
-  ]
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[\\w-]+)(?: packageName=(?<packageName>[\\w-/]+))?(?: extractVersion=(?<extractVersion>[^\\s]+))?\\s*\\n\\s*- name:\\s*[\\w-]+\\s*\\n\\s*version:\\s*"(?<currentValue>[0-9.]+)"',
+      ],
+    },
+  ],
 }
