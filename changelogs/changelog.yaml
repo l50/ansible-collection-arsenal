@@ -163,3 +163,46 @@ releases:
       - Removed inline comment about `bash_profile` creation being conditional.
       - Removed old system package.
     release_date: '2025-04-11'
+  1.0.5:
+    changes:
+      added:
+      - Added SSL certificate environment variables for Go module downloads.
+      - Added `.templatesyncignore` file to control template synchronization.
+      - Added `area/plugins` label for plugin directory changes.
+      - Added `create.yml` and `destroy.yml` to all Molecule test scenarios.
+      - Added `go mod tidy` step before compilation in sliver and ttpforge roles.
+      - Added alternative local build and install method for the collection in README
+      - Added architecture diagram generation with Mermaid for collection visualization.
+      - Added comprehensive README documentation for all playbooks.
+      - Added custom Docsible template for automated Ansible role documentation.
+      - Added development environment setup and documentation generation instructions
+        to README
+      - Added markdownlint configuration replacing mdstyle.rb.
+      - Added renovate dashboard label configuration.
+      - Added template sync workflow for infrastructure file synchronization.
+      - Added use of Docsible for automated role documentation to README
+      changed:
+      - Enhanced error handling and fallback mechanisms in Go binary detection.
+      - Fixed ASDF installation checks to verify both data directory and binary.
+      - Fixed sliver role operator config generation with proper permissions.
+      - Fixed ttpforge compilation issues with proper environment variable setup.
+      - Fixed user home directory detection for different OS families.
+      - Improved ASDF plugin version management with renovate datasource annotations.
+      - Improved Molecule test configurations with consistent provisioner settings.
+      - Refactored sliver role to use single user configuration instead of user list.
+      - Refactored ttpforge role with improved user home directory detection.
+      - Simplified playbook configurations removing redundant variable definitions.
+      - Standardized shell configuration to use .bashrc instead of .bash_profile.
+      - Updated Ansible collection dependencies (amazon.aws to 10.1.1, ansible.windows
+        to 3.2.0, community.docker to 4.7.0, community.general to 11.2.1).
+      - Updated GitHub Actions to latest versions (create-github-app-token, checkout,
+        setup-python, cache).
+      - Updated Go version to 1.24.4 and Python to 3.13.3 in CI workflows.
+      - Updated renovate configuration with improved automerge rules and custom regex
+        managers.
+      removed:
+      - Removed `generate_docs.py` in favor of Docsible documentation generation.
+      - Removed `mdstyle.rb` linter configuration file.
+      - Removed redundant user creation tasks from playbook converge files.
+      - Removed unused `install-sliver.sh.j2` template.
+    release_date: '2025-09-04'
