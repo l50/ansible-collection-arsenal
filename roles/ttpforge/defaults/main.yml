@@ -10,5 +10,5 @@ ttpforge_asdf_plugins:
     scope: "global"
   # renovate: datasource=github-tags depName=python packageName=python/cpython extractVersion=^v(?<version>.*)$
   - name: python
-    version: "3.13.1"
+    version: "3.13.7"
     scope: "global"
