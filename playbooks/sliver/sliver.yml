@@ -13,3 +13,5 @@
           - name: golang
             version: "1.23.5"
             scope: "global"
+        # Enable cleanup to minimize footprint
+        sliver_cleanup_enabled: true

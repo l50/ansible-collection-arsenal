@@ -27,6 +27,30 @@ Install sliver c2
 | `sliver_shell` | str | `{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}` | No description |
 | `sliver_asdf_plugins` | list | `[]` | No description |
 | `sliver_asdf_plugins.0` | dict | `{}` | No description |
+| `sliver_cleanup_enabled` | bool | `False` | No description |
+| `sliver_cleanup_remove_build_packages` | bool | `True` | No description |
+| `sliver_cleanup_remove_golang` | bool | `True` | No description |
+| `sliver_cleanup_package_cache` | bool | `True` | No description |
+| `sliver_cleanup_temp_files` | bool | `True` | No description |
+| `sliver_cleanup_debian_packages` | list | `[]` | No description |
+| `sliver_cleanup_debian_packages.0` | str | `build-essential` | No description |
+| `sliver_cleanup_debian_packages.1` | str | `binutils-mingw-w64` | No description |
+| `sliver_cleanup_debian_packages.2` | str | `g++-mingw-w64` | No description |
+| `sliver_cleanup_debian_packages.3` | str | `mingw-w64` | No description |
+| `sliver_cleanup_debian_packages.4` | str | `gcc` | No description |
+| `sliver_cleanup_debian_packages.5` | str | `g++` | No description |
+| `sliver_cleanup_debian_packages.6` | str | `autoconf` | No description |
+| `sliver_cleanup_debian_packages.7` | str | `bison` | No description |
+| `sliver_cleanup_debian_packages.8` | str | `libtool` | No description |
+| `sliver_cleanup_debian_packages.9` | str | `nasm` | No description |
+| `sliver_cleanup_debian_packages.10` | str | `postgresql` | No description |
+| `sliver_cleanup_debian_packages.11` | str | `postgresql-contrib` | No description |
+| `sliver_cleanup_debian_packages.12` | str | `postgresql-client` | No description |
+| `sliver_cleanup_el_packages` | list | `[]` | No description |
+| `sliver_cleanup_el_packages.0` | str | `gcc` | No description |
+| `sliver_cleanup_el_packages.1` | str | `gcc-c++` | No description |
+| `sliver_cleanup_el_packages.2` | str | `protobuf` | No description |
+| `sliver_cleanup_el_packages.3` | str | `protobuf-devel` | No description |
 
 ### Role Variables (main.yml)
 
@@ -84,6 +108,22 @@ Install sliver c2
 
 ## Tasks
 
+### cleanup.yml
+
+- **Clean up build dependencies and caches** (block)
+- **Ensure Sliver binaries exist before cleanup** (ansible.builtin.stat)
+- **Stop Sliver service before cleanup** (ansible.builtin.systemd) - Conditional
+- **Preserve Sliver binaries and configs** (ansible.builtin.shell)
+- **Clean up Sliver source code and build artifacts** (ansible.builtin.file)
+- **Restore preserved binaries and configs** (ansible.builtin.shell)
+- **Remove build-only packages for Debian-based systems** (ansible.builtin.apt) - Conditional
+- **Remove build-only packages for RedHat-based systems** (ansible.builtin.dnf) - Conditional
+- **Remove ASDF and Go installation** (ansible.builtin.file) - Conditional
+- **Remove unused packages and dependencies for Debian-based systems** (ansible.builtin.apt) - Conditional
+- **Clean apt package cache for Debian-based systems** (ansible.builtin.apt) - Conditional
+- **Clean temporary files and user caches** (ansible.builtin.file) - Conditional
+- **Start Sliver service after cleanup** (ansible.builtin.systemd) - Conditional
+
 ### main.yml
 
 - **Install required packages for Sliver** (ansible.builtin.include_role)
@@ -98,6 +138,7 @@ Install sliver c2
 - **Install asdf and golang for sliver user** (ansible.builtin.include_role) - Conditional
 - **Include Sliver setup tasks** (ansible.builtin.include_tasks)
 - **Include systemd tasks** (ansible.builtin.include_tasks) - Conditional
+- **Include cleanup tasks** (ansible.builtin.include_tasks) - Conditional
 
 ### setup.yml
 
