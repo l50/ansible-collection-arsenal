@@ -8,45 +8,54 @@ sliver_common_install_packages:
   - unzip
   - zip
 
-sliver_debian_packages:
+sliver_debian_runtime_packages:
   - apt-utils
+  - curl
+  - gpg
+  - libapr1
+  - libcurl4-openssl-dev
+  - libssl-dev
+  - libsvn1
+  - libxml2
+  - openssl
+  - xsel
+
+sliver_debian_build_packages:
   - autoconf
   - build-essential
   - binutils-mingw-w64
   - bison
-  - curl
   - g++-mingw-w64
-  - gpg
-  - libapr1
-  - libcurl4-openssl-dev
+  - gcc
+  - g++
   - libgmp3-dev
   - libpcap-dev
   - libpq-dev
   - libsqlite3-dev
-  - libsvn1
-  - libssl-dev
-  - libtool
-  - libxml2
   - libxml2-dev
   - libxslt-dev
   - libyaml-dev
+  - libtool
   - locate
-  - make
   - mingw-w64
   - nasm
   - ncurses-dev
-  - openssl
   - postgresql
   - postgresql-contrib
   - postgresql-client
-  - xsel
   - zlib1g
   - zlib1g-dev
 
-sliver_el_packages:
+sliver_debian_packages: "{{ sliver_debian_runtime_packages + sliver_debian_build_packages }}"
+
+sliver_el_runtime_packages:
   - epel-release
+
+sliver_el_build_packages:
   - gcc
   - gcc-c++
   - protobuf
   - zlib
   - zlib-devel
+
+sliver_el_packages: "{{ sliver_el_runtime_packages + sliver_el_build_packages }}"

@@ -83,7 +83,7 @@
 
     - name: Remove build-only packages for Debian-based systems
       ansible.builtin.apt:
-        name: "{{ sliver_cleanup_debian_packages }}"
+        name: "{{ sliver_debian_build_packages }}"
         state: absent
         autoremove: true
         purge: true
@@ -94,7 +94,7 @@
 
     - name: Remove build-only packages for RedHat-based systems
       ansible.builtin.dnf:
-        name: "{{ sliver_cleanup_el_packages }}"
+        name: "{{ sliver_el_build_packages }}"
         state: absent
         autoremove: true
       become: true

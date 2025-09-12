@@ -17,25 +17,3 @@ sliver_cleanup_remove_build_packages: true
 sliver_cleanup_remove_golang: true
 sliver_cleanup_package_cache: true
 sliver_cleanup_temp_files: true
-
-# Packages to remove during cleanup (build-only dependencies)
-sliver_cleanup_debian_packages:
-  - build-essential
-  - binutils-mingw-w64
-  - g++-mingw-w64
-  - mingw-w64
-  - gcc
-  - g++
-  - autoconf
-  - bison
-  - libtool
-  - nasm
-  - postgresql
-  - postgresql-contrib
-  - postgresql-client
-
-sliver_cleanup_el_packages:
-  - gcc
-  - gcc-c++
-  - protobuf
-  - protobuf-devel
