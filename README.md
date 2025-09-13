@@ -13,7 +13,7 @@ that I employ regularly.
 ```mermaid
 graph TD
     Collection[Ansible Collection]
-    Collection --> Roles[🎭 Roles]
+    Collection --> Roles[⚙️ Roles]
     Roles --> R0[attack_box 🧪]
     Roles --> R1[sliver 🧪]
     Roles --> R2[ttpforge 🧪]

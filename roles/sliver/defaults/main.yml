@@ -1,6 +1,7 @@
 ---
 sliver_install_path: /opt/sliver
 sliver_setup_systemd: false
+sliver_cleanup: false  # Enable for Docker/container builds to minimize image size
 
 sliver_username: "sliver"
 sliver_usergroup: "sliver"

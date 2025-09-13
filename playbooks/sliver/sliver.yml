@@ -5,6 +5,8 @@
     sliver_username: "sliver"
     sliver_usergroup: "sliver"
     sliver_shell: "/bin/bash"
+    # Default to false, override with -e sliver_cleanup=true for production
+    sliver_cleanup: false
   roles:
     - name: Include Sliver role
       role: l50.arsenal.sliver
