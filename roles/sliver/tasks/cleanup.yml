@@ -1,0 +1,103 @@
+---
+- name: Clean up build environment
+  when: sliver_cleanup | bool
+  block:
+    - name: Check if build artifacts exist
+      ansible.builtin.stat:
+        path: "{{ sliver_install_path }}/.git"
+      register: sliver_git_dir
+
+    - name: Remove build artifacts and unnecessary files
+      ansible.builtin.shell: |
+        # Clean up Sliver build artifacts
+        cd {{ sliver_install_path }}
+        find . -name "*.o" -delete 2>/dev/null || true
+        find . -name "*.a" -delete 2>/dev/null || true
+        rm -rf .git test docs .github 2>/dev/null || true
+        rm -rf server/assets/fs/darwin 2>/dev/null || true
+        rm -rf server/assets/fs/windows 2>/dev/null || true
+        rm -rf server/assets/fs/linux 2>/dev/null || true
+
+        # Strip debug symbols from binaries if they exist
+        if [ -f {{ sliver_install_path }}/sliver-server ]; then
+          strip {{ sliver_install_path }}/sliver-server || true
+        fi
+        if [ -f {{ sliver_install_path }}/sliver-client ]; then
+          strip {{ sliver_install_path }}/sliver-client || true
+        fi
+      args:
+        executable: /bin/bash
+      become: true
+      changed_when: sliver_git_dir.stat.exists
+
+    - name: Remove Go build environment
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ sliver_user_home }}/go"
+        - "{{ sliver_user_home }}/.cache/go-build"
+        - "{{ sliver_user_home }}/.asdf"
+      become: true
+
+    - name: Remove development packages (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name: "{{ sliver_debian_packages }}"
+        state: absent
+        autoremove: true
+        autoclean: true
+      when: ansible_os_family == "Debian"
+      become: true
+      failed_when: false
+
+    - name: Remove development packages (RedHat/CentOS)
+      ansible.builtin.dnf:
+        name: "{{ sliver_el_packages }}"
+        state: absent
+        autoremove: true
+      when: ansible_os_family == "RedHat"
+      become: true
+      failed_when: false
+
+    - name: Clean package manager cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        clean: true
+      when: ansible_os_family == "Debian"
+      become: true
+
+    - name: Remove apt lists
+      ansible.builtin.file:
+        path: /var/lib/apt/lists
+        state: absent
+      when: ansible_os_family == "Debian"
+      become: true
+
+    - name: Recreate apt lists directory
+      ansible.builtin.file:
+        path: /var/lib/apt/lists
+        state: directory
+        mode: '0755'
+      when: ansible_os_family == "Debian"
+      become: true
+
+    - name: Clean package manager cache (RedHat/CentOS)
+      ansible.builtin.command:
+        cmd: dnf clean all
+      when: ansible_os_family == "RedHat"
+      become: true
+      changed_when: true
+
+    - name: Remove dnf cache directory
+      ansible.builtin.file:
+        path: /var/cache/dnf
+        state: absent
+      when: ansible_os_family == "RedHat"
+      become: true
+
+    - name: Remove temporary files
+      ansible.builtin.shell: |
+        rm -rf /tmp/* /var/tmp/* 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      become: true
+      changed_when: false

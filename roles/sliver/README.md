@@ -22,6 +22,7 @@ Install sliver c2
 |----------|------|---------|-------------|
 | `sliver_install_path` | str | `/opt/sliver` | No description |
 | `sliver_setup_systemd` | bool | `False` | No description |
+| `sliver_cleanup` | bool | `False` | No description |
 | `sliver_username` | str | `sliver` | No description |
 | `sliver_usergroup` | str | `sliver` | No description |
 | `sliver_shell` | str | `{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}` | No description |
@@ -84,6 +85,21 @@ Install sliver c2
 
 ## Tasks
 
+### cleanup.yml
+
+- **Clean up build environment** (block) - Conditional
+- **Check if build artifacts exist** (ansible.builtin.stat)
+- **Remove build artifacts and unnecessary files** (ansible.builtin.shell)
+- **Remove Go build environment** (ansible.builtin.file)
+- **Remove development packages (Debian/Ubuntu)** (ansible.builtin.apt) - Conditional
+- **Remove development packages (RedHat/CentOS)** (ansible.builtin.dnf) - Conditional
+- **Clean package manager cache (Debian/Ubuntu)** (ansible.builtin.apt) - Conditional
+- **Remove apt lists** (ansible.builtin.file) - Conditional
+- **Recreate apt lists directory** (ansible.builtin.file) - Conditional
+- **Clean package manager cache (RedHat/CentOS)** (ansible.builtin.command) - Conditional
+- **Remove dnf cache directory** (ansible.builtin.file) - Conditional
+- **Remove temporary files** (ansible.builtin.shell)
+
 ### main.yml
 
 - **Install required packages for Sliver** (ansible.builtin.include_role)
@@ -98,6 +114,7 @@ Install sliver c2
 - **Install asdf and golang for sliver user** (ansible.builtin.include_role) - Conditional
 - **Include Sliver setup tasks** (ansible.builtin.include_tasks)
 - **Include systemd tasks** (ansible.builtin.include_tasks) - Conditional
+- **Include cleanup tasks** (ansible.builtin.include_tasks) - Conditional
 
 ### setup.yml
 
