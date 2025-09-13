@@ -56,6 +56,8 @@ Install sliver c2
 | `sliver_debian_runtime_packages.7` | str | `libxml2` | No description |
 | `sliver_debian_runtime_packages.8` | str | `openssl` | No description |
 | `sliver_debian_runtime_packages.9` | str | `xsel` | No description |
+| `sliver_debian_runtime_packages.10` | str | `zlib1g` | No description |
+| `sliver_debian_runtime_packages.11` | str | `zlib1g-dev` | No description |
 | `sliver_debian_build_packages` | list | `[]` | No description |
 | `sliver_debian_build_packages.0` | str | `autoconf` | No description |
 | `sliver_debian_build_packages.1` | str | `build-essential` | No description |
@@ -79,17 +81,15 @@ Install sliver c2
 | `sliver_debian_build_packages.19` | str | `postgresql` | No description |
 | `sliver_debian_build_packages.20` | str | `postgresql-contrib` | No description |
 | `sliver_debian_build_packages.21` | str | `postgresql-client` | No description |
-| `sliver_debian_build_packages.22` | str | `zlib1g` | No description |
-| `sliver_debian_build_packages.23` | str | `zlib1g-dev` | No description |
 | `sliver_debian_packages` | str | `{{ sliver_debian_runtime_packages + sliver_debian_build_packages }}` | No description |
 | `sliver_el_runtime_packages` | list | `[]` | No description |
 | `sliver_el_runtime_packages.0` | str | `epel-release` | No description |
+| `sliver_el_runtime_packages.1` | str | `zlib` | No description |
+| `sliver_el_runtime_packages.2` | str | `zlib-devel` | No description |
 | `sliver_el_build_packages` | list | `[]` | No description |
 | `sliver_el_build_packages.0` | str | `gcc` | No description |
 | `sliver_el_build_packages.1` | str | `gcc-c++` | No description |
 | `sliver_el_build_packages.2` | str | `protobuf` | No description |
-| `sliver_el_build_packages.3` | str | `zlib` | No description |
-| `sliver_el_build_packages.4` | str | `zlib-devel` | No description |
 | `sliver_el_packages` | str | `{{ sliver_el_runtime_packages + sliver_el_build_packages }}` | No description |
 
 ## Tasks
@@ -98,12 +98,10 @@ Install sliver c2
 
 - **Clean up build dependencies and caches** (block)
 - **Ensure Sliver binaries exist before cleanup** (ansible.builtin.stat)
+- **Verify all Sliver binaries exist** (ansible.builtin.assert)
 - **Stop Sliver service before cleanup** (ansible.builtin.systemd) - Conditional
-- **Preserve Sliver binaries and configs** (ansible.builtin.shell)
 - **Clean up Sliver source code and build artifacts** (ansible.builtin.file)
-- **Restore preserved binaries and configs** (ansible.builtin.shell)
 - **Remove build-only packages for Debian-based systems** (ansible.builtin.apt) - Conditional
-- **Remove build-only packages for RedHat-based systems** (ansible.builtin.dnf) - Conditional
 - **Remove ASDF and Go installation** (ansible.builtin.file) - Conditional
 - **Remove unused packages and dependencies for Debian-based systems** (ansible.builtin.apt) - Conditional
 - **Clean apt package cache for Debian-based systems** (ansible.builtin.apt) - Conditional
@@ -129,7 +127,11 @@ Install sliver c2
 ### setup.yml
 
 - **Configure Git to allow sliver_install_path as a safe directory** (community.general.git_config)
-- **Clone Sliver repo** (ansible.builtin.git)
+- **Check if Sliver directory exists** (ansible.builtin.stat)
+- **Check if Sliver directory is a git repository** (ansible.builtin.stat)
+- **Check for local modifications in git repository** (ansible.builtin.shell) - Conditional
+- **Stash local changes if they exist** (ansible.builtin.shell) - Conditional
+- **Clone or update Sliver repo** (ansible.builtin.git)
 - **Check current ownership of {{ sliver_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the Sliver repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in Sliver directory** (ansible.builtin.copy) - Conditional

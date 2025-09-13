@@ -2,17 +2,16 @@
 - name: Converge
   hosts: all
   gather_facts: true
+  vars:
+    sliver_asdf_plugins:
+      - name: golang
+        version: "1.25.1"
+        scope: "global"
+    sliver_cleanup_enabled: true
+    sliver_cleanup_remove_build_packages: true
+    sliver_cleanup_remove_golang: true
+    sliver_cleanup_package_cache: true
+    sliver_cleanup_temp_files: true
 
   roles:
     - role: l50.arsenal.sliver
-      vars:
-        sliver_asdf_plugins:
-          - name: golang
-            version: "1.24.0"
-            scope: "global"
-        # Enable cleanup for testing
-        sliver_cleanup_enabled: true
-        sliver_cleanup_remove_build_packages: true
-        sliver_cleanup_remove_golang: true
-        sliver_cleanup_package_cache: true
-        sliver_cleanup_temp_files: true

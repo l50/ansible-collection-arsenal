@@ -19,6 +19,8 @@ sliver_debian_runtime_packages:
   - libxml2
   - openssl
   - xsel
+  - zlib1g
+  - zlib1g-dev
 
 sliver_debian_build_packages:
   - autoconf
@@ -43,19 +45,17 @@ sliver_debian_build_packages:
   - postgresql
   - postgresql-contrib
   - postgresql-client
-  - zlib1g
-  - zlib1g-dev
 
 sliver_debian_packages: "{{ sliver_debian_runtime_packages + sliver_debian_build_packages }}"
 
 sliver_el_runtime_packages:
   - epel-release
+  - zlib
+  - zlib-devel
 
 sliver_el_build_packages:
   - gcc
   - gcc-c++
   - protobuf
-  - zlib
-  - zlib-devel
 
 sliver_el_packages: "{{ sliver_el_runtime_packages + sliver_el_build_packages }}"

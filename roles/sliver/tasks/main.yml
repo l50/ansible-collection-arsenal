@@ -84,4 +84,3 @@
   when: sliver_cleanup_enabled | bool
   tags:
     - cleanup
-    - never

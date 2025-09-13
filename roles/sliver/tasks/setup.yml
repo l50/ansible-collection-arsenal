@@ -6,7 +6,46 @@
     value: "{{ sliver_install_path }}"
   become: true
 
-- name: Clone Sliver repo
+- name: Check if Sliver directory exists
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}"
+  register: sliver_dir_exists
+  become: true
+
+- name: Check if Sliver directory is a git repository
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/.git"
+  register: sliver_git_exists
+  become: true
+
+- name: Check for local modifications in git repository
+  ansible.builtin.shell: |
+    set -o pipefail
+    git status --porcelain
+  args:
+    chdir: "{{ sliver_install_path }}"
+    executable: /bin/bash
+  register: sliver_git_status
+  become: true
+  changed_when: false
+  failed_when: false
+  when: sliver_git_exists.stat.exists | default(false)
+
+- name: Stash local changes if they exist
+  ansible.builtin.shell: |
+    set -o pipefail
+    git stash push -m "Ansible stash before update"
+  args:
+    chdir: "{{ sliver_install_path }}"
+    executable: /bin/bash
+  become: true
+  when:
+    - sliver_git_exists.stat.exists | default(false)
+    - sliver_git_status.stdout | default('') | length > 0
+  changed_when: "'No local changes to save' not in sliver_git_stash_result.stdout"
+  register: sliver_git_stash_result
+
+- name: Clone or update Sliver repo
   ansible.builtin.git:
     repo: 'https://github.com/bishopfox/sliver.git'
     dest: "{{ sliver_install_path }}"

@@ -8,8 +8,14 @@
         - "{{ sliver_install_path }}/sliver-server"
         - "{{ sliver_install_path }}/sliver-client"
       register: sliver_binaries_check
-      failed_when: not item.stat.exists
       become: true
+
+    - name: Verify all Sliver binaries exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+        fail_msg: "Binary {{ item.item }} does not exist"
+      loop: "{{ sliver_binaries_check.results }}"
 
     - name: Stop Sliver service before cleanup
       ansible.builtin.systemd:
@@ -19,31 +25,12 @@
       when: sliver_setup_systemd | bool
       failed_when: false
 
-    - name: Preserve Sliver binaries and configs
-      ansible.builtin.shell: |
-        # Create temp directory for preservation
-        TEMP_DIR=$(mktemp -d)
-
-        # Preserve binaries
-        cp -p {{ sliver_install_path }}/sliver-server "${TEMP_DIR}/"
-        cp -p {{ sliver_install_path }}/sliver-client "${TEMP_DIR}/"
-
-        # Preserve configs if they exist
-        if [ -d "{{ sliver_install_path }}/configs" ]; then
-          cp -rp {{ sliver_install_path }}/configs "${TEMP_DIR}/"
-        fi
-
-        echo "${TEMP_DIR}"
-      register: sliver_temp_preserve_dir
-      become: true
-      changed_when: true
-
     - name: Clean up Sliver source code and build artifacts
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
-        - "{{ sliver_install_path }}/.git"
+        # Keep .git for idempotency with setup.yml
         - "{{ sliver_install_path }}/.github"
         - "{{ sliver_install_path }}/client"
         - "{{ sliver_install_path }}/server"
@@ -59,27 +46,11 @@
         - "{{ sliver_install_path }}/.tool-versions"
         - "{{ sliver_install_path }}/LICENSE"
         - "{{ sliver_install_path }}/README.md"
+        - "{{ sliver_install_path }}/docs"
+        - "{{ sliver_install_path }}/test"
+        - "{{ sliver_install_path }}/util"
       become: true
-
-    - name: Restore preserved binaries and configs
-      ansible.builtin.shell: |
-        # Restore binaries
-        mv {{ sliver_temp_preserve_dir.stdout }}/sliver-server {{ sliver_install_path }}/
-        mv {{ sliver_temp_preserve_dir.stdout }}/sliver-client {{ sliver_install_path }}/
-
-        # Restore configs if they exist
-        if [ -d "{{ sliver_temp_preserve_dir.stdout }}/configs" ]; then
-          mv {{ sliver_temp_preserve_dir.stdout }}/configs {{ sliver_install_path }}/
-        fi
-
-        # Clean up temp directory
-        rm -rf {{ sliver_temp_preserve_dir.stdout }}
-
-        # Ensure correct permissions
-        chown -R {{ sliver_username }}:{{ sliver_usergroup }} {{ sliver_install_path }}
-        chmod +x {{ sliver_install_path }}/sliver-*
-      become: true
-      changed_when: true
+      failed_when: false  # Some paths might not exist
 
     - name: Remove build-only packages for Debian-based systems
       ansible.builtin.apt:
@@ -90,16 +61,6 @@
       become: true
       when:
         - ansible_os_family == "Debian"
-        - sliver_cleanup_remove_build_packages | bool
-
-    - name: Remove build-only packages for RedHat-based systems
-      ansible.builtin.dnf:
-        name: "{{ sliver_el_build_packages }}"
-        state: absent
-        autoremove: true
-      become: true
-      when:
-        - ansible_os_family == "RedHat"
         - sliver_cleanup_remove_build_packages | bool
 
     - name: Remove ASDF and Go installation
@@ -117,7 +78,6 @@
       ansible.builtin.apt:
         autoremove: true
         autoclean: true
-        purge: true
       become: true
       when:
         - ansible_os_family == "Debian"
