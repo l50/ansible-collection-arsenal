@@ -99,13 +99,20 @@ Install sliver c2
 - **Clean up build dependencies and caches** (block)
 - **Ensure Sliver binaries exist before cleanup** (ansible.builtin.stat)
 - **Verify all Sliver binaries exist** (ansible.builtin.assert)
+- **Check if Sliver service exists** (ansible.builtin.stat)
 - **Stop Sliver service before cleanup** (ansible.builtin.systemd) - Conditional
-- **Clean up Sliver source code and build artifacts** (ansible.builtin.file)
+- **Check which cleanup paths exist** (ansible.builtin.stat)
+- **Clean up Sliver source code and build artifacts** (ansible.builtin.file) - Conditional
+- **Check if build packages are installed** (ansible.builtin.package) - Conditional
 - **Remove build-only packages for Debian-based systems** (ansible.builtin.apt) - Conditional
+- **Check which ASDF/Go paths exist** (ansible.builtin.stat) - Conditional
 - **Remove ASDF and Go installation** (ansible.builtin.file) - Conditional
 - **Remove unused packages and dependencies for Debian-based systems** (ansible.builtin.apt) - Conditional
 - **Clean apt package cache for Debian-based systems** (ansible.builtin.apt) - Conditional
-- **Clean temporary files and user caches** (ansible.builtin.file) - Conditional
+- **Check which temp files exist** (ansible.builtin.find) - Conditional
+- **Check if user cache exists** (ansible.builtin.stat) - Conditional
+- **Clean temporary files** (ansible.builtin.file) - Conditional
+- **Clean user cache** (ansible.builtin.file) - Conditional
 - **Start Sliver service after cleanup** (ansible.builtin.systemd) - Conditional
 
 ### main.yml
@@ -129,11 +136,11 @@ Install sliver c2
 - **Configure Git to allow sliver_install_path as a safe directory** (community.general.git_config)
 - **Check if Sliver directory exists** (ansible.builtin.stat)
 - **Check if Sliver directory is a git repository** (ansible.builtin.stat)
-- **Check for local modifications in git repository** (ansible.builtin.shell) - Conditional
-- **Stash local changes if they exist** (ansible.builtin.shell) - Conditional
 - **Clone or update Sliver repo** (ansible.builtin.git)
 - **Check current ownership of {{ sliver_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the Sliver repository** (ansible.builtin.file) - Conditional
+- **Check if Go version file exists** (ansible.builtin.stat)
+- **Read existing Go version if file exists** (ansible.builtin.slurp) - Conditional
 - **Set up Go version in Sliver directory** (ansible.builtin.copy) - Conditional
 - **Add sliver_install_path to $PATH** (ansible.builtin.lineinfile)
 - **Check if Sliver server exists** (ansible.builtin.stat)

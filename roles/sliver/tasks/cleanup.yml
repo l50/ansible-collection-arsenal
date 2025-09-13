@@ -17,20 +17,26 @@
         fail_msg: "Binary {{ item.item }} does not exist"
       loop: "{{ sliver_binaries_check.results }}"
 
+    - name: Check if Sliver service exists
+      ansible.builtin.stat:
+        path: /etc/systemd/system/sliver.service
+      register: sliver_service_exists
+      become: true
+
     - name: Stop Sliver service before cleanup
       ansible.builtin.systemd:
         name: sliver
         state: stopped
       become: true
-      when: sliver_setup_systemd | bool
+      when:
+        - sliver_setup_systemd | bool
+        - sliver_service_exists.stat.exists
       failed_when: false
 
-    - name: Clean up Sliver source code and build artifacts
-      ansible.builtin.file:
+    - name: Check which cleanup paths exist
+      ansible.builtin.stat:
         path: "{{ item }}"
-        state: absent
       loop:
-        # Keep .git for idempotency with setup.yml
         - "{{ sliver_install_path }}/.github"
         - "{{ sliver_install_path }}/client"
         - "{{ sliver_install_path }}/server"
@@ -49,8 +55,28 @@
         - "{{ sliver_install_path }}/docs"
         - "{{ sliver_install_path }}/test"
         - "{{ sliver_install_path }}/util"
+      register: sliver_cleanup_paths_check
       become: true
-      failed_when: false  # Some paths might not exist
+
+    - name: Clean up Sliver source code and build artifacts
+      ansible.builtin.file:
+        path: "{{ item.item }}"
+        state: absent
+      loop: "{{ sliver_cleanup_paths_check.results }}"
+      when: item.stat.exists
+      become: true
+      failed_when: false
+
+    - name: Check if build packages are installed
+      ansible.builtin.package:
+        name: "{{ sliver_debian_build_packages }}"
+        state: present
+      check_mode: true
+      register: sliver_build_packages_check
+      become: true
+      when:
+        - ansible_os_family == "Debian"
+        - sliver_cleanup_remove_build_packages | bool
 
     - name: Remove build-only packages for Debian-based systems
       ansible.builtin.apt:
@@ -62,17 +88,29 @@
       when:
         - ansible_os_family == "Debian"
         - sliver_cleanup_remove_build_packages | bool
+        - sliver_build_packages_check.changed
 
-    - name: Remove ASDF and Go installation
-      ansible.builtin.file:
+    - name: Check which ASDF/Go paths exist
+      ansible.builtin.stat:
         path: "{{ item }}"
-        state: absent
       loop:
         - "{{ sliver_user_home }}/.asdf"
         - "{{ sliver_user_home }}/go"
         - "{{ sliver_user_home }}/.cache/go-build"
+      register: sliver_asdf_paths_check
       become: true
       when: sliver_cleanup_remove_golang | bool
+
+    - name: Remove ASDF and Go installation
+      ansible.builtin.file:
+        path: "{{ item.item }}"
+        state: absent
+      loop: "{{ sliver_asdf_paths_check.results | default([]) }}"
+      when:
+        - sliver_cleanup_remove_golang | bool
+        - item.stat is defined
+        - item.stat.exists
+      become: true
 
     - name: Remove unused packages and dependencies for Debian-based systems
       ansible.builtin.apt:
@@ -82,6 +120,8 @@
       when:
         - ansible_os_family == "Debian"
         - sliver_cleanup_package_cache | bool
+      register: sliver_apt_cleanup_result
+      changed_when: sliver_apt_cleanup_result.changed
 
     - name: Clean apt package cache for Debian-based systems
       ansible.builtin.apt:
@@ -90,24 +130,51 @@
       when:
         - ansible_os_family == "Debian"
         - sliver_cleanup_package_cache | bool
+      changed_when: false # apt clean doesn't change system state in a meaningful way
 
-    - name: Clean temporary files and user caches
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "/tmp/sliver*"
-        - "/var/tmp/sliver*"
-        - "{{ sliver_user_home }}/.cache"
+    - name: Check which temp files exist
+      ansible.builtin.find:
+        paths:
+          - "/tmp"
+          - "/var/tmp"
+        patterns:
+          - "sliver*"
+      register: sliver_temp_files_check
       become: true
       when: sliver_cleanup_temp_files | bool
+
+    - name: Check if user cache exists
+      ansible.builtin.stat:
+        path: "{{ sliver_user_home }}/.cache"
+      register: sliver_user_cache_check
+      become: true
+      when: sliver_cleanup_temp_files | bool
+
+    - name: Clean temporary files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ sliver_temp_files_check.files | default([]) }}"
+      become: true
+      when: sliver_cleanup_temp_files | bool
+
+    - name: Clean user cache
+      ansible.builtin.file:
+        path: "{{ sliver_user_home }}/.cache"
+        state: absent
+      become: true
+      when:
+        - sliver_cleanup_temp_files | bool
+        - sliver_user_cache_check.stat.exists
 
     - name: Start Sliver service after cleanup
       ansible.builtin.systemd:
         name: sliver
         state: started
       become: true
-      when: sliver_setup_systemd | bool
+      when:
+        - sliver_setup_systemd | bool
+        - sliver_service_exists.stat.exists
 
   rescue:
     - name: Cleanup failed - attempting to restore service
@@ -115,7 +182,9 @@
         name: sliver
         state: started
       become: true
-      when: sliver_setup_systemd | bool
+      when:
+        - sliver_setup_systemd | bool
+        - sliver_service_exists.stat.exists | default(false)
       failed_when: false
 
     - name: Report cleanup failure

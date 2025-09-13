@@ -18,33 +18,6 @@
   register: sliver_git_exists
   become: true
 
-- name: Check for local modifications in git repository
-  ansible.builtin.shell: |
-    set -o pipefail
-    git status --porcelain
-  args:
-    chdir: "{{ sliver_install_path }}"
-    executable: /bin/bash
-  register: sliver_git_status
-  become: true
-  changed_when: false
-  failed_when: false
-  when: sliver_git_exists.stat.exists | default(false)
-
-- name: Stash local changes if they exist
-  ansible.builtin.shell: |
-    set -o pipefail
-    git stash push -m "Ansible stash before update"
-  args:
-    chdir: "{{ sliver_install_path }}"
-    executable: /bin/bash
-  become: true
-  when:
-    - sliver_git_exists.stat.exists | default(false)
-    - sliver_git_status.stdout | default('') | length > 0
-  changed_when: "'No local changes to save' not in sliver_git_stash_result.stdout"
-  register: sliver_git_stash_result
-
 - name: Clone or update Sliver repo
   ansible.builtin.git:
     repo: 'https://github.com/bishopfox/sliver.git'
@@ -72,6 +45,19 @@
     (sliver_dir_stat.stat.pw_name != sliver_username or
      sliver_dir_stat.stat.gr_name != sliver_usergroup)
 
+- name: Check if Go version file exists
+  ansible.builtin.stat:
+    path: "{{ sliver_install_path }}/.tool-versions"
+  register: sliver_tool_versions_stat
+  become: true
+
+- name: Read existing Go version if file exists
+  ansible.builtin.slurp:
+    src: "{{ sliver_install_path }}/.tool-versions"
+  register: sliver_existing_tool_versions
+  become: true
+  when: sliver_tool_versions_stat.stat.exists
+
 - name: Set up Go version in Sliver directory
   ansible.builtin.copy:
     dest: "{{ sliver_install_path }}/.tool-versions"
@@ -79,7 +65,11 @@
     owner: "{{ sliver_username }}"
     group: "{{ sliver_usergroup }}"
     mode: '0644'
-  when: sliver_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
+  when: >
+    sliver_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0 and
+    (not sliver_tool_versions_stat.stat.exists or
+     (sliver_existing_tool_versions.content | b64decode | trim) != "golang " + sliver_asdf_plugins[0].version)
+  become: true
 
 - name: Add sliver_install_path to $PATH
   ansible.builtin.lineinfile:
