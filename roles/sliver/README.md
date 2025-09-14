@@ -173,17 +173,16 @@ Install sliver c2
 - **Remove unpacked compilers if found** (ansible.builtin.file) - Conditional
 - **Gather package facts** (ansible.builtin.package_facts) - Conditional
 - **Remove development packages (excluding protected)** (ansible.builtin.apt) - Conditional
+- **Clean all cache directories** (ansible.builtin.file)
+- **Verify sliver binaries still work after cleanup** (ansible.builtin.command)
 - **Find and remove Python artifacts efficiently** (ansible.builtin.shell)
 - **Truncate log files** (ansible.builtin.shell)
 - **Container-specific optimizations** (block) - Conditional
 - **Remove container-unnecessary locale data** (ansible.builtin.shell)
-- **Remove container-unnecessary system files** (ansible.builtin.file)
+- **Remove container-unnecessary system files** (ansible.builtin.shell)
 - **Targeted cleanup for specific unnecessary packages** (ansible.builtin.shell) - Conditional
-- **Clean all cache directories once** (ansible.builtin.file)
-- **Verify sliver binaries still work after cleanup** (ansible.builtin.command)
-- **Report binary verification results** (ansible.builtin.debug) - Conditional
 - **Final APT cleanup (last for layer caching)** (ansible.builtin.shell) - Conditional
-- **Unhold protected packages after cleanup** (ansible.builtin.dpkg_selections) - Conditional
+- **Unhold protected packages after cleanup** (ansible.builtin.shell) - Conditional
 - **Display cleanup summary** (ansible.builtin.debug) - Conditional
 
 ### main.yml
