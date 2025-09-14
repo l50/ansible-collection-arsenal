@@ -1,7 +1,8 @@
 ---
+sliver_cleanup: false  # Enable for Docker/container builds to minimize image size
 sliver_install_path: /opt/sliver
 sliver_setup_systemd: false
-sliver_cleanup: false  # Enable for Docker/container builds to minimize image size
+sliver_unpack_at_build: true # Disable to skip unpacking at build time for Docker/container builds
 
 sliver_username: "sliver"
 sliver_usergroup: "sliver"
@@ -9,5 +10,5 @@ sliver_shell: "{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash
 sliver_asdf_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
   - name: golang
-    version: "1.25.1"
+    version: "1.24.5"
     scope: "global"

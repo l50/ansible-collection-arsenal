@@ -42,12 +42,22 @@
     mode: '0644'
   when: sliver_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
 
-- name: Add sliver_install_path to $PATH
-  ansible.builtin.lineinfile:
+- name: Add Sliver paths to user's bashrc
+  ansible.builtin.blockinfile:
     path: "{{ sliver_user_home }}/.bashrc"
-    line: "export PATH=$PATH:{{ sliver_install_path }}"
-    insertafter: EOF
-    regexp: "^export PATH=.*:{{ sliver_install_path }}.*$"
+    block: |
+      # Sliver paths
+      export PATH="/opt/sliver:$PATH"
+
+      # Add Sliver's Go and tools to PATH (created on first server run)
+      if [ -d "{{ sliver_user_home }}/.sliver/go/bin" ]; then
+        export PATH="{{ sliver_user_home }}/.sliver/go/bin:$PATH"
+      fi
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SLIVER PATHS"
+    create: true
+    owner: "{{ sliver_username }}"
+    group: "{{ sliver_usergroup }}"
+    mode: '0644'
   become: true
   become_user: "{{ sliver_username }}"
 
@@ -175,6 +185,7 @@
   when:
     - not sliver_server_unpacked_stat.stat.exists
     - sliver_server_exists_for_unpack.stat.exists
+    - sliver_unpack_at_build | default(true) | bool
   changed_when: "'Unpacking complete' in sliver_unpack_result.stdout"
   register: sliver_unpack_result
   environment:

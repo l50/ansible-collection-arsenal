@@ -2,102 +2,307 @@
 - name: Clean up build environment
   when: sliver_cleanup | bool
   block:
-    - name: Check if build artifacts exist
-      ansible.builtin.stat:
-        path: "{{ sliver_install_path }}/.git"
-      register: sliver_git_dir
+    - name: Create list of packages to protect
+      ansible.builtin.set_fact:
+        sliver_protected_packages: "{{ (sliver_packages.essential | default([])) + (sliver_packages.runtime_debian | default([])) | unique }}"
+      when: ansible_os_family == "Debian"
 
-    - name: Remove build artifacts and unnecessary files
-      ansible.builtin.shell: |
-        # Clean up Sliver build artifacts
-        cd {{ sliver_install_path }}
-        find . -name "*.o" -delete 2>/dev/null || true
-        find . -name "*.a" -delete 2>/dev/null || true
-        rm -rf .git test docs .github 2>/dev/null || true
-        rm -rf server/assets/fs/darwin 2>/dev/null || true
-        rm -rf server/assets/fs/windows 2>/dev/null || true
-        rm -rf server/assets/fs/linux 2>/dev/null || true
-
-        # Strip debug symbols from binaries if they exist
-        if [ -f {{ sliver_install_path }}/sliver-server ]; then
-          strip {{ sliver_install_path }}/sliver-server || true
-        fi
-        if [ -f {{ sliver_install_path }}/sliver-client ]; then
-          strip {{ sliver_install_path }}/sliver-client || true
-        fi
-      args:
-        executable: /bin/bash
+    - name: Hold runtime and essential packages before cleanup
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop: "{{ sliver_protected_packages }}"
       become: true
-      changed_when: sliver_git_dir.stat.exists
+      when:
+        - ansible_os_family == "Debian"
+      failed_when: false
 
-    - name: Remove Go build environment
+    - name: Remove build-time Go installation and caches
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
-      loop:
-        - "{{ sliver_user_home }}/go"
-        - "{{ sliver_user_home }}/.cache/go-build"
-        - "{{ sliver_user_home }}/.asdf"
+      loop: "{{ sliver_cleanup_paths }}"
       become: true
 
-    - name: Remove development packages (Debian/Ubuntu)
-      ansible.builtin.apt:
-        name: "{{ sliver_debian_packages }}"
-        state: absent
-        autoremove: true
-        autoclean: true
-      when: ansible_os_family == "Debian"
-      become: true
-      failed_when: false
-
-    - name: Remove development packages (RedHat/CentOS)
-      ansible.builtin.dnf:
-        name: "{{ sliver_el_packages }}"
-        state: absent
-        autoremove: true
-      when: ansible_os_family == "RedHat"
-      become: true
-      failed_when: false
-
-    - name: Clean package manager cache (Debian/Ubuntu)
-      ansible.builtin.apt:
-        clean: true
-      when: ansible_os_family == "Debian"
+    - name: Find non-binary files in sliver directory
+      ansible.builtin.find:
+        paths: "{{ sliver_install_path }}"
+        file_type: file
+        recurse: false
+        excludes: "{{ sliver_keep_binaries }}"
+      register: sliver_files_to_remove
       become: true
 
-    - name: Remove apt lists
+    - name: Remove non-binary files from sliver directory
       ansible.builtin.file:
-        path: /var/lib/apt/lists
+        path: "{{ item.path }}"
         state: absent
-      when: ansible_os_family == "Debian"
+      loop: "{{ sliver_files_to_remove.files }}"
       become: true
 
-    - name: Recreate apt lists directory
+    - name: Remove source directories from sliver installation
       ansible.builtin.file:
-        path: /var/lib/apt/lists
-        state: directory
-        mode: '0755'
-      when: ansible_os_family == "Debian"
+        path: "{{ sliver_install_path }}/{{ item }}"
+        state: absent
+      loop: "{{ sliver_source_directories }}"
       become: true
 
-    - name: Clean package manager cache (RedHat/CentOS)
+    - name: Find empty directories in sliver path
+      ansible.builtin.find:
+        paths: "{{ sliver_install_path }}"
+        file_type: directory
+        recurse: true
+      register: sliver_all_dirs
+      become: true
+
+    - name: Remove empty directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ sliver_all_dirs.files }}"
+      when: item.size == 0
+      become: true
+
+    - name: Strip debug symbols from binaries
       ansible.builtin.command:
-        cmd: dnf clean all
-      when: ansible_os_family == "RedHat"
+        cmd: "strip {{ sliver_install_path }}/{{ item }}"
+      loop: "{{ sliver_keep_binaries }}"
       become: true
-      changed_when: true
+      changed_when: false
+      failed_when: false
 
-    - name: Remove dnf cache directory
+    - name: Check for unpacked compilers in .sliver directory
+      ansible.builtin.stat:
+        path: "{{ sliver_user_home }}/.sliver/{{ item }}"
+      register: sliver_compilers
+      loop:
+        - go
+        - zig
+      become: true
+
+    - name: Remove unpacked compilers if found
       ansible.builtin.file:
-        path: /var/cache/dnf
+        path: "{{ item.stat.path }}"
         state: absent
-      when: ansible_os_family == "RedHat"
+      when: item.stat.exists
+      loop: "{{ sliver_compilers.results }}"
       become: true
 
-    - name: Remove temporary files
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: apt
+      when: ansible_os_family == "Debian"
+      become: true
+
+    - name: Remove development packages (excluding protected)
+      ansible.builtin.apt:
+        name: "{{ sliver_cleanup_packages_debian }}"
+        state: absent
+        purge: true
+        autoremove: true
+      when: ansible_os_family == "Debian"
+      become: true
+      failed_when: false
+
+    - name: Find and remove Python artifacts efficiently
       ansible.builtin.shell: |
-        rm -rf /tmp/* /var/tmp/* 2>/dev/null || true
+        # Target specific Python paths
+        for dir in /usr/lib/python* /usr/local/lib/python*; do
+          if [ -d "$dir" ]; then
+            find "$dir" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+            find "$dir" -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete 2>/dev/null || true
+          fi
+        done
+        # Remove pip cache
+        rm -rf /root/.cache/pip
+        rm -rf /home/*/.cache/pip
       args:
         executable: /bin/bash
       become: true
       changed_when: false
+      failed_when: false
+
+    - name: Truncate log files
+      ansible.builtin.shell: |
+        find /var/log -type f -exec truncate -s 0 {} \; 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      become: true
+      changed_when: false
+      failed_when: false
+
+    - name: Container-specific optimizations
+      when: ansible_virtualization_type == "docker"
+      block:
+        - name: Remove container-unnecessary locale data
+          ansible.builtin.shell: |
+            # Keep only C and en_US locales
+            find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en*' -exec rm -rf {} + 2>/dev/null || true
+            # Remove large locale source files
+            rm -rf /usr/share/i18n/locales/cns11643_stroke
+            rm -rf /usr/share/i18n/locales/iso14651_t1_common
+            find /usr/share/i18n -type f -size +1M -delete 2>/dev/null || true
+          args:
+            executable: /bin/bash
+          become: true
+          changed_when: false
+          failed_when: false
+
+        - name: Remove container-unnecessary system files
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /usr/share/zoneinfo
+            - /usr/share/doc
+            - /usr/share/man
+            - /usr/share/info
+            - /var/cache/ldconfig
+          become: true
+          failed_when: false
+
+    - name: Targeted cleanup for specific unnecessary packages
+      ansible.builtin.shell: |
+        set -o pipefail
+        echo "=== Starting targeted cleanup for Sliver C2 container ==="
+
+        # Remove ASDF version manager
+        rm -f /usr/local/bin/asdf
+        rm -rf /opt/asdf
+        rm -rf ~/.asdf
+
+        # Remove Python completely if not in protected packages
+        if ! echo "{{ sliver_protected_packages | join(' ') }}" | grep -q python; then
+          apt-get remove -y --purge \
+            python3* libpython3* \
+            python3-pip python3-setuptools python3-wheel \
+            python3-dev python3-venv \
+            2>/dev/null || true
+          rm -rf /usr/lib/python3*
+          rm -rf /usr/lib/*/libpython*
+        fi
+
+        # Remove Perl completely if not in protected packages
+        if ! echo "{{ sliver_protected_packages | join(' ') }}" | grep -q perl; then
+          apt-get remove -y --purge perl perl-base perl-modules-* libperl* 2>/dev/null || true
+          rm -rf /usr/lib/*/perl*
+          rm -rf /usr/share/perl*
+        fi
+
+        # Remove systemd
+        if ! echo "{{ sliver_protected_packages | join(' ') }}" | grep -q systemd; then
+          apt-get remove -y --purge systemd libsystemd* 2>/dev/null || true
+        fi
+
+        # Remove graphics and display libraries
+        apt-get remove -y --purge \
+          libllvm* llvm* \
+          libgallium* libvulkan* vulkan* \
+          libgl* libgles* libdrm* mesa* \
+          libgtk* libgdk* \
+          libasound* libpulse* \
+          libx11-* libxext* libxrender* libxtst* \
+          2>/dev/null || true
+
+        # Remove snapd
+        apt-get remove -y --purge snapd snap-confine ubuntu-core-launcher 2>/dev/null || true
+        rm -rf /usr/lib/snapd /snap /var/snap /var/lib/snapd
+
+        # Remove development tools (but not runtime libraries)
+        apt-get remove -y --purge \
+          *-dev *-dbg *-doc \
+          gcc* g++* cpp* \
+          build-essential libtool cmake dpkg-dev \
+          linux-libc-dev libc6-dev libc-dev-bin \
+          manpages manpages-dev \
+          2>/dev/null || true
+
+        # Clean PostgreSQL development files but keep runtime
+        if echo "{{ sliver_protected_packages | join(' ') }}" | grep -q postgresql; then
+          # Only remove development/documentation files
+          rm -rf /usr/lib/postgresql/*/lib/bitcode
+          rm -rf /usr/lib/postgresql/*/lib/pgxs
+          rm -rf /usr/share/postgresql/*/extension
+          find /usr/lib/postgresql -name "*.bc" -delete 2>/dev/null || true
+        else
+          # Remove PostgreSQL completely if not protected
+          apt-get remove -y --purge postgresql* libpq* 2>/dev/null || true
+        fi
+
+        # Remove hardware databases
+        rm -rf /usr/lib/udev
+        rm -f /lib/udev/hwdb.bin
+
+        # Remove gconv libraries if not needed
+        rm -rf /usr/lib/*/gconv
+
+        # Remove static libraries and headers
+        find /usr -name "*.a" -delete 2>/dev/null || true
+        find /usr -name "*.la" -delete 2>/dev/null || true
+        rm -rf /usr/include
+
+        # Final autoremove
+        apt-get autoremove -y --purge
+
+        echo "=== Targeted cleanup complete ==="
+      args:
+        executable: /bin/bash
+      become: true
+      when: ansible_os_family == "Debian"
+      failed_when: false
+      changed_when: false
+
+    - name: Clean all cache directories once
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ (sliver_cleanup_paths + sliver_additional_cleanup_paths | default([])) | unique }}"
+      become: true
+
+    - name: Verify sliver binaries still work after cleanup
+      ansible.builtin.command:
+        cmd: "{{ sliver_install_path }}/{{ item }} version"
+      loop: "{{ sliver_keep_binaries }}"
+      register: sliver_binary_check
+      failed_when: false
+      become: true
+      changed_when: false
+
+    - name: Report binary verification results
+      ansible.builtin.debug:
+        msg: "Binary {{ item.item }} check: {{ 'OK' if item.rc == 0 else 'FAILED' }}"
+      loop: "{{ sliver_binary_check.results }}"
+      when: sliver_binary_check is defined
+
+    - name: Final APT cleanup (last for layer caching)
+      ansible.builtin.shell: |  # noqa: command-instead-of-module
+        set -o pipefail
+        apt-get clean
+        apt-get autoclean
+        rm -rf /var/lib/apt/lists/*
+        rm -rf /var/cache/apt/*
+        rm -rf /var/lib/dpkg/*-old
+        rm -rf /var/lib/dpkg/backup/*
+      args:
+        executable: /bin/bash
+      become: true
+      when: ansible_os_family == "Debian"
+      changed_when: false
+
+    - name: Unhold protected packages after cleanup
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: install
+      loop: "{{ sliver_protected_packages }}"
+      become: true
+      when: ansible_os_family == "Debian"
+      failed_when: false
+
+- name: Display cleanup summary
+  ansible.builtin.debug:
+    msg:
+      - "=== Sliver Cleanup Complete ==="
+      - "Protected packages: {{ sliver_protected_packages | length }}"
+      - "Binaries verified: {{ sliver_keep_binaries | join(', ') }}"
+      - "All binaries functional: {{ sliver_binary_check.results | selectattr('rc', 'equalto', 0) | list | length == sliver_keep_binaries | length }}"
+  when: sliver_binary_check is defined
