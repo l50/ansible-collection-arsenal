@@ -34,49 +34,67 @@ Install sliver c2
 
 | Variable | Type | Value | Description |
 |----------|------|-------|-------------|
-| `sliver_common_install_packages` | list | `[]` | No description |
-| `sliver_common_install_packages.0` | str | `acl` | No description |
-| `sliver_common_install_packages.1` | str | `git` | No description |
-| `sliver_common_install_packages.2` | str | `gnupg` | No description |
-| `sliver_common_install_packages.3` | str | `make` | No description |
-| `sliver_common_install_packages.4` | str | `wget` | No description |
-| `sliver_common_install_packages.5` | str | `unzip` | No description |
-| `sliver_common_install_packages.6` | str | `zip` | No description |
-| `sliver_debian_packages` | list | `[]` | No description |
-| `sliver_debian_packages.0` | str | `apt-utils` | No description |
-| `sliver_debian_packages.1` | str | `autoconf` | No description |
-| `sliver_debian_packages.2` | str | `build-essential` | No description |
-| `sliver_debian_packages.3` | str | `binutils-mingw-w64` | No description |
-| `sliver_debian_packages.4` | str | `bison` | No description |
-| `sliver_debian_packages.5` | str | `curl` | No description |
-| `sliver_debian_packages.6` | str | `g++-mingw-w64` | No description |
-| `sliver_debian_packages.7` | str | `gpg` | No description |
-| `sliver_debian_packages.8` | str | `libapr1` | No description |
-| `sliver_debian_packages.9` | str | `libcurl4-openssl-dev` | No description |
-| `sliver_debian_packages.10` | str | `libgmp3-dev` | No description |
-| `sliver_debian_packages.11` | str | `libpcap-dev` | No description |
-| `sliver_debian_packages.12` | str | `libpq-dev` | No description |
-| `sliver_debian_packages.13` | str | `libsqlite3-dev` | No description |
-| `sliver_debian_packages.14` | str | `libsvn1` | No description |
-| `sliver_debian_packages.15` | str | `libssl-dev` | No description |
-| `sliver_debian_packages.16` | str | `libtool` | No description |
-| `sliver_debian_packages.17` | str | `libxml2` | No description |
-| `sliver_debian_packages.18` | str | `libxml2-dev` | No description |
-| `sliver_debian_packages.19` | str | `libxslt-dev` | No description |
-| `sliver_debian_packages.20` | str | `libyaml-dev` | No description |
-| `sliver_debian_packages.21` | str | `locate` | No description |
-| `sliver_debian_packages.22` | str | `make` | No description |
-| `sliver_debian_packages.23` | str | `mingw-w64` | No description |
-| `sliver_debian_packages.24` | str | `nasm` | No description |
-| `sliver_debian_packages.25` | str | `ncurses-dev` | No description |
-| `sliver_debian_packages.26` | str | `openssl` | No description |
-| `sliver_debian_packages.27` | str | `patch` | No description |
-| `sliver_debian_packages.28` | str | `postgresql` | No description |
-| `sliver_debian_packages.29` | str | `postgresql-contrib` | No description |
-| `sliver_debian_packages.30` | str | `postgresql-client` | No description |
-| `sliver_debian_packages.31` | str | `xsel` | No description |
-| `sliver_debian_packages.32` | str | `zlib1g` | No description |
-| `sliver_debian_packages.33` | str | `zlib1g-dev` | No description |
+| `sliver_packages` | dict | `{}` | No description |
+| `sliver_packages.essential` | list | `[]` | No description |
+| `sliver_packages.essential.0` | str | `acl` | No description |
+| `sliver_packages.essential.1` | str | `git` | No description |
+| `sliver_packages.essential.2` | str | `gnupg` | No description |
+| `sliver_packages.essential.3` | str | `unzip` | No description |
+| `sliver_packages.essential.4` | str | `zip` | No description |
+| `sliver_packages.build_only` | list | `[]` | No description |
+| `sliver_packages.build_only.0` | str | `make` | No description |
+| `sliver_packages.build_only.1` | str | `wget` | No description |
+| `sliver_packages.build_only.2` | str | `curl` | No description |
+| `sliver_packages.build_only.3` | str | `autoconf` | No description |
+| `sliver_packages.build_only.4` | str | `automake` | No description |
+| `sliver_packages.build_only.5` | str | `build-essential` | No description |
+| `sliver_packages.build_only.6` | str | `gcc` | No description |
+| `sliver_packages.build_only.7` | str | `g++` | No description |
+| `sliver_packages.build_only.8` | str | `libtool` | No description |
+| `sliver_packages.build_only.9` | str | `python3-pip` | No description |
+| `sliver_packages.build_only.10` | str | `ansible` | No description |
+| `sliver_packages.build_only.11` | str | `libssl-dev` | No description |
+| `sliver_packages.build_only.12` | str | `zlib1g-dev` | No description |
+| `sliver_packages.build_only.13` | str | `libncurses5-dev` | No description |
+| `sliver_packages.build_only.14` | str | `libncursesw5-dev` | No description |
+| `sliver_packages.build_only.15` | str | `libreadline-dev` | No description |
+| `sliver_packages.build_only.16` | str | `libsqlite3-dev` | No description |
+| `sliver_packages.build_only.17` | str | `libgdbm-dev` | No description |
+| `sliver_packages.build_only.18` | str | `libdb5.3-dev` | No description |
+| `sliver_packages.build_only.19` | str | `libbz2-dev` | No description |
+| `sliver_packages.build_only.20` | str | `libexpat1-dev` | No description |
+| `sliver_packages.build_only.21` | str | `liblzma-dev` | No description |
+| `sliver_packages.build_only.22` | str | `libffi-dev` | No description |
+| `sliver_packages.runtime_debian` | list | `[]` | No description |
+| `sliver_packages.runtime_debian.0` | str | `apt-utils` | No description |
+| `sliver_packages.runtime_debian.1` | str | `gpg` | No description |
+| `sliver_packages.runtime_debian.2` | str | `openssl` | No description |
+| `sliver_packages.runtime_debian.3` | str | `libapr1` | No description |
+| `sliver_packages.runtime_debian.4` | str | `libsvn1` | No description |
+| `sliver_packages.runtime_debian.5` | str | `libxml2` | No description |
+| `sliver_packages.runtime_debian.6` | str | `zlib1g` | No description |
+| `sliver_packages.runtime_debian.7` | str | `xsel` | No description |
+| `sliver_packages.runtime_debian.8` | str | `libcurl4-openssl-dev` | No description |
+| `sliver_packages.runtime_debian.9` | str | `libgmp3-dev` | No description |
+| `sliver_packages.runtime_debian.10` | str | `libpcap-dev` | No description |
+| `sliver_packages.runtime_debian.11` | str | `libpq-dev` | No description |
+| `sliver_packages.runtime_debian.12` | str | `libxml2-dev` | No description |
+| `sliver_packages.runtime_debian.13` | str | `libxslt-dev` | No description |
+| `sliver_packages.runtime_debian.14` | str | `libyaml-dev` | No description |
+| `sliver_packages.runtime_debian.15` | str | `ncurses-dev` | No description |
+| `sliver_packages.runtime_debian.16` | str | `postgresql` | No description |
+| `sliver_packages.runtime_debian.17` | str | `postgresql-contrib` | No description |
+| `sliver_packages.runtime_debian.18` | str | `postgresql-client` | No description |
+| `sliver_packages.cross_compile` | list | `[]` | No description |
+| `sliver_packages.cross_compile.0` | str | `binutils-mingw-w64` | No description |
+| `sliver_packages.cross_compile.1` | str | `g++-mingw-w64` | No description |
+| `sliver_packages.cross_compile.2` | str | `mingw-w64` | No description |
+| `sliver_packages.cross_compile.3` | str | `bison` | No description |
+| `sliver_packages.cross_compile.4` | str | `nasm` | No description |
+| `sliver_packages.cross_compile.5` | str | `locate` | No description |
+| `sliver_packages.cross_compile.6` | str | `patch` | No description |
+| `sliver_common_install_packages` | str | `{{ sliver_packages.essential + ['make', 'wget', 'curl'] }}` | No description |
+| `sliver_debian_packages` | str | `{{ sliver_packages.build_only + sliver_packages.runtime_debian + sliver_packages.cross_compile }}` | No description |
 | `sliver_el_packages` | list | `[]` | No description |
 | `sliver_el_packages.0` | str | `epel-release` | No description |
 | `sliver_el_packages.1` | str | `gcc` | No description |
@@ -84,24 +102,93 @@ Install sliver c2
 | `sliver_el_packages.3` | str | `protobuf` | No description |
 | `sliver_el_packages.4` | str | `zlib` | No description |
 | `sliver_el_packages.5` | str | `zlib-devel` | No description |
+| `sliver_cleanup_packages_debian` | str | `{{ sliver_packages.build_only + sliver_packages.cross_compile }}` | No description |
+| `sliver_cleanup_paths` | list | `[]` | No description |
+| `sliver_cleanup_paths.0` | str | `{{ sliver_user_home }}/go` | No description |
+| `sliver_cleanup_paths.1` | str | `{{ sliver_user_home }}/.cache` | No description |
+| `sliver_cleanup_paths.2` | str | `{{ sliver_user_home }}/.asdf` | No description |
+| `sliver_cleanup_paths.3` | str | `{{ sliver_user_home }}/.local` | No description |
+| `sliver_cleanup_paths.4` | str | `{{ sliver_user_home }}/.config` | No description |
+| `sliver_cleanup_paths.5` | str | `{{ sliver_user_home }}/.tool-versions` | No description |
+| `sliver_cleanup_paths.6` | str | `/root/go` | No description |
+| `sliver_cleanup_paths.7` | str | `/root/.cache` | No description |
+| `sliver_cleanup_paths.8` | str | `/root/.asdf` | No description |
+| `sliver_cleanup_paths.9` | str | `/root/.local` | No description |
+| `sliver_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
+| `sliver_cleanup_paths.11` | str | `/root/.ssh` | No description |
+| `sliver_system_cleanup_paths` | list | `[]` | No description |
+| `sliver_system_cleanup_paths.0` | str | `/var/lib/apt/lists/*` | No description |
+| `sliver_system_cleanup_paths.1` | str | `/var/cache/apt/*` | No description |
+| `sliver_system_cleanup_paths.2` | str | `/var/cache/debconf/*` | No description |
+| `sliver_system_cleanup_paths.3` | str | `/usr/share/doc/*` | No description |
+| `sliver_system_cleanup_paths.4` | str | `/usr/share/man/*` | No description |
+| `sliver_system_cleanup_paths.5` | str | `/usr/share/locale/*` | No description |
+| `sliver_system_cleanup_paths.6` | str | `/usr/share/info/*` | No description |
+| `sliver_system_cleanup_paths.7` | str | `/tmp/*` | No description |
+| `sliver_system_cleanup_paths.8` | str | `/var/tmp/*` | No description |
+| `sliver_mingw_directories` | list | `[]` | No description |
+| `sliver_mingw_directories.0` | str | `/usr/x86_64-w64-mingw32` | No description |
+| `sliver_mingw_directories.1` | str | `/usr/i686-w64-mingw32` | No description |
+| `sliver_mingw_directories.2` | str | `/usr/x86_64-w64-mingw32ucrt` | No description |
+| `sliver_source_directories` | list | `[]` | No description |
+| `sliver_source_directories.0` | str | `client` | No description |
+| `sliver_source_directories.1` | str | `server` | No description |
+| `sliver_source_directories.2` | str | `implant` | No description |
+| `sliver_source_directories.3` | str | `protobuf` | No description |
+| `sliver_source_directories.4` | str | `util` | No description |
+| `sliver_source_directories.5` | str | `vendor` | No description |
+| `sliver_source_directories.6` | str | `test` | No description |
+| `sliver_source_directories.7` | str | `docs` | No description |
+| `sliver_source_directories.8` | str | `.github` | No description |
+| `sliver_source_directories.9` | str | `.git` | No description |
+| `sliver_keep_binaries` | list | `[]` | No description |
+| `sliver_keep_binaries.0` | str | `sliver-server` | No description |
+| `sliver_keep_binaries.1` | str | `sliver-client` | No description |
+| `sliver_container_remove_packages` | list | `[]` | No description |
+| `sliver_container_remove_packages.0` | str | `*vulkan*` | No description |
+| `sliver_container_remove_packages.1` | str | `*llvm*` | No description |
+| `sliver_container_remove_packages.2` | str | `libicu*` | No description |
+| `sliver_container_remove_packages.3` | str | `snapd` | No description |
+| `sliver_container_remove_packages.4` | str | `libgallium*` | No description |
+| `sliver_container_remove_packages.5` | str | `libasan*` | No description |
 
 ## Tasks
 
 ### cleanup.yml
 
 - **Clean up build environment** (block) - Conditional
-- **Hold git package to prevent removal during cleanup** (ansible.builtin.shell) - Conditional
-- **Remove build-time Go installation and caches** (ansible.builtin.shell)
-- **Clean up sliver directory - keep only binaries** (ansible.builtin.shell)
-- **Clean unpacked compilers if they exist** (ansible.builtin.shell)
-- **Remove MinGW cross-compilation tools** (ansible.builtin.shell)
-- **Remove unnecessary system libraries for containers** (ansible.builtin.shell) - Conditional
-- **Remove all development packages** (ansible.builtin.shell) - Conditional
-- **Final system cleanup** (ansible.builtin.shell)
-- **Clean user directories** (ansible.builtin.shell)
+- **Hold git package to prevent removal during cleanup** (ansible.builtin.dpkg_selections) - Conditional
+- **Remove build-time Go installation and caches** (ansible.builtin.file)
+- **Find non-binary files in sliver directory** (ansible.builtin.find)
+- **Remove non-binary files from sliver directory** (ansible.builtin.file)
+- **Remove source directories from sliver installation** (ansible.builtin.file)
+- **Find empty directories in sliver path** (ansible.builtin.find)
+- **Remove empty directories** (ansible.builtin.file) - Conditional
+- **Strip debug symbols from binaries** (ansible.builtin.command)
+- **Check for unpacked Go compiler** (ansible.builtin.stat)
+- **Remove unpacked Go compiler if found** (ansible.builtin.file) - Conditional
+- **Check for unpacked Zig compiler** (ansible.builtin.stat)
+- **Remove unpacked Zig compiler if found** (ansible.builtin.file) - Conditional
+- **Gather package facts** (ansible.builtin.package_facts) - Conditional
+- **Identify MinGW packages to remove** (ansible.builtin.set_fact) - Conditional
+- **Remove MinGW packages** (ansible.builtin.apt) - Conditional
+- **Remove MinGW directories** (ansible.builtin.file)
+- **Remove unnecessary system libraries for containers** (ansible.builtin.apt) - Conditional
+- **Remove development packages** (ansible.builtin.apt) - Conditional
+- **Remove system cache paths** (ansible.builtin.file)
+- **Find Python cache directories** (ansible.builtin.find)
+- **Remove Python cache directories** (ansible.builtin.file)
+- **Find Python compiled files** (ansible.builtin.find)
+- **Remove Python compiled files** (ansible.builtin.file)
+- **Remove pip cache** (ansible.builtin.file)
+- **Find log files** (ansible.builtin.find)
+- **Truncate sliver log files** (ansible.builtin.copy)
+- **Clean sliver user cache directories** (ansible.builtin.file)
+- **Clean root home directories** (ansible.builtin.file)
 - **Check if PostgreSQL log directory exists** (ansible.builtin.stat)
-- **Truncate PostgreSQL logs if present** (ansible.builtin.shell) - Conditional
-- **Unhold git package after cleanup is complete** (ansible.builtin.shell) - Conditional
+- **Find PostgreSQL log files** (ansible.builtin.find) - Conditional
+- **Truncate PostgreSQL log files** (ansible.builtin.copy) - Conditional
+- **Unhold git package after cleanup is complete** (ansible.builtin.dpkg_selections) - Conditional
 
 ### main.yml
 

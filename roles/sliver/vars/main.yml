@@ -1,48 +1,75 @@
 ---
-sliver_common_install_packages:
-  - acl
-  - git
-  - gnupg
-  - make
-  - wget
-  - unzip
-  - zip
+sliver_packages:
+  # Packages to keep after build
+  essential:
+    - acl
+    - git
+    - gnupg
+    - unzip
+    - zip
 
-sliver_debian_packages:
-  - apt-utils
-  - autoconf
-  - build-essential
-  - binutils-mingw-w64
-  - bison
-  - curl
-  - g++-mingw-w64
-  - gpg
-  - libapr1
-  - libcurl4-openssl-dev
-  - libgmp3-dev
-  - libpcap-dev
-  - libpq-dev
-  - libsqlite3-dev
-  - libsvn1
-  - libssl-dev
-  - libtool
-  - libxml2
-  - libxml2-dev
-  - libxslt-dev
-  - libyaml-dev
-  - locate
-  - make
-  - mingw-w64
-  - nasm
-  - ncurses-dev
-  - openssl
-  - patch
-  - postgresql
-  - postgresql-contrib
-  - postgresql-client
-  - xsel
-  - zlib1g
-  - zlib1g-dev
+  # Packages needed for build but removed during cleanup
+  build_only:
+    - make
+    - wget
+    - curl
+    - autoconf
+    - automake
+    - build-essential
+    - gcc
+    - g++
+    - libtool
+    - python3-pip
+    - ansible
+    - libssl-dev
+    - zlib1g-dev
+    - libncurses5-dev
+    - libncursesw5-dev
+    - libreadline-dev
+    - libsqlite3-dev
+    - libgdbm-dev
+    - libdb5.3-dev
+    - libbz2-dev
+    - libexpat1-dev
+    - liblzma-dev
+    - libffi-dev
+
+  # Packages that stay installed (runtime dependencies)
+  runtime_debian:
+    - apt-utils
+    - gpg
+    - openssl
+    - libapr1
+    - libsvn1
+    - libxml2
+    - zlib1g
+    - xsel
+    - libcurl4-openssl-dev
+    - libgmp3-dev
+    - libpcap-dev
+    - libpq-dev
+    - libxml2-dev
+    - libxslt-dev
+    - libyaml-dev
+    - ncurses-dev
+    - postgresql
+    - postgresql-contrib
+    - postgresql-client
+
+  # Cross-compilation tools (always removed during cleanup)
+  cross_compile:
+    - binutils-mingw-w64
+    - g++-mingw-w64
+    - mingw-w64
+    - bison
+    - nasm
+    - locate
+    - patch
+
+# Compose installation lists
+sliver_common_install_packages: "{{ sliver_packages.essential + ['make', 'wget', 'curl'] }}"
+
+sliver_debian_packages: "{{ sliver_packages.build_only + sliver_packages.runtime_debian + sliver_packages.cross_compile }}"
 
 sliver_el_packages:
   - epel-release
@@ -51,3 +78,61 @@ sliver_el_packages:
   - protobuf
   - zlib
   - zlib-devel
+
+# Cleanup lists (reference the same packages)
+sliver_cleanup_packages_debian: "{{ sliver_packages.build_only + sliver_packages.cross_compile }}"
+
+# Cleanup paths
+sliver_cleanup_paths:
+  - "{{ sliver_user_home }}/go"
+  - "{{ sliver_user_home }}/.cache"
+  - "{{ sliver_user_home }}/.asdf"
+  - "{{ sliver_user_home }}/.local"
+  - "{{ sliver_user_home }}/.config"
+  - "{{ sliver_user_home }}/.tool-versions"
+  - "/root/go"
+  - "/root/.cache"
+  - "/root/.asdf"
+  - "/root/.local"
+  - "/root/.tool-versions"
+  - "/root/.ssh"
+
+sliver_system_cleanup_paths:
+  - /var/lib/apt/lists/*
+  - /var/cache/apt/*
+  - /var/cache/debconf/*
+  - /usr/share/doc/*
+  - /usr/share/man/*
+  - /usr/share/locale/*
+  - /usr/share/info/*
+  - /tmp/*
+  - /var/tmp/*
+
+sliver_mingw_directories:
+  - /usr/x86_64-w64-mingw32
+  - /usr/i686-w64-mingw32
+  - /usr/x86_64-w64-mingw32ucrt
+
+sliver_source_directories:
+  - client
+  - server
+  - implant
+  - protobuf
+  - util
+  - vendor
+  - test
+  - docs
+  - .github
+  - .git
+
+sliver_keep_binaries:
+  - sliver-server
+  - sliver-client
+
+sliver_container_remove_packages:
+  - "*vulkan*"
+  - "*llvm*"
+  - "libicu*"
+  - "snapd"
+  - "libgallium*"
+  - "libasan*"
