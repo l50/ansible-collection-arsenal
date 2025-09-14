@@ -37,10 +37,17 @@ Install sliver c2
 | `sliver_packages` | dict | `{}` | No description |
 | `sliver_packages.essential` | list | `[]` | No description |
 | `sliver_packages.essential.0` | str | `acl` | No description |
-| `sliver_packages.essential.1` | str | `git` | No description |
-| `sliver_packages.essential.2` | str | `gnupg` | No description |
-| `sliver_packages.essential.3` | str | `unzip` | No description |
-| `sliver_packages.essential.4` | str | `zip` | No description |
+| `sliver_packages.essential.1` | str | `ca-certificates` | No description |
+| `sliver_packages.essential.2` | str | `git` | No description |
+| `sliver_packages.essential.3` | str | `gnupg` | No description |
+| `sliver_packages.essential.4` | str | `libcurl4` | No description |
+| `sliver_packages.essential.5` | str | `libssl3` | No description |
+| `sliver_packages.essential.6` | str | `libxml2` | No description |
+| `sliver_packages.essential.7` | str | `unzip` | No description |
+| `sliver_packages.essential.8` | str | `vim` | No description |
+| `sliver_packages.essential.9` | str | `vim-common` | No description |
+| `sliver_packages.essential.10` | str | `vim-runtime` | No description |
+| `sliver_packages.essential.11` | str | `zip` | No description |
 | `sliver_packages.build_only` | list | `[]` | No description |
 | `sliver_packages.build_only.0` | str | `make` | No description |
 | `sliver_packages.build_only.1` | str | `wget` | No description |
@@ -116,6 +123,12 @@ Install sliver c2
 | `sliver_cleanup_paths.9` | str | `/root/.local` | No description |
 | `sliver_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
 | `sliver_cleanup_paths.11` | str | `/root/.ssh` | No description |
+| `sliver_cleanup_paths.12` | str | `/tmp/*` | No description |
+| `sliver_cleanup_paths.13` | str | `/var/tmp/*` | No description |
+| `sliver_cleanup_paths.14` | str | `/var/cache/debconf` | No description |
+| `sliver_cleanup_paths.15` | str | `/var/lib/systemd/catalog` | No description |
+| `sliver_cleanup_paths.16` | str | `/var/spool/cron` | No description |
+| `sliver_cleanup_paths.17` | str | `/var/spool/mail` | No description |
 | `sliver_mingw_directories` | list | `[]` | No description |
 | `sliver_mingw_directories.0` | str | `/usr/x86_64-w64-mingw32` | No description |
 | `sliver_mingw_directories.1` | str | `/usr/i686-w64-mingw32` | No description |
@@ -147,7 +160,8 @@ Install sliver c2
 ### cleanup.yml
 
 - **Clean up build environment** (block) - Conditional
-- **Hold git package to prevent removal during cleanup** (ansible.builtin.dpkg_selections) - Conditional
+- **Create list of packages to protect** (ansible.builtin.set_fact) - Conditional
+- **Hold runtime and essential packages before cleanup** (ansible.builtin.dpkg_selections) - Conditional
 - **Remove build-time Go installation and caches** (ansible.builtin.file)
 - **Find non-binary files in sliver directory** (ansible.builtin.find)
 - **Remove non-binary files from sliver directory** (ansible.builtin.file)
@@ -155,27 +169,22 @@ Install sliver c2
 - **Find empty directories in sliver path** (ansible.builtin.find)
 - **Remove empty directories** (ansible.builtin.file) - Conditional
 - **Strip debug symbols from binaries** (ansible.builtin.command)
-- **Check for unpacked Go compiler** (ansible.builtin.stat)
-- **Remove unpacked Go compiler if found** (ansible.builtin.file) - Conditional
-- **Check for unpacked Zig compiler** (ansible.builtin.stat)
-- **Remove unpacked Zig compiler if found** (ansible.builtin.file) - Conditional
+- **Check for unpacked compilers in .sliver directory** (ansible.builtin.stat)
+- **Remove unpacked compilers if found** (ansible.builtin.file) - Conditional
 - **Gather package facts** (ansible.builtin.package_facts) - Conditional
-- **Identify MinGW packages to remove** (ansible.builtin.set_fact) - Conditional
-- **Remove MinGW packages** (ansible.builtin.apt) - Conditional
-- **Remove MinGW directories** (ansible.builtin.file)
-- **Remove unnecessary system libraries for containers** (ansible.builtin.apt) - Conditional
-- **Remove development packages** (ansible.builtin.apt) - Conditional
-- **Find Python cache directories** (ansible.builtin.find)
-- **Remove Python cache directories** (ansible.builtin.file)
-- **Find Python compiled files** (ansible.builtin.find)
-- **Remove Python compiled files** (ansible.builtin.file)
-- **Remove pip cache** (ansible.builtin.file)
-- **Find log files** (ansible.builtin.find)
-- **Truncate sliver log files** (ansible.builtin.copy)
-- **Clean sliver user cache directories** (ansible.builtin.file)
-- **Clean root home directories** (ansible.builtin.file)
-- **Final cleanup - remove unnecessary items for container image builds** (ansible.builtin.shell) - Conditional
-- **Unhold git package after cleanup is complete** (ansible.builtin.dpkg_selections) - Conditional
+- **Remove development packages (excluding protected)** (ansible.builtin.apt) - Conditional
+- **Find and remove Python artifacts efficiently** (ansible.builtin.shell)
+- **Truncate log files** (ansible.builtin.shell)
+- **Container-specific optimizations** (block) - Conditional
+- **Remove container-unnecessary locale data** (ansible.builtin.shell)
+- **Remove container-unnecessary system files** (ansible.builtin.file)
+- **Targeted cleanup for specific unnecessary packages** (ansible.builtin.shell) - Conditional
+- **Clean all cache directories once** (ansible.builtin.file)
+- **Verify sliver binaries still work after cleanup** (ansible.builtin.command)
+- **Report binary verification results** (ansible.builtin.debug) - Conditional
+- **Final APT cleanup (last for layer caching)** (ansible.builtin.shell) - Conditional
+- **Unhold protected packages after cleanup** (ansible.builtin.dpkg_selections) - Conditional
+- **Display cleanup summary** (ansible.builtin.debug) - Conditional
 
 ### main.yml
 

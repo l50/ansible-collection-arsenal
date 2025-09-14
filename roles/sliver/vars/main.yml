@@ -3,9 +3,16 @@ sliver_packages:
   # Packages to keep after build
   essential:
     - acl
+    - ca-certificates
     - git
     - gnupg
+    - libcurl4
+    - libssl3
+    - libxml2
     - unzip
+    - vim
+    - vim-common
+    - vim-runtime
     - zip
 
   # Packages needed for build but removed during cleanup
@@ -96,6 +103,12 @@ sliver_cleanup_paths:
   - "/root/.local"
   - "/root/.tool-versions"
   - "/root/.ssh"
+  - "/tmp/*"
+  - "/var/tmp/*"
+  - "/var/cache/debconf"
+  - "/var/lib/systemd/catalog"
+  - "/var/spool/cron"
+  - "/var/spool/mail"
 
 sliver_mingw_directories:
   - /usr/x86_64-w64-mingw32
