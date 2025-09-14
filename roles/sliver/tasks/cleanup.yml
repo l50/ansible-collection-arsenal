@@ -2,102 +2,179 @@
 - name: Clean up build environment
   when: sliver_cleanup | bool
   block:
-    - name: Check if build artifacts exist
-      ansible.builtin.stat:
-        path: "{{ sliver_install_path }}/.git"
-      register: sliver_git_dir
-
-    - name: Remove build artifacts and unnecessary files
-      ansible.builtin.shell: |
-        # Clean up Sliver build artifacts
-        cd {{ sliver_install_path }}
-        find . -name "*.o" -delete 2>/dev/null || true
-        find . -name "*.a" -delete 2>/dev/null || true
-        rm -rf .git test docs .github 2>/dev/null || true
-        rm -rf server/assets/fs/darwin 2>/dev/null || true
-        rm -rf server/assets/fs/windows 2>/dev/null || true
-        rm -rf server/assets/fs/linux 2>/dev/null || true
-
-        # Strip debug symbols from binaries if they exist
-        if [ -f {{ sliver_install_path }}/sliver-server ]; then
-          strip {{ sliver_install_path }}/sliver-server || true
-        fi
-        if [ -f {{ sliver_install_path }}/sliver-client ]; then
-          strip {{ sliver_install_path }}/sliver-client || true
-        fi
-      args:
-        executable: /bin/bash
+    - name: Hold git package to prevent removal during cleanup
+      ansible.builtin.shell: apt-mark hold git
       become: true
-      changed_when: sliver_git_dir.stat.exists
+      when: ansible_os_family == "Debian"
 
-    - name: Remove Go build environment
+    - name: Remove build-time Go installation and caches
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
         - "{{ sliver_user_home }}/go"
-        - "{{ sliver_user_home }}/.cache/go-build"
+        - "{{ sliver_user_home }}/.cache"
         - "{{ sliver_user_home }}/.asdf"
+        - "/root/go"
+        - "/root/.cache"
+        - "/root/.asdf"
+        - "/root/.local"
+        - "/root/.tool-versions"
       become: true
 
-    - name: Remove development packages (Debian/Ubuntu)
-      ansible.builtin.apt:
-        name: "{{ sliver_debian_packages }}"
-        state: absent
-        autoremove: true
-        autoclean: true
-      when: ansible_os_family == "Debian"
-      become: true
-      failed_when: false
-
-    - name: Remove development packages (RedHat/CentOS)
-      ansible.builtin.dnf:
-        name: "{{ sliver_el_packages }}"
-        state: absent
-        autoremove: true
-      when: ansible_os_family == "RedHat"
-      become: true
-      failed_when: false
-
-    - name: Clean package manager cache (Debian/Ubuntu)
-      ansible.builtin.apt:
-        clean: true
-      when: ansible_os_family == "Debian"
-      become: true
-
-    - name: Remove apt lists
-      ansible.builtin.file:
-        path: /var/lib/apt/lists
-        state: absent
-      when: ansible_os_family == "Debian"
-      become: true
-
-    - name: Recreate apt lists directory
-      ansible.builtin.file:
-        path: /var/lib/apt/lists
-        state: directory
-        mode: '0755'
-      when: ansible_os_family == "Debian"
-      become: true
-
-    - name: Clean package manager cache (RedHat/CentOS)
-      ansible.builtin.command:
-        cmd: dnf clean all
-      when: ansible_os_family == "RedHat"
-      become: true
-      changed_when: true
-
-    - name: Remove dnf cache directory
-      ansible.builtin.file:
-        path: /var/cache/dnf
-        state: absent
-      when: ansible_os_family == "RedHat"
-      become: true
-
-    - name: Remove temporary files
+    - name: Clean up sliver directory - keep only binaries
       ansible.builtin.shell: |
-        rm -rf /tmp/* /var/tmp/* 2>/dev/null || true
+        cd {{ sliver_install_path }}
+        # Remove all source directories
+        rm -rf client/ server/ implant/ protobuf/ util/ vendor/ test/ docs/ .github/ .git/
+        # Remove all files except the binaries
+        find . -maxdepth 1 -type f ! -name "sliver-server" ! -name "sliver-client" -delete 2>/dev/null || true
+        # Remove any empty directories
+        find . -type d -empty -delete 2>/dev/null || true
+
+        # Strip debug symbols from binaries to reduce size
+        strip sliver-server 2>/dev/null || true
+        strip sliver-client 2>/dev/null || true
       args:
         executable: /bin/bash
       become: true
-      changed_when: false
+
+    - name: Clean unpacked compilers if they exist
+      ansible.builtin.shell: >
+        if [ -d "{{ sliver_user_home }}/.sliver/go" ]; then
+          echo "Removing unexpectedly found Go compiler..." &&
+          rm -rf "{{ sliver_user_home }}/.sliver/go";
+        fi;
+        if [ -d "{{ sliver_user_home }}/.sliver/zig" ]; then
+          echo "Removing unexpectedly found Zig compiler..." &&
+          rm -rf "{{ sliver_user_home }}/.sliver/zig";
+        fi
+      args:
+        executable: /bin/bash
+      become: true
+
+    - name: Remove MinGW cross-compilation tools
+      ansible.builtin.shell: |
+        # Get list of MinGW packages (exclude git if it somehow appears)
+        MINGW_PACKAGES=$(dpkg -l | grep -E 'mingw|w64' | grep -v ' git ' | awk '{print $2}' | tr '\n' ' ')
+
+        if [ -n "$MINGW_PACKAGES" ]; then
+          echo "Removing MinGW packages: $MINGW_PACKAGES"
+          apt-get remove -y --purge $MINGW_PACKAGES
+        fi
+
+        # Force remove MinGW directories
+        rm -rf /usr/x86_64-w64-mingw32
+        rm -rf /usr/i686-w64-mingw32
+        rm -rf /usr/x86_64-w64-mingw32ucrt
+      args:
+        executable: /bin/bash
+      become: true
+
+    - name: Remove unnecessary system libraries for containers
+      ansible.builtin.shell: |
+        # Remove graphics/large libraries not needed for Sliver
+        REMOVE_PACKAGES=""
+
+        # Check and add packages to remove list (exclude git-related packages)
+        for pkg in '*vulkan*' '*llvm*' 'libicu*' 'snapd' 'libgallium*' 'libasan*'; do
+          if dpkg -l | grep -q "$pkg" && ! echo "$pkg" | grep -q git; then
+            REMOVE_PACKAGES="$REMOVE_PACKAGES $pkg"
+          fi
+        done
+
+        if [ -n "$REMOVE_PACKAGES" ]; then
+          apt-get remove -y --purge $REMOVE_PACKAGES || true
+        fi
+      args:
+        executable: /bin/bash
+      become: true
+      when: ansible_virtualization_type == "docker"
+      failed_when: false
+
+    - name: Remove all development packages
+      ansible.builtin.shell: |
+        #!/bin/bash
+        PACKAGES_TO_REMOVE="build-essential gcc g++ make wget curl autoconf automake libtool python3-pip ansible"
+
+        # Add any -dev packages
+        for pkg in libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev libffi-dev; do
+          if dpkg -l | grep -q "^ii  ${pkg}"; then
+            PACKAGES_TO_REMOVE="${PACKAGES_TO_REMOVE} ${pkg}"
+          fi
+        done
+
+        # Remove the packages
+        apt-get remove -y --purge ${PACKAGES_TO_REMOVE}
+
+        # Run autoremove (git will be protected by hold)
+        apt-get autoremove -y --purge
+        apt-get clean
+      args:
+        executable: /bin/bash
+      when: ansible_os_family == "Debian"
+      become: true
+
+    - name: Final system cleanup
+      ansible.builtin.shell: |
+        # Remove package caches
+        rm -rf /var/lib/apt/lists/*
+        rm -rf /var/cache/apt/*
+        rm -rf /var/cache/debconf/*
+
+        # Remove documentation
+        rm -rf /usr/share/doc/*
+        rm -rf /usr/share/man/*
+        rm -rf /usr/share/locale/*
+        rm -rf /usr/share/info/*
+
+        # Remove Python cache
+        find /usr -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+        find /usr -type f -name '*.pyc' -delete 2>/dev/null || true
+        rm -rf /root/.cache/pip
+
+        # Clean tmp directories
+        rm -rf /tmp/* /var/tmp/*
+
+        # Truncate logs
+        find /var/log -type f -exec truncate -s 0 {} \; 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      become: true
+
+    - name: Clean user directories
+      ansible.builtin.shell: |
+        # Clean sliver user home but preserve .sliver structure
+        rm -rf {{ sliver_user_home }}/.cache
+        rm -rf {{ sliver_user_home }}/.local
+        rm -rf {{ sliver_user_home }}/.config
+        rm -rf {{ sliver_user_home }}/.tool-versions
+
+        # Clean root home (but preserve git config if it exists)
+        rm -rf /root/.asdf
+        rm -rf /root/.local
+        rm -rf /root/.tool-versions
+        rm -rf /root/.ssh
+      args:
+        executable: /bin/bash
+      become: true
+
+    - name: Check if PostgreSQL log directory exists
+      ansible.builtin.stat:
+        path: /var/log/postgresql
+      register: sliver_postgresql_log_dir
+      become: true
+
+    - name: Truncate PostgreSQL logs if present
+      ansible.builtin.shell: |
+        find /var/log/postgresql -type f -name "*.log" -exec truncate -s 0 {} \; 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      when: sliver_postgresql_log_dir.stat.exists and sliver_postgresql_log_dir.stat.isdir
+      become: true
+      failed_when: false
+
+    - name: Unhold git package after cleanup is complete
+      ansible.builtin.shell: apt-mark unhold git
+      become: true
+      when: ansible_os_family == "Debian"

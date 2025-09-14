@@ -20,9 +20,10 @@ Install sliver c2
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
+| `sliver_cleanup` | bool | `False` | No description |
 | `sliver_install_path` | str | `/opt/sliver` | No description |
 | `sliver_setup_systemd` | bool | `False` | No description |
-| `sliver_cleanup` | bool | `False` | No description |
+| `sliver_unpack_at_build` | bool | `True` | No description |
 | `sliver_username` | str | `sliver` | No description |
 | `sliver_usergroup` | str | `sliver` | No description |
 | `sliver_shell` | str | `{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}` | No description |
@@ -69,12 +70,13 @@ Install sliver c2
 | `sliver_debian_packages.24` | str | `nasm` | No description |
 | `sliver_debian_packages.25` | str | `ncurses-dev` | No description |
 | `sliver_debian_packages.26` | str | `openssl` | No description |
-| `sliver_debian_packages.27` | str | `postgresql` | No description |
-| `sliver_debian_packages.28` | str | `postgresql-contrib` | No description |
-| `sliver_debian_packages.29` | str | `postgresql-client` | No description |
-| `sliver_debian_packages.30` | str | `xsel` | No description |
-| `sliver_debian_packages.31` | str | `zlib1g` | No description |
-| `sliver_debian_packages.32` | str | `zlib1g-dev` | No description |
+| `sliver_debian_packages.27` | str | `patch` | No description |
+| `sliver_debian_packages.28` | str | `postgresql` | No description |
+| `sliver_debian_packages.29` | str | `postgresql-contrib` | No description |
+| `sliver_debian_packages.30` | str | `postgresql-client` | No description |
+| `sliver_debian_packages.31` | str | `xsel` | No description |
+| `sliver_debian_packages.32` | str | `zlib1g` | No description |
+| `sliver_debian_packages.33` | str | `zlib1g-dev` | No description |
 | `sliver_el_packages` | list | `[]` | No description |
 | `sliver_el_packages.0` | str | `epel-release` | No description |
 | `sliver_el_packages.1` | str | `gcc` | No description |
@@ -88,17 +90,18 @@ Install sliver c2
 ### cleanup.yml
 
 - **Clean up build environment** (block) - Conditional
-- **Check if build artifacts exist** (ansible.builtin.stat)
-- **Remove build artifacts and unnecessary files** (ansible.builtin.shell)
-- **Remove Go build environment** (ansible.builtin.file)
-- **Remove development packages (Debian/Ubuntu)** (ansible.builtin.apt) - Conditional
-- **Remove development packages (RedHat/CentOS)** (ansible.builtin.dnf) - Conditional
-- **Clean package manager cache (Debian/Ubuntu)** (ansible.builtin.apt) - Conditional
-- **Remove apt lists** (ansible.builtin.file) - Conditional
-- **Recreate apt lists directory** (ansible.builtin.file) - Conditional
-- **Clean package manager cache (RedHat/CentOS)** (ansible.builtin.command) - Conditional
-- **Remove dnf cache directory** (ansible.builtin.file) - Conditional
-- **Remove temporary files** (ansible.builtin.shell)
+- **Hold git package to prevent removal during cleanup** (ansible.builtin.shell) - Conditional
+- **Remove build-time Go installation and caches** (ansible.builtin.shell)
+- **Clean up sliver directory - keep only binaries** (ansible.builtin.shell)
+- **Clean unpacked compilers if they exist** (ansible.builtin.shell)
+- **Remove MinGW cross-compilation tools** (ansible.builtin.shell)
+- **Remove unnecessary system libraries for containers** (ansible.builtin.shell) - Conditional
+- **Remove all development packages** (ansible.builtin.shell) - Conditional
+- **Final system cleanup** (ansible.builtin.shell)
+- **Clean user directories** (ansible.builtin.shell)
+- **Check if PostgreSQL log directory exists** (ansible.builtin.stat)
+- **Truncate PostgreSQL logs if present** (ansible.builtin.shell) - Conditional
+- **Unhold git package after cleanup is complete** (ansible.builtin.shell) - Conditional
 
 ### main.yml
 
@@ -123,7 +126,7 @@ Install sliver c2
 - **Check current ownership of {{ sliver_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the Sliver repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in Sliver directory** (ansible.builtin.copy) - Conditional
-- **Add sliver_install_path to $PATH** (ansible.builtin.lineinfile)
+- **Add Sliver paths to user's bashrc** (ansible.builtin.blockinfile)
 - **Check if Sliver server exists** (ansible.builtin.stat)
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
 - **Compile sliver** (ansible.builtin.shell) - Conditional
