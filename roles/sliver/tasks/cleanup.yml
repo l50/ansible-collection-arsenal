@@ -141,13 +141,7 @@
       when: ansible_os_family == "Debian"
       become: true
 
-    - name: Remove system cache paths
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop: "{{ sliver_system_cleanup_paths }}"
-      become: true
-
+    # Keep the Ansible-native Python cleanup but supplement it
     - name: Find Python cache directories
       ansible.builtin.find:
         paths: /usr
@@ -228,32 +222,173 @@
         - /root/.ssh
       become: true
 
-    - name: Check if PostgreSQL log directory exists
-      ansible.builtin.stat:
-        path: /var/log/postgresql
-      register: sliver_postgresql_log_dir
-      become: true
+    - name: Final cleanup - remove unnecessary items for container image builds
+      ansible.builtin.shell: |
+        set -e
 
-    - name: Find PostgreSQL log files
-      ansible.builtin.find:
-        paths: /var/log/postgresql
-        patterns: "*.log"
-        file_type: file
-      register: sliver_postgres_logs
-      when:
-        - sliver_postgresql_log_dir.stat.exists
-        - sliver_postgresql_log_dir.stat.isdir
+        echo "=== Starting ultra-aggressive cleanup ==="
+
+        # Remove LLVM and graphics libraries
+        apt-get remove -y --purge \
+          libllvm* llvm* \
+          libgallium* \
+          libvulkan* vulkan* \
+          libgl* libgles* \
+          libdrm* \
+          mesa* \
+          2>/dev/null || true
+
+        # Remove snapd
+        apt-get remove -y --purge snapd snap-confine ubuntu-core-launcher 2>/dev/null || true
+        rm -rf /usr/lib/snapd
+        rm -rf /snap
+        rm -rf /var/snap
+        rm -rf /var/lib/snapd
+
+        # Remove ICU internationalization
+        apt-get remove -y --purge libicu* icu-* 2>/dev/null || true
+
+        # Remove development packages and compilers
+        apt-get remove -y --purge \
+          *-dev *-dbg *-doc \
+          gcc* g++* cpp* \
+          build-essential libtool cmake dpkg-dev \
+          linux-libc-dev libc6-dev libc-dev-bin \
+          manpages manpages-dev \
+          2>/dev/null || true
+
+        # Remove GCC
+        rm -rf /usr/libexec/gcc
+        rm -rf /usr/lib/gcc
+
+        # Remove Perl
+        apt-get remove -y --purge perl perl-base perl-modules-* 2>/dev/null || true
+        rm -rf /usr/lib/aarch64-linux-gnu/perl*
+        rm -rf /usr/share/perl*
+
+        # Remove Python packages
+        apt-get remove -y --purge \
+          python3-pip python3-setuptools python3-wheel \
+          python3-dev python3-venv \
+          2>/dev/null || true
+
+        # Remove other unnecessary packages
+        apt-get remove -y --purge \
+          openssh-server \
+          krb5-locales \
+          publicsuffix \
+          xauth \
+          fontconfig* fonts-* \
+          libgtk* libgdk* \
+          libasound* libpulse* \
+          libx11-* libxext* libxrender* libxtst* \
+          2>/dev/null || true
+
+        # Clean PostgreSQL - remove bitcode and unnecessary components
+        rm -rf /usr/lib/postgresql/*/lib/bitcode
+        rm -rf /usr/lib/postgresql/*/lib/pgxs
+        rm -rf /usr/share/postgresql/*/extension
+        find /usr/lib/postgresql -name "*.bc" -delete 2>/dev/null || true
+
+        # Remove file magic database
+        rm -f /usr/lib/file/magic.mgc
+
+        # Remove udev hardware database
+        rm -f /usr/lib/udev/hwdb.bin
+
+        # Purge any packages that were automatically installed as dependencies
+        apt-get autoremove -y --purge
+
+        # Mark all libraries as auto-installed and remove unused
+        apt-mark auto ".*" 2>/dev/null || true
+        apt-mark manual git sliver-server sliver-client postgresql postgresql-client postgresql-contrib 2>/dev/null || true
+        apt-get autoremove -y --purge
+
+        # Clean package manager completely
+        apt-get clean
+        apt-get autoclean
+        rm -rf /var/lib/apt/lists/*
+        rm -rf /var/cache/apt/*
+        rm -rf /var/cache/debconf/*
+        rm -rf /var/lib/dpkg/*-old
+        rm -rf /var/lib/dpkg/backup/*
+
+        # Remove all documentation and man pages
+        rm -rf /usr/share/doc
+        rm -rf /usr/share/man
+        rm -rf /usr/share/info
+        rm -rf /usr/share/lintian
+        rm -rf /usr/share/linda
+        rm -rf /usr/share/bug
+
+        # Remove all locales except C
+        rm -rf /usr/share/locale/*
+
+        # Remove misc shared data
+        rm -rf /usr/share/zoneinfo
+        rm -rf /usr/share/i18n
+        rm -rf /usr/share/common-licenses
+        rm -rf /usr/share/mime
+        rm -rf /usr/share/pixmaps
+        rm -rf /usr/share/applications
+        rm -rf /usr/share/menu
+        rm -rf /usr/share/sounds
+        rm -rf /usr/share/icons
+        rm -rf /usr/share/fonts
+        rm -rf /usr/share/terminfo
+        rm -rf /usr/share/X11
+        rm -rf /usr/share/bash-completion
+
+        # Remove all static libraries and headers
+        find /usr -name "*.a" -delete 2>/dev/null || true
+        find /usr -name "*.la" -delete 2>/dev/null || true
+        rm -rf /usr/include
+
+        # Remove Python stuff we do not need
+        rm -rf /usr/lib/python*/test
+        rm -rf /usr/lib/python*/tests
+        rm -rf /usr/lib/python*/idle*
+        rm -rf /usr/lib/python*/tkinter
+        rm -rf /usr/lib/python*/unittest
+        rm -rf /usr/lib/python*/ensurepip
+        rm -rf /usr/lib/python*/distutils
+        rm -rf /usr/lib/python*/lib2to3
+        rm -rf /usr/lib/python*/pydoc*
+        rm -rf /usr/lib/python*/config-*
+        find /usr -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+        find /usr -type f -name "*.pyc" -delete 2>/dev/null || true
+        find /usr -type f -name "*.pyo" -delete 2>/dev/null || true
+
+        # Clean all caches
+        rm -rf /var/cache/*
+        rm -rf /root/.cache
+        rm -rf /root/.local
+        rm -rf /root/.config
+        rm -rf /home/*/.cache
+        rm -rf /home/*/.local
+        rm -rf /home/*/.config
+
+        # Clean tmp
+        rm -rf /tmp/* /var/tmp/*
+
+        # Remove all logs
+        find /var/log -type f -delete 2>/dev/null || true
+
+        # Remove cron, systemd catalog, etc
+        rm -rf /var/spool/cron
+        rm -rf /var/spool/mail
+        rm -rf /var/lib/systemd/catalog
+
+        # Cleanup any remaining build artifacts
+        find / -name "*.o" -delete 2>/dev/null || true
+        find / -name "*.lo" -delete 2>/dev/null || true
+
+        echo "=== Cleanup complete ==="
+      args:
+        executable: /bin/bash
       become: true
+      when: ansible_os_family == "Debian"
       failed_when: false
-
-    - name: Truncate PostgreSQL log files
-      ansible.builtin.copy:
-        content: ""
-        dest: "{{ item.path }}"
-        mode: '0644'
-      loop: "{{ sliver_postgres_logs.files | default([]) }}"
-      when: sliver_postgres_logs.files is defined
-      become: true
       changed_when: false
 
     - name: Unhold git package after cleanup is complete

@@ -97,17 +97,6 @@ sliver_cleanup_paths:
   - "/root/.tool-versions"
   - "/root/.ssh"
 
-sliver_system_cleanup_paths:
-  - /var/lib/apt/lists/*
-  - /var/cache/apt/*
-  - /var/cache/debconf/*
-  - /usr/share/doc/*
-  - /usr/share/man/*
-  - /usr/share/locale/*
-  - /usr/share/info/*
-  - /tmp/*
-  - /var/tmp/*
-
 sliver_mingw_directories:
   - /usr/x86_64-w64-mingw32
   - /usr/i686-w64-mingw32

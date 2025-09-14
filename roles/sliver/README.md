@@ -116,16 +116,6 @@ Install sliver c2
 | `sliver_cleanup_paths.9` | str | `/root/.local` | No description |
 | `sliver_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
 | `sliver_cleanup_paths.11` | str | `/root/.ssh` | No description |
-| `sliver_system_cleanup_paths` | list | `[]` | No description |
-| `sliver_system_cleanup_paths.0` | str | `/var/lib/apt/lists/*` | No description |
-| `sliver_system_cleanup_paths.1` | str | `/var/cache/apt/*` | No description |
-| `sliver_system_cleanup_paths.2` | str | `/var/cache/debconf/*` | No description |
-| `sliver_system_cleanup_paths.3` | str | `/usr/share/doc/*` | No description |
-| `sliver_system_cleanup_paths.4` | str | `/usr/share/man/*` | No description |
-| `sliver_system_cleanup_paths.5` | str | `/usr/share/locale/*` | No description |
-| `sliver_system_cleanup_paths.6` | str | `/usr/share/info/*` | No description |
-| `sliver_system_cleanup_paths.7` | str | `/tmp/*` | No description |
-| `sliver_system_cleanup_paths.8` | str | `/var/tmp/*` | No description |
 | `sliver_mingw_directories` | list | `[]` | No description |
 | `sliver_mingw_directories.0` | str | `/usr/x86_64-w64-mingw32` | No description |
 | `sliver_mingw_directories.1` | str | `/usr/i686-w64-mingw32` | No description |
@@ -175,7 +165,6 @@ Install sliver c2
 - **Remove MinGW directories** (ansible.builtin.file)
 - **Remove unnecessary system libraries for containers** (ansible.builtin.apt) - Conditional
 - **Remove development packages** (ansible.builtin.apt) - Conditional
-- **Remove system cache paths** (ansible.builtin.file)
 - **Find Python cache directories** (ansible.builtin.find)
 - **Remove Python cache directories** (ansible.builtin.file)
 - **Find Python compiled files** (ansible.builtin.find)
@@ -185,9 +174,7 @@ Install sliver c2
 - **Truncate sliver log files** (ansible.builtin.copy)
 - **Clean sliver user cache directories** (ansible.builtin.file)
 - **Clean root home directories** (ansible.builtin.file)
-- **Check if PostgreSQL log directory exists** (ansible.builtin.stat)
-- **Find PostgreSQL log files** (ansible.builtin.find) - Conditional
-- **Truncate PostgreSQL log files** (ansible.builtin.copy) - Conditional
+- **Final cleanup - remove unnecessary items for container image builds** (ansible.builtin.shell) - Conditional
 - **Unhold git package after cleanup is complete** (ansible.builtin.dpkg_selections) - Conditional
 
 ### main.yml
