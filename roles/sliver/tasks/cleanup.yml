@@ -104,6 +104,23 @@
       become: true
       failed_when: false
 
+    - name: Clean all cache directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ (sliver_cleanup_paths + sliver_additional_cleanup_paths | default([])) | unique }}"
+      become: true
+      failed_when: false  # Continue even if some paths don't exist
+
+    - name: Verify sliver binaries still work after cleanup
+      ansible.builtin.command:
+        cmd: "{{ sliver_install_path }}/{{ item }} version"
+      loop: "{{ sliver_keep_binaries }}"
+      register: sliver_binary_check
+      failed_when: false
+      become: true
+      changed_when: false
+
     - name: Find and remove Python artifacts efficiently
       ansible.builtin.shell: |
         # Target specific Python paths
@@ -149,17 +166,17 @@
           failed_when: false
 
         - name: Remove container-unnecessary system files
-          ansible.builtin.file:
-            path: "{{ item }}"
-            state: absent
-          loop:
-            - /usr/share/zoneinfo
-            - /usr/share/doc
-            - /usr/share/man
-            - /usr/share/info
-            - /var/cache/ldconfig
+          ansible.builtin.shell: |
+            rm -rf /usr/share/zoneinfo
+            rm -rf /usr/share/doc
+            rm -rf /usr/share/man
+            rm -rf /usr/share/info
+            rm -rf /var/cache/ldconfig
+          args:
+            executable: /bin/bash
           become: true
           failed_when: false
+          changed_when: false  # These are cleanup operations, not changes
 
     - name: Targeted cleanup for specific unnecessary packages
       ansible.builtin.shell: |
@@ -170,6 +187,11 @@
         rm -f /usr/local/bin/asdf
         rm -rf /opt/asdf
         rm -rf ~/.asdf
+
+        rm -rf /home/sliver/go /home/sliver/.cache /home/sliver/.asdf /home/sliver/.local /home/sliver/.config /home/sliver/.tool-versions
+        rm -rf /root/go /root/.cache /root/.asdf /root/.local /root/.tool-versions /root/.ssh
+        rm -rf /tmp/* /var/tmp/*
+        rm -rf /var/cache/debconf /var/lib/systemd/catalog /var/spool/cron /var/spool/mail
 
         # Remove Python completely if not in protected packages
         if ! echo "{{ sliver_protected_packages | join(' ') }}" | grep -q python; then
@@ -252,28 +274,6 @@
       failed_when: false
       changed_when: false
 
-    - name: Clean all cache directories once
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop: "{{ (sliver_cleanup_paths + sliver_additional_cleanup_paths | default([])) | unique }}"
-      become: true
-
-    - name: Verify sliver binaries still work after cleanup
-      ansible.builtin.command:
-        cmd: "{{ sliver_install_path }}/{{ item }} version"
-      loop: "{{ sliver_keep_binaries }}"
-      register: sliver_binary_check
-      failed_when: false
-      become: true
-      changed_when: false
-
-    - name: Report binary verification results
-      ansible.builtin.debug:
-        msg: "Binary {{ item.item }} check: {{ 'OK' if item.rc == 0 else 'FAILED' }}"
-      loop: "{{ sliver_binary_check.results }}"
-      when: sliver_binary_check is defined
-
     - name: Final APT cleanup (last for layer caching)
       ansible.builtin.shell: |  # noqa: command-instead-of-module
         set -o pipefail
@@ -290,13 +290,17 @@
       changed_when: false
 
     - name: Unhold protected packages after cleanup
-      ansible.builtin.dpkg_selections:
-        name: "{{ item }}"
-        selection: install
-      loop: "{{ sliver_protected_packages }}"
+      ansible.builtin.shell: |
+        set -o pipefail
+        for pkg in {{ sliver_protected_packages | join(' ') }}; do
+          echo "$pkg install" | dpkg --set-selections 2>/dev/null || true
+        done
+      args:
+        executable: /bin/bash
       become: true
       when: ansible_os_family == "Debian"
       failed_when: false
+      changed_when: false  # This is a state restoration, not a change
 
 - name: Display cleanup summary
   ansible.builtin.debug:
