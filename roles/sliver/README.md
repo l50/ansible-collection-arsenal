@@ -181,7 +181,8 @@ Install sliver c2
 - **Remove container-unnecessary locale data** (ansible.builtin.shell)
 - **Remove container-unnecessary system files** (ansible.builtin.shell)
 - **Targeted cleanup for specific unnecessary packages** (ansible.builtin.shell) - Conditional
-- **Final APT cleanup (last for layer caching)** (ansible.builtin.shell) - Conditional
+- **Final APT cleanup** (ansible.builtin.apt) - Conditional
+- **Clean APT cache and lists** (ansible.builtin.shell) - Conditional
 - **Unhold protected packages after cleanup** (ansible.builtin.shell) - Conditional
 - **Display cleanup summary** (ansible.builtin.debug) - Conditional
 
