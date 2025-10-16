@@ -8,7 +8,7 @@ sliver_packages:
     - gnupg
     - libcurl4
     - libssl3
-    - libxml2
+    - libxml2-dev
     - unzip
     - vim
     - vim-common
@@ -48,7 +48,6 @@ sliver_packages:
     - openssl
     - libapr1
     - libsvn1
-    - libxml2
     - zlib1g
     - xsel
     - libcurl4-openssl-dev
