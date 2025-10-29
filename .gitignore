@@ -9,3 +9,4 @@ changelogs/.plugin-cache.yaml
 .ansible
 *.tar.gz
 *.log
+.tool-versions

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import json, sys; data=json.load(sys.stdin); cmd=data.get('tool_input',{}).get('command',''); forbidden=['🤖','Generated with','Co-Authored-By: Claude','claude.com/claude-code']; msg='❌ BLOCKED: Forbidden content (emojis/branding)\\\\n\\\\n✅ Use ONLY fabric output\\\\nGenerate: git diff --staged | fabric --pattern commit' if 'git commit' in cmd and '-m' in cmd and any(f in cmd for f in forbidden) else '❌ BLOCKED: Forbidden content (emojis/branding)\\\\n\\\\n✅ Use ONLY fabric output\\\\nGenerate: git diff main...HEAD | fabric --pattern pr' if 'gh pr create' in cmd and '--body' in cmd and any(f in cmd for f in forbidden) else ''; sys.stderr.write(msg) if msg else None; sys.exit(2 if msg else 0)\""
+          }
+        ]
+      }
+    ]
+  },
+  "alwaysThinkingEnabled": false
+}
