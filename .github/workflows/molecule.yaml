@@ -54,6 +54,96 @@ permissions:
   pull-requests: write
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      roles: ${{ steps.filter.outputs.roles }}
+      playbooks: ${{ steps.filter.outputs.playbooks }}
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      test_all: ${{ steps.check-event.outputs.test_all }}
+    steps:
+      - name: Set up git repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          path: ${{ env.COLLECTION_PATH }}
+          fetch-depth: 0
+
+      - name: Check event type
+        id: check-event
+        run: |
+          # Test all on: push to main, schedule, workflow_dispatch without specific inputs, merge_group
+          if [[ "${{ github.event_name }}" == "push" ]] || \
+             [[ "${{ github.event_name }}" == "schedule" ]] || \
+             [[ "${{ github.event_name }}" == "merge_group" ]] || \
+             [[ "${{ github.event_name }}" == "workflow_dispatch" && -z "${{ env.ROLE }}" && -z "${{ env.PLAYBOOK }}" ]]; then
+            echo "test_all=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "test_all=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Detect changed files
+        id: filter
+        if: steps.check-event.outputs.test_all == 'false'
+        working-directory: ${{ env.COLLECTION_PATH }}
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE="origin/main"
+            HEAD="HEAD"
+          fi
+
+          # Get changed files
+          CHANGED_FILES=$(git diff --name-only "$BASE"..."$HEAD")
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Extract changed roles
+          ROLES=$(echo "$CHANGED_FILES" | grep '^roles/' | cut -d'/' -f2 | sort -u | tr '\n' ' ')
+          echo "roles=$ROLES" >> "$GITHUB_OUTPUT"
+          echo "Changed roles: $ROLES"
+
+          # Extract changed playbooks
+          PLAYBOOKS=$(echo "$CHANGED_FILES" | grep '^playbooks/' | cut -d'/' -f2 | sort -u | tr '\n' ' ')
+          echo "playbooks=$PLAYBOOKS" >> "$GITHUB_OUTPUT"
+          echo "Changed playbooks: $PLAYBOOKS"
+
+      - name: Generate test matrix
+        id: generate-matrix
+        working-directory: ${{ env.COLLECTION_PATH }}
+        run: |
+          if [[ "${{ steps.check-event.outputs.test_all }}" == "true" ]]; then
+            # Test all roles and playbooks
+            MATRIX_JSON='[{"name":"Role Test - attack_box","path":"roles/attack_box"},{"name":"Role Test - sliver","path":"roles/sliver"},{"name":"Role Test - ttpforge","path":"roles/ttpforge"},{"name":"Playbook Test - atomic-red-team","path":"playbooks/atomic-red-team"},{"name":"Playbook Test - attack_box","path":"playbooks/attack_box"},{"name":"Playbook Test - sliver","path":"playbooks/sliver"},{"name":"Playbook Test - ttpforge","path":"playbooks/ttpforge"}]'
+          else
+            # Test only changed roles + all playbooks
+            ROLES="${{ steps.filter.outputs.roles }}"
+            MATRIX_JSON="["
+            FIRST=true
+
+            # Add changed roles
+            if [[ -n "$ROLES" ]]; then
+              for role in $ROLES; do
+                if [[ "$FIRST" == "true" ]]; then
+                  FIRST=false
+                else
+                  MATRIX_JSON+=","
+                fi
+                MATRIX_JSON+="{\"name\":\"Role Test - ${role}\",\"path\":\"roles/${role}\"}"
+              done
+            fi
+
+            # Always add all playbooks
+            if [[ "$FIRST" == "false" ]]; then
+              MATRIX_JSON+=","
+            fi
+            MATRIX_JSON+='{"name":"Playbook Test - atomic-red-team","path":"playbooks/atomic-red-team"},{"name":"Playbook Test - attack_box","path":"playbooks/attack_box"},{"name":"Playbook Test - sliver","path":"playbooks/sliver"},{"name":"Playbook Test - ttpforge","path":"playbooks/ttpforge"}]'
+          fi
+
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          echo "Matrix to test: $MATRIX_JSON"
+
   validate-inputs:
     runs-on: ubuntu-latest
     steps:
@@ -297,7 +387,7 @@ jobs:
           fi
 
   full_test:
-    needs: validate-inputs
+    needs: [validate-inputs, detect-changes]
     if: ${{ github.event.inputs.ROLE == '' && github.event.inputs.PLAYBOOK == '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -305,21 +395,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        include:
-          - name: "Role Test - attack_box"
-            path: "roles/attack_box"
-          - name: "Role Test - sliver"
-            path: "roles/sliver"
-          - name: "Role Test - ttpforge"
-            path: "roles/ttpforge"
-          - name: "Playbook Test - atomic-red-team"
-            path: "playbooks/atomic-red-team"
-          - name: "Playbook Test - attack_box"
-            path: "playbooks/attack_box"
-          - name: "Playbook Test - sliver"
-            path: "playbooks/sliver"
-          - name: "Playbook Test - ttpforge"
-            path: "playbooks/ttpforge"
+        include: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
 
     steps:
       - name: Install Act dependencies
