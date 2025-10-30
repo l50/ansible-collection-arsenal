@@ -7,3 +7,5 @@ attack_box_common_install_packages:
   - zsh
 
 attack_box_user: "{{ ansible_user_id }}"
+
+# Test comment to verify role change detection works correctly
