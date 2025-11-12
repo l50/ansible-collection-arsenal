@@ -24,3 +24,80 @@ tasks:
       - task: pre-commit:update-hooks
       - task: pre-commit:clear-cache
       - task: pre-commit:run-hooks
+
+  gen-changelog-fragment:
+    desc: "Generate changelog fragment from commits since last release"
+    cmds:
+      - |
+        # Get the last release tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+        if [ -z "$LAST_TAG" ]; then
+          echo "No previous tags found. Fetching all commit history..."
+          COMMITS=$(git log --oneline --no-merges)
+        else
+          echo "Generating changelog from commits since $LAST_TAG..."
+          COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --no-merges)
+        fi
+
+        if [ -z "$COMMITS" ]; then
+          echo "No commits found since last release"
+          exit 1
+        fi
+
+        echo "Commits to process:"
+        echo "$COMMITS"
+        echo ""
+
+        # Generate changelog fragment using fabric
+        echo "$COMMITS" | fabric --pattern changelog > "changelogs/fragments/{{.NEXT_VERSION}}.yaml"
+
+        echo "Generated changelog fragment: changelogs/fragments/{{.NEXT_VERSION}}.yaml"
+        cat "changelogs/fragments/{{.NEXT_VERSION}}.yaml"
+    requires:
+      vars: ['NEXT_VERSION']
+
+  release:
+    desc: "Create release branch, generate changelog, and open PR"
+    deps: [github:check-gh-cli]
+    cmds:
+      - |
+        # Create branch
+        if git show-ref --verify --quiet "refs/heads/{{.NEXT_VERSION}}"; then
+          git checkout "{{.NEXT_VERSION}}"
+        else
+          git checkout -b "{{.NEXT_VERSION}}"
+        fi
+      - task: gen-changelog-fragment
+        vars:
+          NEXT_VERSION: "{{.NEXT_VERSION}}"
+      - task: ansible:gen-changelog
+        vars:
+          NEXT_VERSION: "{{.NEXT_VERSION}}"
+      - |
+        # Commit and push
+        git add .
+        if ! git diff --cached --quiet; then
+          git commit -m "chore: Release version {{.NEXT_VERSION}}"
+        fi
+        git push -u origin "{{.NEXT_VERSION}}"
+      - |
+        # Create PR if it doesn't exist
+        if ! gh pr list --head "{{.NEXT_VERSION}}" --json number | jq -e '.[0].number' >/dev/null 2>&1; then
+          gh pr create --title "Release {{.NEXT_VERSION}}" --body "Release {{.NEXT_VERSION}}" --base main
+        fi
+        echo "After PR is merged, run: NEXT_VERSION={{.NEXT_VERSION}} task release-finalize"
+    requires:
+      vars: ['NEXT_VERSION']
+
+  release-finalize:
+    desc: "Create GitHub release after PR is merged"
+    deps: [github:check-gh-cli]
+    cmds:
+      - git checkout main
+      - git pull
+      - task: github:create-release
+        vars:
+          NEXT_VERSION: "{{.NEXT_VERSION}}"
+    requires:
+      vars: ['NEXT_VERSION']
