@@ -1,6 +1,9 @@
 ---
 - name: TTPForge
   hosts: all
+  vars:
+    # Default to false, override with -e ttpforge_cleanup=true for production containers
+    ttpforge_cleanup: false
   roles:
     - name: Setup users on workstation
       role: cowdogmoo.workstation.user_setup

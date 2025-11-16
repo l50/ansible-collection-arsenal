@@ -15,8 +15,6 @@
     force: true
     update: true
   become: true
-  register: ttpforge_git_clone_result
-  changed_when: ttpforge_git_clone_result.before != ttpforge_git_clone_result.after
 
 - name: Check current ownership of {{ ttpforge_install_path }}
   ansible.builtin.stat:
