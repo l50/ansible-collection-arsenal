@@ -131,7 +131,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Check current ownership of {{ ttpforge_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the ttpforge repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in ttpforge directory** (ansible.builtin.copy) - Conditional
-- **Add ttpforge_install_path to $PATH** (ansible.builtin.lineinfile)
+- **Add ttpforge_install_path to $PATH** (ansible.builtin.lineinfile) - Conditional
 - **Check if ttpforge binary exists** (ansible.builtin.stat)
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
 - **Compile ttpforge** (ansible.builtin.shell) - Conditional

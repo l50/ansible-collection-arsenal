@@ -51,6 +51,7 @@
     regexp: "^export PATH=.*:{{ ttpforge_install_path }}.*$"
   become: true
   become_user: "{{ ttpforge_username }}"
+  when: not (ansible_virtualization_type is defined and ansible_virtualization_type == "docker")
 
 - name: Check if ttpforge binary exists
   ansible.builtin.stat:
