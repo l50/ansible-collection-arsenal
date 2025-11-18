@@ -1,0 +1,33 @@
+---
+- name: Converge with cleanup
+  hosts: all
+  gather_facts: true
+  vars:
+    test_username: "{{ ansible_distribution | lower }}"
+    test_usergroup: "{{ ansible_distribution | lower }}"
+    test_shell: "/bin/bash"
+
+  pre_tasks:
+    - name: Create test user
+      ansible.builtin.user:
+        name: "{{ test_username }}"
+        shell: "{{ test_shell }}"
+        create_home: true
+      become: true
+
+    - name: Set environment facts
+      ansible.builtin.set_fact:
+        ansible_env:
+          HOME: "/home/{{ test_username }}"
+
+  roles:
+    - role: l50.arsenal.ttpforge
+      vars:
+        ttpforge_username: "{{ test_username }}"
+        ttpforge_usergroup: "{{ test_usergroup }}"
+        ttpforge_shell: "{{ test_shell }}"
+        ttpforge_cleanup: true  # Enable cleanup
+        ttpforge_asdf_plugins:
+          - name: golang
+            version: "1.24.0"
+            scope: "global"

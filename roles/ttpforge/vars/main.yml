@@ -1,10 +1,61 @@
 ---
-ttpforge_common_install_packages:
-  - build-essential
-  - g++
-  - gcc
-  - git
-  - make
-  - unzip
-  - wget
-  - zip
+ttpforge_packages:
+  # Packages to keep after build
+  essential:
+    - git
+    - unzip
+    - wget
+    - zip
+
+  # Packages needed for build but removed during cleanup
+  build_only:
+    - build-essential
+    - g++
+    - gcc
+    - make
+
+  # Packages that stay installed (runtime dependencies)
+  runtime_debian: []
+
+# Compose installation lists
+ttpforge_common_install_packages: "{{ ttpforge_packages.essential + ttpforge_packages.build_only }}"
+
+# Cleanup lists
+ttpforge_cleanup_packages_debian: "{{ ttpforge_packages.build_only }}"
+
+# Cleanup paths
+ttpforge_cleanup_paths:
+  - "{{ ttpforge_user_home }}/go"
+  - "{{ ttpforge_user_home }}/.cache"
+  - "{{ ttpforge_user_home }}/.asdf"
+  - "{{ ttpforge_user_home }}/.local"
+  - "{{ ttpforge_user_home }}/.config"
+  - "{{ ttpforge_user_home }}/.tool-versions"
+  - "/root/go"
+  - "/root/.cache"
+  - "/root/.asdf"
+  - "/root/.local"
+  - "/root/.tool-versions"
+  - "/root/.ssh"
+  - "/tmp/*"
+  - "/var/tmp/*"
+
+ttpforge_source_directories:
+  - .git
+  - .github
+  - cmd
+  - pkg
+  - examples
+  - docs
+  - test
+  - tests
+
+ttpforge_keep_binaries:
+  - ttpforge
+
+ttpforge_container_remove_packages:
+  - "*vulkan*"
+  - "*llvm*"
+  - "libicu*"
+  - "snapd"
+  - "libgallium*"

@@ -22,6 +22,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
+| `ttpforge_cleanup` | bool | `False` | No description |
 | `ttpforge_install_path` | str | `/opt/ttpforge` | No description |
 | `ttpforge_username` | str | `{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}` | No description |
 | `ttpforge_usergroup` | str | `{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}` | No description |
@@ -34,17 +35,81 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 | Variable | Type | Value | Description |
 |----------|------|-------|-------------|
-| `ttpforge_common_install_packages` | list | `[]` | No description |
-| `ttpforge_common_install_packages.0` | str | `build-essential` | No description |
-| `ttpforge_common_install_packages.1` | str | `g++` | No description |
-| `ttpforge_common_install_packages.2` | str | `gcc` | No description |
-| `ttpforge_common_install_packages.3` | str | `git` | No description |
-| `ttpforge_common_install_packages.4` | str | `make` | No description |
-| `ttpforge_common_install_packages.5` | str | `unzip` | No description |
-| `ttpforge_common_install_packages.6` | str | `wget` | No description |
-| `ttpforge_common_install_packages.7` | str | `zip` | No description |
+| `ttpforge_packages` | dict | `{}` | No description |
+| `ttpforge_packages.essential` | list | `[]` | No description |
+| `ttpforge_packages.essential.0` | str | `git` | No description |
+| `ttpforge_packages.essential.1` | str | `unzip` | No description |
+| `ttpforge_packages.essential.2` | str | `wget` | No description |
+| `ttpforge_packages.essential.3` | str | `zip` | No description |
+| `ttpforge_packages.build_only` | list | `[]` | No description |
+| `ttpforge_packages.build_only.0` | str | `build-essential` | No description |
+| `ttpforge_packages.build_only.1` | str | `g++` | No description |
+| `ttpforge_packages.build_only.2` | str | `gcc` | No description |
+| `ttpforge_packages.build_only.3` | str | `make` | No description |
+| `ttpforge_packages.runtime_debian` | list | `[]` | No description |
+| `ttpforge_common_install_packages` | str | `{{ ttpforge_packages.essential + ttpforge_packages.build_only }}` | No description |
+| `ttpforge_cleanup_packages_debian` | str | `{{ ttpforge_packages.build_only }}` | No description |
+| `ttpforge_cleanup_paths` | list | `[]` | No description |
+| `ttpforge_cleanup_paths.0` | str | `{{ ttpforge_user_home }}/go` | No description |
+| `ttpforge_cleanup_paths.1` | str | `{{ ttpforge_user_home }}/.cache` | No description |
+| `ttpforge_cleanup_paths.2` | str | `{{ ttpforge_user_home }}/.asdf` | No description |
+| `ttpforge_cleanup_paths.3` | str | `{{ ttpforge_user_home }}/.local` | No description |
+| `ttpforge_cleanup_paths.4` | str | `{{ ttpforge_user_home }}/.config` | No description |
+| `ttpforge_cleanup_paths.5` | str | `{{ ttpforge_user_home }}/.tool-versions` | No description |
+| `ttpforge_cleanup_paths.6` | str | `/root/go` | No description |
+| `ttpforge_cleanup_paths.7` | str | `/root/.cache` | No description |
+| `ttpforge_cleanup_paths.8` | str | `/root/.asdf` | No description |
+| `ttpforge_cleanup_paths.9` | str | `/root/.local` | No description |
+| `ttpforge_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
+| `ttpforge_cleanup_paths.11` | str | `/root/.ssh` | No description |
+| `ttpforge_cleanup_paths.12` | str | `/tmp/*` | No description |
+| `ttpforge_cleanup_paths.13` | str | `/var/tmp/*` | No description |
+| `ttpforge_source_directories` | list | `[]` | No description |
+| `ttpforge_source_directories.0` | str | `.git` | No description |
+| `ttpforge_source_directories.1` | str | `.github` | No description |
+| `ttpforge_source_directories.2` | str | `cmd` | No description |
+| `ttpforge_source_directories.3` | str | `pkg` | No description |
+| `ttpforge_source_directories.4` | str | `examples` | No description |
+| `ttpforge_source_directories.5` | str | `docs` | No description |
+| `ttpforge_source_directories.6` | str | `test` | No description |
+| `ttpforge_source_directories.7` | str | `tests` | No description |
+| `ttpforge_keep_binaries` | list | `[]` | No description |
+| `ttpforge_keep_binaries.0` | str | `ttpforge` | No description |
+| `ttpforge_container_remove_packages` | list | `[]` | No description |
+| `ttpforge_container_remove_packages.0` | str | `*vulkan*` | No description |
+| `ttpforge_container_remove_packages.1` | str | `*llvm*` | No description |
+| `ttpforge_container_remove_packages.2` | str | `libicu*` | No description |
+| `ttpforge_container_remove_packages.3` | str | `snapd` | No description |
+| `ttpforge_container_remove_packages.4` | str | `libgallium*` | No description |
 
 ## Tasks
+
+### cleanup.yml
+
+- **Create list of packages to protect** (ansible.builtin.set_fact) - Conditional
+- **Hold runtime and essential packages before cleanup** (ansible.builtin.dpkg_selections) - Conditional
+- **Remove build-time Go installation and caches** (ansible.builtin.file)
+- **Find non-binary files in ttpforge directory** (ansible.builtin.find)
+- **Remove non-binary files from ttpforge directory** (ansible.builtin.file)
+- **Remove source directories from ttpforge installation** (ansible.builtin.file)
+- **Find empty directories in ttpforge path** (ansible.builtin.find)
+- **Remove empty directories** (ansible.builtin.file) - Conditional
+- **Strip debug symbols from binary** (ansible.builtin.command)
+- **Remove ASDF version manager** (ansible.builtin.file)
+- **Gather package facts** (ansible.builtin.package_facts) - Conditional
+- **Remove development packages (excluding protected)** (ansible.builtin.apt) - Conditional
+- **Clean all cache directories** (ansible.builtin.file)
+- **Verify ttpforge binary still works after cleanup** (ansible.builtin.command)
+- **Find and remove Python artifacts efficiently** (ansible.builtin.shell)
+- **Truncate log files** (ansible.builtin.shell)
+- **Container-specific optimizations** (block) - Conditional
+- **Remove container-unnecessary locale data** (ansible.builtin.shell)
+- **Remove container-unnecessary system files** (ansible.builtin.shell)
+- **Targeted cleanup for TTPForge container** (ansible.builtin.shell) - Conditional
+- **Final APT cleanup** (ansible.builtin.apt) - Conditional
+- **Clean APT cache and lists** (ansible.builtin.shell) - Conditional
+- **Unhold protected packages after cleanup** (ansible.builtin.shell) - Conditional
+- **Display cleanup summary** (ansible.builtin.debug) - Conditional
 
 ### main.yml
 
@@ -57,6 +122,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Check if asdf binary is installed** (ansible.builtin.stat)
 - **Install asdf and associated plugins for ttpforge user** (ansible.builtin.include_role) - Conditional
 - **Include TTPForge setup tasks** (ansible.builtin.include_tasks)
+- **Include TTPForge cleanup tasks** (ansible.builtin.include_tasks) - Conditional
 
 ### setup.yml
 
@@ -65,7 +131,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Check current ownership of {{ ttpforge_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the ttpforge repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in ttpforge directory** (ansible.builtin.copy) - Conditional
-- **Add ttpforge_install_path to $PATH** (ansible.builtin.lineinfile)
+- **Add ttpforge_install_path to $PATH** (ansible.builtin.lineinfile) - Conditional
 - **Check if ttpforge binary exists** (ansible.builtin.stat)
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
 - **Compile ttpforge** (ansible.builtin.shell) - Conditional

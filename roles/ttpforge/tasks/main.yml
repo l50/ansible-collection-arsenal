@@ -58,3 +58,7 @@
 
 - name: Include TTPForge setup tasks
   ansible.builtin.include_tasks: setup.yml
+
+- name: Include TTPForge cleanup tasks
+  ansible.builtin.include_tasks: cleanup.yml
+  when: ttpforge_cleanup | bool
