@@ -20,15 +20,15 @@ Install sliver c2
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `sliver_cleanup` | bool | `False` | No description |
-| `sliver_install_path` | str | `/opt/sliver` | No description |
-| `sliver_setup_systemd` | bool | `False` | No description |
-| `sliver_unpack_at_build` | bool | `True` | No description |
-| `sliver_username` | str | `sliver` | No description |
-| `sliver_usergroup` | str | `sliver` | No description |
-| `sliver_shell` | str | `{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}` | No description |
-| `sliver_asdf_plugins` | list | `[]` | No description |
-| `sliver_asdf_plugins.0` | dict | `{}` | No description |
+| `sliver_cleanup` | bool | <code>False</code> | No description |
+| `sliver_install_path` | str | <code>/opt/sliver</code> | No description |
+| `sliver_setup_systemd` | bool | <code>False</code> | No description |
+| `sliver_unpack_at_build` | bool | <code>True</code> | No description |
+| `sliver_username` | str | <code>sliver</code> | No description |
+| `sliver_usergroup` | str | <code>sliver</code> | No description |
+| `sliver_shell` | str | <code>{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
+| `sliver_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
+| `sliver_asdf_plugins.0` | dict | <code>{}</code> | No description |
 
 ### Role Variables (main.yml)
 

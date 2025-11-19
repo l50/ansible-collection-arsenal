@@ -22,14 +22,14 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `ttpforge_cleanup` | bool | `False` | No description |
-| `ttpforge_install_path` | str | `/opt/ttpforge` | No description |
-| `ttpforge_username` | str | `{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}` | No description |
-| `ttpforge_usergroup` | str | `{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}` | No description |
-| `ttpforge_shell` | str | `{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}` | No description |
-| `ttpforge_asdf_plugins` | list | `[]` | No description |
-| `ttpforge_asdf_plugins.0` | dict | `{}` | No description |
-| `ttpforge_asdf_plugins.1` | dict | `{}` | No description |
+| `ttpforge_cleanup` | bool | <code>False</code> | No description |
+| `ttpforge_install_path` | str | <code>/opt/ttpforge</code> | No description |
+| `ttpforge_username` | str | <code>{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
+| `ttpforge_usergroup` | str | <code>{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
+| `ttpforge_shell` | str | <code>{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
+| `ttpforge_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
+| `ttpforge_asdf_plugins.0` | dict | <code>{}</code> | No description |
+| `ttpforge_asdf_plugins.1` | dict | <code>{}</code> | No description |
 
 ### Role Variables (main.yml)
 

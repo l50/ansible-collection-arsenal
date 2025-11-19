@@ -15,13 +15,13 @@ Creates an attack box for penetration testing and red teaming
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `attack_box_common_install_packages` | list | `[]` | No description |
-| `attack_box_common_install_packages.0` | str | `gzip` | No description |
-| `attack_box_common_install_packages.1` | str | `kali-linux-core` | No description |
-| `attack_box_common_install_packages.2` | str | `vim` | No description |
-| `attack_box_common_install_packages.3` | str | `wordlists` | No description |
-| `attack_box_common_install_packages.4` | str | `zsh` | No description |
-| `attack_box_user` | str | `{{ ansible_user_id }}` | No description |
+| `attack_box_common_install_packages` | list | <code>&#91;&#93;</code> | No description |
+| `attack_box_common_install_packages.0` | str | <code>gzip</code> | No description |
+| `attack_box_common_install_packages.1` | str | <code>kali-linux-core</code> | No description |
+| `attack_box_common_install_packages.2` | str | <code>vim</code> | No description |
+| `attack_box_common_install_packages.3` | str | <code>wordlists</code> | No description |
+| `attack_box_common_install_packages.4` | str | <code>zsh</code> | No description |
+| `attack_box_user` | str | <code>{{ ansible_user_id }}</code> | No description |
 
 ## Tasks
 
