@@ -26,7 +26,7 @@
 |----------|------|---------|-------------|
 {%- for key, details in defaultfile.data.items() %}
 {%- if not key.endswith('.0') and not key.endswith('.1') and not key.endswith('.2') and not key.endswith('.3') and not key.endswith('.4') and not key.endswith('.5') and not key.endswith('.6') and '.' not in key or key.count('.') == 1 %}
-| `{{ key }}` | {{ details.type }} | `{{ details.value }}` | {{ details.description or 'No description' }} |
+| `{{ key }}` | {{ details.type }} | `{{ details.value | replace('|', '\\|') | replace('\n', '\\n') }}` | {{ details.description or 'No description' }} |
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
