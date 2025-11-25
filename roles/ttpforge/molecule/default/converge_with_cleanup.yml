@@ -17,7 +17,7 @@
 
     - name: Set environment facts
       ansible.builtin.set_fact:
-        ansible_env:
+        ttpforge_ansible_env:
           HOME: "/home/{{ test_username }}"
 
   roles:

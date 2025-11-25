@@ -13,6 +13,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 ## Dependencies
 
+
 - cowdogmoo.workstation.package_management
 - cowdogmoo.workstation.asdf
 
@@ -21,7 +22,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 ### Default Variables (main.yml)
 
 | Variable | Type | Default | Description |
-|----------|------|---------|-------------|
+| -------- | ---- | ------- | ----------- |
 | `ttpforge_cleanup` | bool | <code>False</code> | No description |
 | `ttpforge_install_path` | str | <code>/opt/ttpforge</code> | No description |
 | `ttpforge_username` | str | <code>{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
@@ -34,7 +35,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 ### Role Variables (main.yml)
 
 | Variable | Type | Value | Description |
-|----------|------|-------|-------------|
+| -------- | ---- | ----- | ----------- |
 | `ttpforge_packages` | dict | `{}` | No description |
 | `ttpforge_packages.essential` | list | `[]` | No description |
 | `ttpforge_packages.essential.0` | str | `git` | No description |
@@ -86,6 +87,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 ### cleanup.yml
 
+
 - **Create list of packages to protect** (ansible.builtin.set_fact) - Conditional
 - **Hold runtime and essential packages before cleanup** (ansible.builtin.dpkg_selections) - Conditional
 - **Remove build-time Go installation and caches** (ansible.builtin.file)
@@ -113,6 +115,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 ### main.yml
 
+
 - **Set ttpforge user home directory** (ansible.builtin.include_tasks)
 - **Install required packages for ttpforge** (ansible.builtin.include_role)
 - **Ensure home directory exists for ttpforge user** (ansible.builtin.file)
@@ -125,6 +128,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Include TTPForge cleanup tasks** (ansible.builtin.include_tasks) - Conditional
 
 ### setup.yml
+
 
 - **Configure Git to allow ttpforge repository as a safe directory** (community.general.git_config)
 - **Clone ttpforge repo** (ansible.builtin.git)
@@ -139,6 +143,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Initialize ttpforge** (ansible.builtin.command) - Conditional
 
 ### ttpforge_get_user_home.yml
+
 
 - **Gather available local users** (ansible.builtin.getent) - Conditional
 - **Set user home directory** (ansible.builtin.set_fact) - Conditional
@@ -159,6 +164,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **License**: MIT
 
 ## Platforms
+
 
 - Ubuntu: all
 - macOS: all

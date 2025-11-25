@@ -17,12 +17,12 @@
 
     - name: Check user exists
       ansible.builtin.command: "id -un {{ ttpforge_username }}"
-      register: user_check
+      register: ttpforge_user_check
       changed_when: false
-      failed_when: user_check.rc != 0
+      failed_when: ttpforge_user_check.rc != 0
 
     - name: Check user sudo access
       ansible.builtin.stat:
         path: "/etc/sudoers.d/{{ ttpforge_username }}"
-      register: sudoers_check
+      register: ttpforge_sudoers_check
       when: ttpforge_username != 'root'
