@@ -20,52 +20,52 @@
     - name: Check wordlists directory exists
       ansible.builtin.stat:
         path: /usr/share/wordlists
-      register: wordlists_dir
+      register: attack_box_wordlists_dir
       when: ansible_distribution_release == "kali-rolling"
 
     - name: Assert wordlists directory exists
       ansible.builtin.assert:
         that:
-          - wordlists_dir.stat.exists
+          - attack_box_wordlists_dir.stat.exists
       when: ansible_distribution_release == "kali-rolling"
 
     - name: Check rockyou wordlist file exists
       ansible.builtin.stat:
         path: /usr/share/wordlists/rockyou.txt
-      register: rockyou_file
+      register: attack_box_rockyou_file
       when: ansible_distribution_release == "kali-rolling"
 
     - name: Assert rockyou wordlist file exists
       ansible.builtin.assert:
         that:
-          - rockyou_file.stat.exists
+          - attack_box_rockyou_file.stat.exists
       when: ansible_distribution_release == "kali-rolling"
 
     - name: Check user exists
       ansible.builtin.command:
         cmd: "id -un {{ ansible_user_id }}"
-      register: user_check
+      register: attack_box_user_check
       changed_when: false
-      failed_when: user_check.rc != 0
+      failed_when: attack_box_user_check.rc != 0
 
     - name: Check .ssh directory exists for the user
       ansible.builtin.stat:
         path: "{{ ansible_user_id | ternary('/root/.ssh', '/home/' + ansible_user_id + '/.ssh') }}"
-      register: ssh_dir_check
+      register: attack_box_ssh_dir_check
 
     - name: Assert .ssh directory exists
       ansible.builtin.assert:
         that:
-          - ssh_dir_check.stat.exists
+          - attack_box_ssh_dir_check.stat.exists
 
     - name: Check authorized_keys file exists for the user
       ansible.builtin.stat:
         path: "{{ ansible_user_id | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_user_id + '/.ssh/authorized_keys') }}"
-      register: authorized_keys_check
-      when: ssh_dir_check.stat.exists
+      register: attack_box_authorized_keys_check
+      when: attack_box_ssh_dir_check.stat.exists
 
     - name: Assert authorized_keys file exists
       ansible.builtin.assert:
         that:
-          - authorized_keys_check.stat.exists
-      when: authorized_keys_check.stat.exists
+          - attack_box_authorized_keys_check.stat.exists
+      when: attack_box_authorized_keys_check.stat.exists

@@ -29,23 +29,23 @@
 
     - name: Check sliver user exists
       ansible.builtin.command: "id -un {{ sliver_username }}"
-      register: user_check
+      register: sliver_user_check
       changed_when: false
-      failed_when: user_check.rc != 0
+      failed_when: sliver_user_check.rc != 0
 
     - name: Check user sudo access
       ansible.builtin.stat:
         path: "/etc/sudoers.d/{{ sliver_username }}"
-      register: sudoers_check
+      register: sliver_sudoers_check
       when: sliver_username != 'root'
       failed_when: >
         sliver_username != 'root' and
-        not sudoers_check.stat.exists
+        not sliver_sudoers_check.stat.exists
 
     - name: Check if operator config exists
       ansible.builtin.stat:
         path: "{{ sliver_user_home }}/.sliver-client/configs/{{ sliver_username }}_localhost.cfg"
-      register: operator_config
+      register: sliver_operator_config
       failed_when: >
-        not operator_config.stat.exists or
-        operator_config.stat.size == 0
+        not sliver_operator_config.stat.exists or
+        sliver_operator_config.stat.size == 0

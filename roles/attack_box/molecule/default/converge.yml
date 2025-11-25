@@ -16,7 +16,7 @@
 
     - name: Set home directory fact
       ansible.builtin.set_fact:
-        ansible_env:
+        attack_box_ansible_env:
           HOME: "{{ container_home }}"
 
     - name: Include default variables

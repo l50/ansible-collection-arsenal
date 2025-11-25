@@ -10,7 +10,7 @@
   tasks:
     - name: Set async_dir for HOME env
       ansible.builtin.set_fact:
-        ansible_async_dir: "{{ lookup('env', 'HOME') }}/.ansible_async/"
+        ttpforge_ansible_async_dir: "{{ lookup('env', 'HOME') }}/.ansible_async/"
       when: lookup('env', 'HOME') | length > 0
 
     - name: Create molecule instance(s)
@@ -26,7 +26,7 @@
         recreate: false
         log_driver: json-file
         labels: "{{ molecule_labels | combine(item.labels | default({})) }}"
-      register: server
+      register: ttpforge_server
       loop: "{{ molecule_yml.platforms }}"
       async: 7200
       poll: 0
@@ -34,8 +34,8 @@
     - name: Wait for instance(s) creation to complete
       ansible.builtin.async_status:
         jid: "{{ item.ansible_job_id }}"
-      register: docker_jobs
-      until: docker_jobs.finished
+      register: ttpforge_docker_jobs
+      until: ttpforge_docker_jobs.finished
       retries: 300
       delay: 1
-      loop: "{{ server.results }}"
+      loop: "{{ ttpforge_server.results }}"

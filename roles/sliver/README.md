@@ -11,6 +11,7 @@ Install sliver c2
 
 ## Dependencies
 
+
 - cowdogmoo.workstation.package_management
 - cowdogmoo.workstation.asdf
 
@@ -19,7 +20,7 @@ Install sliver c2
 ### Default Variables (main.yml)
 
 | Variable | Type | Default | Description |
-|----------|------|---------|-------------|
+| -------- | ---- | ------- | ----------- |
 | `sliver_cleanup` | bool | <code>False</code> | No description |
 | `sliver_install_path` | str | <code>/opt/sliver</code> | No description |
 | `sliver_setup_systemd` | bool | <code>False</code> | No description |
@@ -33,7 +34,7 @@ Install sliver c2
 ### Role Variables (main.yml)
 
 | Variable | Type | Value | Description |
-|----------|------|-------|-------------|
+| -------- | ---- | ----- | ----------- |
 | `sliver_packages` | dict | `{}` | No description |
 | `sliver_packages.essential` | list | `[]` | No description |
 | `sliver_packages.essential.0` | str | `acl` | No description |
@@ -158,6 +159,7 @@ Install sliver c2
 
 ### cleanup.yml
 
+
 - **Clean up build environment** (block) - Conditional
 - **Create list of packages to protect** (ansible.builtin.set_fact) - Conditional
 - **Hold runtime and essential packages before cleanup** (ansible.builtin.dpkg_selections) - Conditional
@@ -187,6 +189,7 @@ Install sliver c2
 
 ### main.yml
 
+
 - **Install required packages for Sliver** (ansible.builtin.include_role)
 - **Create user** (ansible.builtin.include_role)
 - **Set sliver user home directory** (ansible.builtin.include_tasks)
@@ -202,6 +205,7 @@ Install sliver c2
 - **Include cleanup tasks** (ansible.builtin.include_tasks) - Conditional
 
 ### setup.yml
+
 
 - **Configure Git to allow sliver_install_path as a safe directory** (community.general.git_config)
 - **Clone Sliver repo** (ansible.builtin.git)
@@ -221,11 +225,13 @@ Install sliver c2
 
 ### sliver_get_user_home.yml
 
+
 - **Gather available local users** (ansible.builtin.getent) - Conditional
 - **Set user home directory** (ansible.builtin.set_fact) - Conditional
 - **Set user home directory for macOS** (ansible.builtin.set_fact) - Conditional
 
 ### systemd.yml
+
 
 - **Configure systemd service for Sliver** (ansible.builtin.copy)
 - **Start Sliver service** (ansible.builtin.systemd)
@@ -245,6 +251,7 @@ Install sliver c2
 - **License**: MIT
 
 ## Platforms
+
 
 - Ubuntu: all
 - macOS: all
