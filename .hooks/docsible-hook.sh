@@ -11,6 +11,13 @@ NC='\033[0m'
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
+# Check if docsible is installed
+if ! command -v docsible &> /dev/null; then
+    echo -e "${RED}Error: docsible is not installed${NC}"
+    echo "Please install docsible: pip3 install docsible==0.8.0"
+    exit 1
+fi
+
 # Check if template exists
 TEMPLATE_PATH=".hooks/templates/docsible-template.md.j2"
 if [ ! -f "$TEMPLATE_PATH" ]; then
@@ -35,8 +42,8 @@ for role_dir in roles/*/; do
         cp "$readme" "$readme.bak"
     fi
 
-    # Use subshell to avoid corrupting git index in submodule environments
-    if output=$(cd "$role_dir" 2>&1 && docsible --role . --no-docsible --no-backup --comments --md-role-template "$REPO_ROOT/$TEMPLATE_PATH" 2>&1); then
+    # Generate documentation for role
+    if output=$(docsible --role "$role_dir" --no-docsible --no-backup --comments --md-role-template "$REPO_ROOT/$TEMPLATE_PATH" 2>&1); then
 
         # Check if changed
         if [ -f "$readme.bak" ]; then
@@ -52,12 +59,16 @@ for role_dir in roles/*/; do
             FILES_MODIFIED=1
         fi
     else
-        echo -e "${RED}  Failed to generate docs${NC}"
+        echo -e "${RED}  Failed to generate docs for $role_name${NC}"
         echo -e "${RED}  Error: $output${NC}"
         # Restore original if it existed
         if [ -f "$readme.bak" ]; then
             mv "$readme.bak" "$readme"
         fi
+        # Clean up any backup files before failing
+        find . -name "README_backup_*.md" -type f -delete 2> /dev/null || true
+        find . -name ".docsible" -type f -delete 2> /dev/null || true
+        exit 1
     fi
 done
 
