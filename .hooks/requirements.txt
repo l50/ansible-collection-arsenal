@@ -1,4 +1,5 @@
 ansible-core==2.20.0
+ansible-lint==25.11.1
 docker==7.1.0
 docsible==0.8.0
 molecule==25.11.1
