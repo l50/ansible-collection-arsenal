@@ -4,11 +4,12 @@
     database: passwd
     key: "{{ ttpforge_username }}"
   register: ttpforge_getent_passwd
+  failed_when: false
   when: ansible_os_family != 'Darwin'
 
 - name: Set user home directory
   ansible.builtin.set_fact:
-    ttpforge_user_home: "{{ ttpforge_getent_passwd[ttpforge_username].home | default('/home/' + ttpforge_username) }}"
+    ttpforge_user_home: "{{ ttpforge_getent_passwd.ansible_facts.getent_passwd[ttpforge_username][5] if (ttpforge_getent_passwd.ansible_facts.getent_passwd is defined and ttpforge_username in ttpforge_getent_passwd.ansible_facts.getent_passwd) else '/home/' + ttpforge_username }}"
   when: ansible_os_family != 'Darwin'
 
 - name: Set user home directory for macOS
