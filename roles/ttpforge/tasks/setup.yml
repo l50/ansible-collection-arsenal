@@ -43,12 +43,15 @@
     mode: '0644'
   when: ttpforge_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
 
-- name: Add ttpforge_install_path to $PATH
-  ansible.builtin.lineinfile:
+- name: Add TTPForge paths to user's bashrc
+  ansible.builtin.blockinfile:
     path: "{{ ttpforge_user_home }}/.bashrc"
-    line: "export PATH=$PATH:{{ ttpforge_install_path }}"
-    insertafter: EOF
-    regexp: "^export PATH=.*:{{ ttpforge_install_path }}.*$"
+    block: |
+      # TTPForge paths
+      export PATH="{{ ttpforge_install_path }}:$PATH"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - TTPFORGE PATHS"
+    create: true
+    mode: '0644'
   become: true
   become_user: "{{ ttpforge_username }}"
   when: not (ansible_virtualization_type is defined and ansible_virtualization_type == "docker")
@@ -139,7 +142,7 @@
 
 - name: Check if ttpforge has been initialized
   ansible.builtin.stat:
-    path: "{{ ansible_env.HOME }}/.ttpforge"
+    path: "{{ ttpforge_user_home }}/.ttpforge"
   register: ttpforge_initialized_stat
 
 - name: Initialize ttpforge
