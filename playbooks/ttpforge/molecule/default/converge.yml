@@ -2,6 +2,17 @@
 - name: Converge
   hosts: all
   gather_facts: true
+  vars:
+    test_username: "ttpforge"
+    test_shell: "/bin/bash"
+
+  pre_tasks:
+    - name: Create test user
+      ansible.builtin.user:
+        name: "{{ test_username }}"
+        shell: "{{ test_shell }}"
+        create_home: true
+      become: true
 
 - name: Import playbook for testing
   ansible.builtin.import_playbook: ../../ttpforge.yml
