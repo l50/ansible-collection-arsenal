@@ -78,7 +78,3 @@
 - name: Include systemd tasks
   ansible.builtin.include_tasks: systemd.yml
   when: sliver_setup_systemd | bool
-
-- name: Include cleanup tasks
-  ansible.builtin.include_tasks: cleanup.yml
-  when: sliver_cleanup | bool

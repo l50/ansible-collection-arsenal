@@ -85,34 +85,6 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 ## Tasks
 
-### cleanup.yml
-
-
-- **Create list of packages to protect** (ansible.builtin.set_fact) - Conditional
-- **Hold runtime and essential packages before cleanup** (ansible.builtin.dpkg_selections) - Conditional
-- **Remove build-time Go installation and caches** (ansible.builtin.file)
-- **Find non-binary files in ttpforge directory** (ansible.builtin.find)
-- **Remove non-binary files from ttpforge directory** (ansible.builtin.file)
-- **Remove source directories from ttpforge installation** (ansible.builtin.file)
-- **Find empty directories in ttpforge path** (ansible.builtin.find)
-- **Remove empty directories** (ansible.builtin.file) - Conditional
-- **Strip debug symbols from binary** (ansible.builtin.command)
-- **Remove ASDF version manager** (ansible.builtin.file)
-- **Gather package facts** (ansible.builtin.package_facts) - Conditional
-- **Remove development packages (excluding protected)** (ansible.builtin.apt) - Conditional
-- **Clean all cache directories** (ansible.builtin.file)
-- **Verify ttpforge binary still works after cleanup** (ansible.builtin.command)
-- **Find and remove Python artifacts efficiently** (ansible.builtin.shell)
-- **Truncate log files** (ansible.builtin.shell)
-- **Container-specific optimizations** (block) - Conditional
-- **Remove container-unnecessary locale data** (ansible.builtin.shell)
-- **Remove container-unnecessary system files** (ansible.builtin.shell)
-- **Targeted cleanup for TTPForge container** (ansible.builtin.shell) - Conditional
-- **Final APT cleanup** (ansible.builtin.apt) - Conditional
-- **Clean APT cache and lists** (ansible.builtin.shell) - Conditional
-- **Unhold protected packages after cleanup** (ansible.builtin.shell) - Conditional
-- **Display cleanup summary** (ansible.builtin.debug) - Conditional
-
 ### main.yml
 
 
@@ -125,7 +97,6 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Check if asdf binary is installed** (ansible.builtin.stat)
 - **Install asdf and associated plugins for ttpforge user** (ansible.builtin.include_role) - Conditional
 - **Include TTPForge setup tasks** (ansible.builtin.include_tasks)
-- **Include TTPForge cleanup tasks** (ansible.builtin.include_tasks) - Conditional
 
 ### setup.yml
 
@@ -135,7 +106,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Check current ownership of {{ ttpforge_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the ttpforge repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in ttpforge directory** (ansible.builtin.copy) - Conditional
-- **Add ttpforge_install_path to $PATH** (ansible.builtin.lineinfile) - Conditional
+- **Add TTPForge paths to user's bashrc** (ansible.builtin.blockinfile) - Conditional
 - **Check if ttpforge binary exists** (ansible.builtin.stat)
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
 - **Compile ttpforge** (ansible.builtin.shell) - Conditional

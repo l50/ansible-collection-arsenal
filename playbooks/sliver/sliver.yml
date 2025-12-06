@@ -15,3 +15,126 @@
           - name: golang
             version: "1.23.5"
             scope: "global"
+
+    - name: Cleanup Sliver build artifacts
+      role: cowdogmoo.workstation.build_cleanup
+      vars:
+        build_cleanup_enabled: "{{ sliver_cleanup }}"
+        build_cleanup_install_path: /opt/sliver
+        build_cleanup_user_home: /home/sliver
+        build_cleanup_username: sliver
+        build_cleanup_keep_binaries:
+          - sliver-server
+          - sliver-client
+        build_cleanup_protected_packages:
+          - acl
+          - ca-certificates
+          - git
+          - gnupg
+          - libcurl4
+          - libssl3
+          - libxml2-dev
+          - unzip
+          - vim
+          - vim-common
+          - vim-runtime
+          - zip
+          - apt-utils
+          - gpg
+          - openssl
+          - libapr1
+          - libsvn1
+          - zlib1g
+          - xsel
+          - libcurl4-openssl-dev
+          - libgmp3-dev
+          - libpcap-dev
+          - libpq-dev
+          - libxslt-dev
+          - libyaml-dev
+          - ncurses-dev
+          - postgresql
+          - postgresql-contrib
+          - postgresql-client
+          - python3
+          - python3-minimal
+          - libpython3-stdlib
+          - python3-apt
+        build_cleanup_source_directories:
+          - client
+          - server
+          - implant
+          - protobuf
+          - util
+          - vendor
+          - test
+          - docs
+          - .github
+          - .git
+        build_cleanup_paths:
+          - /home/sliver/go
+          - /home/sliver/.cache
+          - /home/sliver/.asdf
+          - /home/sliver/.local
+          - /home/sliver/.config
+          - /home/sliver/.tool-versions
+          - /root/go
+          - /root/.cache
+          - /root/.asdf
+          - /root/.local
+          - /root/.tool-versions
+          - /root/.ssh
+          - /tmp/*
+          - /var/tmp/*
+          - /var/cache/debconf
+          - /var/lib/systemd/catalog
+          - /var/spool/cron
+          - /var/spool/mail
+          - /usr/x86_64-w64-mingw32
+          - /usr/i686-w64-mingw32
+          - /usr/x86_64-w64-mingw32ucrt
+        build_cleanup_packages_debian:
+          - make
+          - wget
+          - curl
+          - autoconf
+          - automake
+          - build-essential
+          - gcc
+          - g++
+          - libtool
+          - python3-pip
+          - ansible
+          - libssl-dev
+          - zlib1g-dev
+          - libncurses5-dev
+          - libncursesw5-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - libgdbm-dev
+          - libdb5.3-dev
+          - libbz2-dev
+          - libexpat1-dev
+          - liblzma-dev
+          - libffi-dev
+          - binutils-mingw-w64
+          - g++-mingw-w64
+          - mingw-w64
+          - bison
+          - nasm
+          - locate
+          - patch
+        build_cleanup_container_remove_packages:
+          - "*vulkan*"
+          - "*llvm*"
+          - "libicu*"
+          - "snapd"
+          - "libgallium*"
+          - "libasan*"
+        build_cleanup_check_unpacked_compilers: true
+        build_cleanup_compiler_paths:
+          - golang
+        build_cleanup_handle_postgresql: true
+        build_cleanup_handle_perl: true
+        build_cleanup_handle_systemd: true
+        build_cleanup_generate_post_script: true

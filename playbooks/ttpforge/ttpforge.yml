@@ -2,6 +2,9 @@
 - name: TTPForge
   hosts: all
   vars:
+    ttpforge_username: "ttpforge"
+    ttpforge_usergroup: "ttpforge"
+    ttpforge_shell: "/bin/bash"
     # Default to false, override with -e ttpforge_cleanup=true for production containers
     ttpforge_cleanup: false
   roles:
@@ -10,3 +13,90 @@
 
     - name: Install TTPForge
       role: l50.arsenal.ttpforge
+      vars:
+        ttpforge_asdf_plugins:
+          - name: golang
+            version: "1.25.4"
+            scope: "global"
+          - name: python
+            version: "3.14.0"
+            scope: "global"
+
+    - name: Cleanup TTPForge build artifacts
+      role: cowdogmoo.workstation.build_cleanup
+      vars:
+        build_cleanup_enabled: "{{ ttpforge_cleanup }}"
+        build_cleanup_install_path: /opt/ttpforge
+        build_cleanup_user_home: /home/ttpforge
+        build_cleanup_username: ttpforge
+        build_cleanup_keep_binaries:
+          - ttpforge
+        build_cleanup_protected_packages:
+          - git
+          - unzip
+          - wget
+          - zip
+          - ca-certificates
+          - gnupg
+          - vim
+          - vim-common
+          - vim-runtime
+          - apt-utils
+          - gpg
+          - openssl
+          - zlib1g
+          - python3
+          - python3-minimal
+          - libpython3-stdlib
+          - python3-apt
+        build_cleanup_source_directories:
+          - .git
+          - .github
+          - cmd
+          - pkg
+          - examples
+          - docs
+          - test
+          - tests
+        build_cleanup_paths:
+          - /home/ttpforge/go
+          - /home/ttpforge/.cache
+          - /home/ttpforge/.asdf
+          - /home/ttpforge/.local
+          - /home/ttpforge/.config
+          - /home/ttpforge/.tool-versions
+          - /root/go
+          - /root/.cache
+          - /root/.asdf
+          - /root/.local
+          - /root/.tool-versions
+          - /root/.ssh
+          - /tmp/*
+          - /var/tmp/*
+        build_cleanup_packages_debian:
+          - build-essential
+          - g++
+          - gcc
+          - make
+          - autoconf
+          - automake
+          - libtool
+          - python3-pip
+          - ansible
+          - libssl-dev
+          - zlib1g-dev
+          - patch
+        build_cleanup_container_remove_packages:
+          - "*vulkan*"
+          - "*llvm*"
+          - "libicu*"
+          - "snapd"
+          - "libgallium*"
+        build_cleanup_check_unpacked_compilers: true
+        build_cleanup_compiler_paths:
+          - golang
+          - python
+        build_cleanup_handle_postgresql: false
+        build_cleanup_handle_perl: true
+        build_cleanup_handle_systemd: true
+        build_cleanup_generate_post_script: true
