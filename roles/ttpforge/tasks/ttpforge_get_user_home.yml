@@ -3,8 +3,8 @@
   ansible.builtin.getent:
     database: passwd
     key: "{{ ttpforge_username }}"
+    fail_key: false
   register: ttpforge_getent_passwd
-  failed_when: false
   when: ansible_os_family != 'Darwin'
 
 - name: Set user home directory
