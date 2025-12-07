@@ -63,8 +63,8 @@ Install sliver c2
 | `sliver_packages.build_only.10` | str | `ansible` | No description |
 | `sliver_packages.build_only.11` | str | `libssl-dev` | No description |
 | `sliver_packages.build_only.12` | str | `zlib1g-dev` | No description |
-| `sliver_packages.build_only.13` | str | `libncurses5-dev` | No description |
-| `sliver_packages.build_only.14` | str | `libncursesw5-dev` | No description |
+| `sliver_packages.build_only.13` | str | `libncurses-dev` | No description |
+| `sliver_packages.build_only.14` | str | `libncursesw-dev` | No description |
 | `sliver_packages.build_only.15` | str | `libreadline-dev` | No description |
 | `sliver_packages.build_only.16` | str | `libsqlite3-dev` | No description |
 | `sliver_packages.build_only.17` | str | `libgdbm-dev` | No description |
