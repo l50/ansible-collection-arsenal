@@ -30,8 +30,7 @@ sliver_packages:
     - ansible
     - libssl-dev
     - zlib1g-dev
-    - libncurses5-dev
-    - libncursesw5-dev
+    - libncurses-dev
     - libreadline-dev
     - libsqlite3-dev
     - libgdbm-dev
@@ -57,7 +56,6 @@ sliver_packages:
     - libxml2-dev
     - libxslt-dev
     - libyaml-dev
-    - ncurses-dev
     - postgresql
     - postgresql-contrib
     - postgresql-client
