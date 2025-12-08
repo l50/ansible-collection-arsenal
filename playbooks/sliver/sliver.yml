@@ -104,7 +104,6 @@
           - g++
           - libtool
           - python3-pip
-          - ansible
           - libssl-dev
           - zlib1g-dev
           - libncurses5-dev

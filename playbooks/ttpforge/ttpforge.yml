@@ -82,7 +82,6 @@
           - automake
           - libtool
           - python3-pip
-          - ansible
           - libssl-dev
           - zlib1g-dev
           - patch
