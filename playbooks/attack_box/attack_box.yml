@@ -1,5 +1,74 @@
 ---
 - name: Attack Box
   hosts: all
+  vars:
+    # Default to false, override with -e attack_box_cleanup=true for production
+    attack_box_cleanup: false
   roles:
     - role: l50.arsenal.attack_box
+
+    - name: Cleanup Attack Box build artifacts
+      role: cowdogmoo.workstation.build_cleanup
+      vars:
+        build_cleanup_enabled: "{{ attack_box_cleanup }}"
+        build_cleanup_user_home: /root
+        build_cleanup_username: root
+        build_cleanup_keep_binaries: []
+        build_cleanup_protected_packages:
+          - acl
+          - ca-certificates
+          - git
+          - gnupg
+          - libssl3
+          - unzip
+          - vim
+          - vim-common
+          - vim-runtime
+          - zip
+          - apt-utils
+          - gpg
+          - openssl
+          - zlib1g
+          - python3
+          - python3-minimal
+          - libpython3-stdlib
+          - python3-apt
+        build_cleanup_source_directories: []
+        build_cleanup_paths:
+          - /root/.cache
+          - /root/.local
+          - /root/.ssh
+          - /tmp/*
+          - /var/tmp/*
+          - /var/cache/debconf
+          - /var/lib/systemd/catalog
+          - /var/spool/cron
+          - /var/spool/mail
+        build_cleanup_packages_debian:
+          - make
+          - wget
+          - curl
+          - autoconf
+          - automake
+          - build-essential
+          - gcc
+          - g++
+          - libtool
+          - python3-pip
+          - libssl-dev
+          - zlib1g-dev
+          - locate
+          - patch
+        build_cleanup_container_remove_packages:
+          - "*vulkan*"
+          - "*llvm*"
+          - "libicu*"
+          - "snapd"
+          - "libgallium*"
+          - "libasan*"
+        build_cleanup_check_unpacked_compilers: true
+        build_cleanup_compiler_paths: []
+        build_cleanup_handle_postgresql: false
+        build_cleanup_handle_perl: true
+        build_cleanup_handle_systemd: true
+        build_cleanup_generate_post_script: true
