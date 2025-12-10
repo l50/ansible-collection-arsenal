@@ -11,6 +11,7 @@
       role: cowdogmoo.workstation.build_cleanup
       vars:
         build_cleanup_enabled: "{{ attack_box_cleanup }}"
+        build_cleanup_install_path: /usr/local
         build_cleanup_user_home: /root
         build_cleanup_username: root
         build_cleanup_keep_binaries: []
