@@ -1,9 +1,91 @@
 ---
 - name: Atomic Red Team
   hosts: all
+  vars:
+    atomic_username: "atomic"
+    atomic_usergroup: "atomic"
+    atomic_shell: "/bin/bash"
+    # Default to false, override with -e atomic_cleanup=true for production containers
+    atomic_cleanup: false
   roles:
     - name: Create Atomic Red Team role user (if not already present)
       role: cowdogmoo.workstation.user_setup
 
     - name: Install Atomic Red Team
       role: l50.ansible_atomic_red_team
+
+    - name: Cleanup Atomic Red Team build artifacts
+      role: cowdogmoo.workstation.build_cleanup
+      vars:
+        build_cleanup_enabled: "{{ atomic_cleanup }}"
+        build_cleanup_install_path: /opt/atomic-red-team
+        build_cleanup_user_home: /home/atomic
+        build_cleanup_username: atomic
+        build_cleanup_keep_binaries: []
+        build_cleanup_protected_packages:
+          - git
+          - unzip
+          - wget
+          - zip
+          - ca-certificates
+          - gnupg
+          - vim
+          - vim-common
+          - vim-runtime
+          - apt-utils
+          - gpg
+          - openssl
+          - zlib1g
+          - python3
+          - python3-minimal
+          - libpython3-stdlib
+          - python3-apt
+          - powershell
+        build_cleanup_source_directories:
+          - .git
+          - .github
+          - docs
+          - test
+          - tests
+        build_cleanup_paths:
+          - /home/atomic/.cache
+          - /home/atomic/.asdf
+          - /home/atomic/.local
+          - /home/atomic/.config
+          - /home/atomic/.tool-versions
+          - /root/.cache
+          - /root/.asdf
+          - /root/.local
+          - /root/.tool-versions
+          - /root/.ssh
+          - /tmp/*
+          - /var/tmp/*
+          - /var/cache/debconf
+          - /var/lib/systemd/catalog
+          - /var/spool/cron
+          - /var/spool/mail
+        build_cleanup_packages_debian:
+          - build-essential
+          - g++
+          - gcc
+          - make
+          - autoconf
+          - automake
+          - libtool
+          - python3-pip
+          - libssl-dev
+          - zlib1g-dev
+          - patch
+        build_cleanup_container_remove_packages:
+          - "*vulkan*"
+          - "*llvm*"
+          - "libicu*"
+          - "snapd"
+          - "libgallium*"
+          - "libasan*"
+        build_cleanup_check_unpacked_compilers: true
+        build_cleanup_compiler_paths: []
+        build_cleanup_handle_postgresql: false
+        build_cleanup_handle_perl: true
+        build_cleanup_handle_systemd: true
+        build_cleanup_generate_post_script: true
