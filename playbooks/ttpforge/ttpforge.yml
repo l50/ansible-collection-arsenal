@@ -10,6 +10,12 @@
   roles:
     - name: Setup users on workstation
       role: cowdogmoo.workstation.user_setup
+      vars:
+        user_setup_default_users:
+          - username: "{{ ttpforge_username }}"
+            usergroup: "{{ ttpforge_usergroup }}"
+            sudo: true
+            shell: "{{ ttpforge_shell }}"
 
     - name: Install TTPForge
       role: l50.arsenal.ttpforge
