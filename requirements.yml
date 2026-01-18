@@ -5,7 +5,7 @@ roles:
 
 collections:
   - name: amazon.aws
-    version: 10.2.0
+    version: 11.0.0
   - name: ansible.windows
     version: 3.3.0
   - name: community.docker
