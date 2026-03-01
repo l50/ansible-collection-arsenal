@@ -41,7 +41,7 @@ env:
   COLLECTION_PATH: ansible_collections/l50/arsenal
   REQUIREMENTS_FILE: .hooks/requirements.txt
   PY_COLORS: "1"
-  PYTHON_VERSION: "3.12.6"
+  PYTHON_VERSION: "3.14.3"
   ROLE: ${{ github.event.inputs.ROLE }}
   PLAYBOOK: ${{ github.event.inputs.PLAYBOOK }}
   ANSIBLE_COLLECTIONS_PATH: ~/.ansible/collections
