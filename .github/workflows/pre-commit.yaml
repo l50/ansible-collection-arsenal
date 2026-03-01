@@ -26,7 +26,7 @@ env:
   GO_VERSION: "1.26.0"
   PYTHON_VERSION: "3.14.3"
   TASK_X_REMOTE_TASKFILES: "1"
-  TASK_VERSION: 3.43.3
+  TASK_VERSION: 3.48.0
 
 jobs:
   pre-commit:
