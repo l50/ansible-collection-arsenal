@@ -27,9 +27,9 @@
     enabled: true,
   },
   pip_requirements: {
-    fileMatch: [
-      '(^|/)requirements\\.txt$',
-      '(^|/)\\.hooks/requirements\\.txt$',
+    managerFilePatterns: [
+      '/(^|/)requirements\\.txt$/',
+      '/(^|/)\\.hooks/requirements\\.txt$/',
     ],
   },
   packageRules: [
