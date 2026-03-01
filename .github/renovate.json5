@@ -26,6 +26,12 @@
   'pre-commit': {
     enabled: true,
   },
+  pip_requirements: {
+    fileMatch: [
+      '(^|/)requirements\\.txt$',
+      '(^|/)\\.hooks/requirements\\.txt$',
+    ],
+  },
   packageRules: [
     {
       description: 'Auto merge Galaxy dependencies',
