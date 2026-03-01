@@ -52,6 +52,30 @@
       ],
     },
     {
+      description: 'Auto-merge pre-commit hooks',
+      matchManagers: [
+        'pre-commit',
+      ],
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+    },
+    {
+      description: 'Auto-merge pip dependencies',
+      matchManagers: [
+        'pip_requirements',
+      ],
+      automerge: true,
+      automergeType: 'pr',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+    },
+    {
       description: 'Group Ansible Galaxy dependencies',
       matchManagers: [
         'ansible-galaxy',
@@ -81,6 +105,44 @@
       matchStrings: [
         '# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[\\w-]+)(?: packageName=(?<packageName>[\\w-/]+))?(?: extractVersion=(?<extractVersion>[^\\s]+))?\\s*\\n\\s*- name:\\s*[\\w-]+\\s*\\n\\s*version:\\s*"(?<currentValue>[0-9.]+)"',
       ],
+    },
+    {
+      customType: 'regex',
+      description: 'Update Python version in GitHub Actions workflows',
+      managerFilePatterns: [
+        '/^\\.github\\/workflows\\/[^/]+\\.ya?ml$/',
+      ],
+      matchStrings: [
+        'PYTHON_VERSION:\\s*["\']?(?<currentValue>[0-9.]+)["\']?',
+      ],
+      depNameTemplate: 'python',
+      datasourceTemplate: 'python-version',
+    },
+    {
+      customType: 'regex',
+      description: 'Update Go version in GitHub Actions workflows',
+      managerFilePatterns: [
+        '/^\\.github\\/workflows\\/[^/]+\\.ya?ml$/',
+      ],
+      matchStrings: [
+        'GO_VERSION:\\s*["\']?(?<currentValue>[0-9.]+)["\']?',
+      ],
+      depNameTemplate: 'go',
+      datasourceTemplate: 'golang-version',
+    },
+    {
+      customType: 'regex',
+      description: 'Update Task version in GitHub Actions workflows',
+      managerFilePatterns: [
+        '/^\\.github\\/workflows\\/[^/]+\\.ya?ml$/',
+      ],
+      matchStrings: [
+        'TASK_VERSION:\\s*(?<currentValue>[0-9.]+)',
+      ],
+      depNameTemplate: 'task',
+      datasourceTemplate: 'github-releases',
+      packageNameTemplate: 'go-task/task',
+      extractVersionTemplate: '^v(?<version>.+)$',
     },
   ],
 }
