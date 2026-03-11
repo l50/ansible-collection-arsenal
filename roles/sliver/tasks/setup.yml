@@ -6,14 +6,24 @@
     value: "{{ sliver_install_path }}"
   become: true
 
+- name: Get current Sliver repo HEAD
+  ansible.builtin.command:
+    cmd: git rev-parse HEAD
+    chdir: "{{ sliver_install_path }}"
+  become: true
+  register: sliver_repo_head_before
+  changed_when: false
+  failed_when: false
+
 - name: Clone Sliver repo
   ansible.builtin.git:
     repo: 'https://github.com/bishopfox/sliver.git'
     dest: "{{ sliver_install_path }}"
     version: master
     force: true
-    update: true
   become: true
+  register: sliver_git_result
+  changed_when: sliver_repo_head_before.rc != 0 or sliver_git_result.before != sliver_git_result.after
 
 - name: Check current ownership of {{ sliver_install_path }}
   ansible.builtin.stat:

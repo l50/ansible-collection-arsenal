@@ -175,6 +175,7 @@ Install sliver c2
 
 
 - **Configure Git to allow sliver_install_path as a safe directory** (community.general.git_config)
+- **Get current Sliver repo HEAD** (ansible.builtin.command)
 - **Clone Sliver repo** (ansible.builtin.git)
 - **Check current ownership of {{ sliver_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the Sliver repository** (ansible.builtin.file) - Conditional
