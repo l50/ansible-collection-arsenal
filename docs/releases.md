@@ -30,7 +30,6 @@ Before creating a release, perform these preparation steps:
    ```
 
    This command will:
-
    - Create a logs directory if it doesn't exist
    - Set the ANSIBLE_CONFIG environment variable
    - Run molecule tests for each role directory
@@ -49,7 +48,6 @@ Before creating a release, perform these preparation steps:
    ```
 
    The run-molecule-action task will:
-
    - Clean up any existing act containers
    - Automatically handle ARM64 architecture on macOS
    - Run the GitHub Actions workflow with the specified role or playbook
@@ -142,157 +140,118 @@ task: [ansible:changelog-lint] antsibull-changelog lint
 task: [ansible:changelog-release] antsibull-changelog release --version $NEXT_VERSION
 ```
 
-## Complete Release Process
+## Automated Release Process (Recommended)
 
-Follow these steps to create a new release:
+The collection includes automated release tasks that streamline the entire release process.
 
-1. Run Tests and Linting
+### Quick Release
 
-   Ensure all tests pass and code is linted:
+For a complete automated release:
 
-   ```bash
-   export TASK_X_REMOTE_TASKFILES=1
-   task -y ansible:run-molecule-tests
-   export TASK_X_REMOTE_TASKFILES=1
-   task -y ansible:lint-ansible
-   ```
+```bash
+export TASK_X_REMOTE_TASKFILES=1
+NEXT_VERSION=x.y.z task -y release
+```
 
-1. Update Documentation
+This command will:
+
+1. Create a release branch
+2. Auto-generate changelog from git commits using fabric
+3. Update galaxy.yml version
+4. Commit and push changes
+5. Create a pull request
+
+After the PR is created:
+
+1. Wait for CI tests to pass in the PR
+2. Review and merge the PR
+3. Finalize the release:
+
+```bash
+export TASK_X_REMOTE_TASKFILES=1
+NEXT_VERSION=x.y.z task -y release-finalize
+```
+
+This will:
+
+- Create the GitHub release and tag
+- Trigger automatic publishing to Ansible Galaxy
+
+### How It Works
+
+**Changelog Generation**: The `gen-changelog-fragment` task uses a fabric pattern to analyze git commits since the last release and automatically generates a properly formatted changelog fragment with the correct sections (`added`, `changed`, `fixed`, `removed`).
+
+**No Manual Fragments Needed**: You don't need to manually create changelog fragments - the automation extracts this from your commit messages.
+
+**Tests Run in CI**: Tests are not run locally during the release task - they run in the PR's CI workflow, keeping the release process fast.
+
+**Tag Creation**: The release tag is only created when you run `release-finalize` after the PR is merged, ensuring the tag points to the merged commit.
+
+## Manual Release Process (Alternative)
+
+If you prefer manual control or need to customize the process, follow these steps:
+
+1. **Update Documentation**
 
    Ensure all documentation is up-to-date, including README files and role documentation.
 
-1. Create a Version Branch
-
-   Create a new branch for the release version:
+1. **Create a Version Branch**
 
    ```bash
    git checkout -b $NEXT_VERSION  # e.g., git checkout -b 2.0.4
    ```
 
-1. Generate Changelog
+1. **Generate Changelog Fragment (Optional)**
 
-   **Option 1: Complete changelog process in one command**
+   If you want to manually create a fragment instead of using automation:
+
+   ```yaml
+   # changelogs/fragments/x.y.z.yaml
+   ---
+   release_summary: "Brief summary"
+   added:
+     - "New feature description"
+   changed:
+     - "Change description"
+   fixed:
+     - "Bug fix description"
+   ```
+
+1. **Generate Changelog**
 
    ```bash
    export TASK_X_REMOTE_TASKFILES=1
    NEXT_VERSION=$NEXT_VERSION task -y ansible:gen-changelog
    ```
 
-   **Option 2: Run individual changelog tasks**
-
-   ```bash
-   # First lint the changelog
-   export TASK_X_REMOTE_TASKFILES=1
-   task -y ansible:changelog-lint
-
-   # Then generate the release (this will also update galaxy.yml)
-   export TASK_X_REMOTE_TASKFILES=1
-   NEXT_VERSION=$NEXT_VERSION task -y ansible:changelog-release
-   ```
-
-   **Note:** When these commands run, antsibull-changelog will process your
-   fragment files, incorporate their content into the main changelog, and then
-   automatically remove the fragment files from the filesystem. This is normal
-   behavior.
-
-1. Create a Release Commit
+1. **Create Release Commit and Push**
 
    ```bash
    git add .
-   git commit
+   git commit -m "chore: Release version $NEXT_VERSION"
+   git push origin $NEXT_VERSION
    ```
 
-   Use this format for your commit message:
+1. **Create and Merge Pull Request**
+   - Create a PR from your branch
+   - Wait for CI tests to pass
+   - Review and merge
 
-   ```bash
-   feat: Improve VNC setup and add awscli as asdf plugin
-
-   **Key Changes:**
-
-   - Enhanced VNC setup with better systemd integration and verification.
-   - Added awscli (v2.24.0) as default asdf plugin.
-   - Refactored user and VNC roles for better maintainability.
-   - Updated Ansible collections and asdf plugin versions.
-
-   **Added:**
-
-   - `awscli` plugin (v2.24.0) to asdf defaults.
-   - Verification tests for VNC: config, services, and port checks.
-   - Cleanup tasks for VNC sessions to support clean restarts.
-   - `vnc_setup_depth` param to control color depth in VNC.
-   - UID-aware handling for better VNC session management.
-
-   **Changed:**
-
-   - Improved VNC systemd template: error handling, env vars, restarts.
-   - Refactored VNC setup into modular task files.
-   - Improved shell detection in user_setup via basename + patterns.
-   - Refactored user_setup role for robust shell installation.
-   - Bumped Ansible collections:
-     - amazon.aws: 9.1.1 → 9.3.0
-     - ansible.windows: 2.7.0 → 2.8.0
-     - community.docker: 4.3.1 → 4.5.2
-     - community.general: 10.3.0 → 10.5.0
-   - Bumped asdf plugins:
-     - golang: 1.23.5 → 1.24.0
-     - python: 3.13.1 → 3.13.2
-     - ruby: 3.3.5 → 3.4.2
-     - helm: 3.17.0 → 3.17.2
-     - kubectl: 1.32.1 → 1.32.3
-
-   **Removed:**
-
-   - RedHat platform from VNC Molecule tests.
-   ```
-
-1. Push the Branch
-
-   ```bash
-   git push origin $NEXT_VERSION  # e.g., git push origin 2.0.4
-   ```
-
-   This will output a URL you can use to create a Pull Request:
-
-   ```bash
-   remote: Create a pull request for '$NEXT_VERSION' on GitHub by visiting:
-   remote:      https://github.com/CowDogMoo/ansible-collection-workstation/pull/new/$NEXT_VERSION
-   ```
-
-1. Create and Merge the Pull Request
-
-   - Click the URL from the previous step to create a PR
-   - Wait for all CI tests to pass
-   - Review the changes
-   - Merge the PR into the main branch
-
-1. Checkout the Main Branch
+1. **Finalize Release**
 
    ```bash
    git checkout main
    git pull
+   export TASK_X_REMOTE_TASKFILES=1
+   NEXT_VERSION=$NEXT_VERSION task -y release-finalize
    ```
 
-1. Create GitHub Release and Tag
-
-   ```bash
-   # This creates both a GitHub release and a git tag
-   gh release create $NEXT_VERSION --generate-notes
-   ```
-
-   This command uses the GitHub CLI to:
-
-   - Create a new release with the specified version
-   - Generate release notes automatically based on commits since the last release
-   - Create a corresponding git tag
-
-1. Automatic Collection Publishing
+1. **Automatic Collection Publishing**
 
    The GitHub Action defined in `.github/workflows/release.yaml` will automatically:
-
-   - Be triggered by the new tag you created
+   - Be triggered by the new tag
    - Build the Ansible collection
-   - Publish it to Ansible Galaxy using the GALAXY_API_KEY secret
-     stored in the repository settings
+   - Publish it to Ansible Galaxy
 
 ## Release Versioning
 
