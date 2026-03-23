@@ -206,3 +206,23 @@ releases:
       - Removed redundant user creation tasks from playbook converge files.
       - Removed unused `install-sliver.sh.j2` template.
     release_date: '2025-09-04'
+  1.1.0:
+    changes:
+      added:
+      - New recon_toolkit role for automated reconnaissance toolchain installation
+        and configuration (#628).
+      - Sliver role now tracks current repo HEAD before cloning for idempotency.
+      changed:
+      - Migrated from asdf to mise for language and tool version management (#630).
+      - Standardized on ansible_facts for all user and distribution references across
+        roles (#629).
+      - Updated multiple dependencies including ansible-lint, molecule, community.general,
+        and various GitHub Actions.
+      fixed:
+      - Fixed sliver role dependencies to use libxml2-dev (#442).
+      release_summary: This release adds a new recon_toolkit role, migrates from asdf
+        to mise for version management, and standardizes on ansible_facts across all
+        roles.
+    fragments:
+    - 1.1.0.yaml
+    release_date: '2026-03-23'

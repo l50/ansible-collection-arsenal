@@ -1,8 +1,34 @@
 ==============================================
-Arsenal Ansible Collection 1.0.5 Release Notes
+Arsenal Ansible Collection 1.1.0 Release Notes
 ==============================================
 
 .. contents:: Topics
+
+v1.1.0
+======
+
+Release Summary
+---------------
+
+This release adds a new recon_toolkit role, migrates from asdf to mise for version management, and standardizes on ansible_facts across all roles.
+
+Added
+-----
+
+- New recon_toolkit role for automated reconnaissance toolchain installation and configuration (#628).
+- Sliver role now tracks current repo HEAD before cloning for idempotency.
+
+Changed
+-------
+
+- Migrated from asdf to mise for language and tool version management (#630).
+- Standardized on ansible_facts for all user and distribution references across roles (#629).
+- Updated multiple dependencies including ansible-lint, molecule, community.general, and various GitHub Actions.
+
+Fixed
+-----
+
+- Fixed sliver role dependencies to use libxml2-dev (#442).
 
 v1.0.5
 ======
