@@ -38,3 +38,15 @@ provisioner:
 
 verifier:
   name: ansible
+
+scenario:
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - converge
+    - verify
+    - cleanup
+    - destroy

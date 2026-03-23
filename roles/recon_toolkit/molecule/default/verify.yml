@@ -27,9 +27,14 @@
       loop:
         - curl
         - jq
-        - dig
         - python3
         - git
+
+    - name: Verify dig is installed
+      ansible.builtin.command: dig -v
+      register: recon_toolkit_dig_check
+      changed_when: false
+      failed_when: false
 
     - name: Assert core tools are working
       ansible.builtin.assert:
@@ -40,6 +45,13 @@
       loop: "{{ recon_toolkit_core_check.results }}"
       loop_control:
         label: "{{ item.item }}"
+
+    - name: Assert dig is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_dig_check.rc == 0
+        fail_msg: "dig is not properly installed"
+        success_msg: "dig is installed"
 
     # ========================================================================
     # Subdomain Enumeration
