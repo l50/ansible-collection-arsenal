@@ -1,11 +1,11 @@
 ---
 - name: Include tasks for package installation
   ansible.builtin.include_tasks: packages.yml
-  when: ansible_distribution_release == "kali-rolling"
+  when: ansible_facts['distribution_release'] == "kali-rolling"
 
 - name: Include tasks for wordlists setup
   ansible.builtin.include_tasks: wordlists.yml
-  when: ansible_distribution_release == "kali-rolling"
+  when: ansible_facts['distribution_release'] == "kali-rolling"
 
 - name: Include tasks for SSH key setup
   ansible.builtin.include_tasks: ssh.yml

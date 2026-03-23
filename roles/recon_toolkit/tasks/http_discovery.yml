@@ -59,7 +59,7 @@
 
     - name: Set rustscan archive name based on architecture
       ansible.builtin.set_fact:
-        recon_toolkit_rustscan_archive: "{{ recon_toolkit_rustscan_archives[ansible_architecture] }}"
+        recon_toolkit_rustscan_archive: "{{ recon_toolkit_rustscan_archives[ansible_facts['architecture']] }}"
       when: recon_toolkit_rustscan_installed.rc != 0
 
     - name: Download rustscan binary archive

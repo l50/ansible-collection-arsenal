@@ -3,8 +3,8 @@
   hosts: all
   gather_facts: true
   vars:
-    test_username: "{{ ansible_distribution | lower }}"
-    test_usergroup: "{{ ansible_distribution | lower }}"
+    test_username: "{{ ansible_facts['distribution'] | lower }}"
+    test_usergroup: "{{ ansible_facts['distribution'] | lower }}"
     test_shell: "/bin/bash"
 
   pre_tasks:

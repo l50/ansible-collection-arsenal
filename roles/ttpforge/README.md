@@ -25,9 +25,9 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 | -------- | ---- | ------- | ----------- |
 | `ttpforge_cleanup` | bool | <code>False</code> | No description |
 | `ttpforge_install_path` | str | <code>/opt/ttpforge</code> | No description |
-| `ttpforge_username` | str | <code>{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
-| `ttpforge_usergroup` | str | <code>{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
-| `ttpforge_shell` | str | <code>{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
+| `ttpforge_username` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}{{ ansible_facts&#91;'user_id'&#93; }}{% else %}{{ ansible_facts&#91;'distribution'&#93; &#124; lower }}{% endif %}</code> | No description |
+| `ttpforge_usergroup` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}staff{% elif ansible_facts&#91;'os_family'&#93; == 'Debian' %}{{ ansible_facts&#91;'user_id'&#93; }}{% elif ansible_facts&#91;'os_family'&#93; == 'RedHat' %}{{ ansible_facts&#91;'user_id'&#93; }}{% else %}{{ ansible_facts&#91;'distribution'&#93; &#124; lower }}{% endif %}</code> | No description |
+| `ttpforge_shell` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
 | `ttpforge_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
 | `ttpforge_asdf_plugins.0` | dict | <code>{}</code> | No description |
 | `ttpforge_asdf_plugins.1` | dict | <code>{}</code> | No description |

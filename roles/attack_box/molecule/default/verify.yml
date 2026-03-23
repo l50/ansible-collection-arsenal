@@ -15,42 +15,42 @@
         that:
           - item in ansible_facts.packages
       loop: "{{ attack_box_common_install_packages }}"
-      when: ansible_distribution_release == "kali-rolling"
+      when: ansible_facts['distribution_release'] == "kali-rolling"
 
     - name: Check wordlists directory exists
       ansible.builtin.stat:
         path: /usr/share/wordlists
       register: attack_box_wordlists_dir
-      when: ansible_distribution_release == "kali-rolling"
+      when: ansible_facts['distribution_release'] == "kali-rolling"
 
     - name: Assert wordlists directory exists
       ansible.builtin.assert:
         that:
           - attack_box_wordlists_dir.stat.exists
-      when: ansible_distribution_release == "kali-rolling"
+      when: ansible_facts['distribution_release'] == "kali-rolling"
 
     - name: Check rockyou wordlist file exists
       ansible.builtin.stat:
         path: /usr/share/wordlists/rockyou.txt
       register: attack_box_rockyou_file
-      when: ansible_distribution_release == "kali-rolling"
+      when: ansible_facts['distribution_release'] == "kali-rolling"
 
     - name: Assert rockyou wordlist file exists
       ansible.builtin.assert:
         that:
           - attack_box_rockyou_file.stat.exists
-      when: ansible_distribution_release == "kali-rolling"
+      when: ansible_facts['distribution_release'] == "kali-rolling"
 
     - name: Check user exists
       ansible.builtin.command:
-        cmd: "id -un {{ ansible_user_id }}"
+        cmd: "id -un {{ ansible_facts['user_id'] }}"
       register: attack_box_user_check
       changed_when: false
       failed_when: attack_box_user_check.rc != 0
 
     - name: Check .ssh directory exists for the user
       ansible.builtin.stat:
-        path: "{{ ansible_user_id | ternary('/root/.ssh', '/home/' + ansible_user_id + '/.ssh') }}"
+        path: "{{ ansible_facts['user_id'] | ternary('/root/.ssh', '/home/' + ansible_facts['user_id'] + '/.ssh') }}"
       register: attack_box_ssh_dir_check
 
     - name: Assert .ssh directory exists
@@ -60,7 +60,7 @@
 
     - name: Check authorized_keys file exists for the user
       ansible.builtin.stat:
-        path: "{{ ansible_user_id | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_user_id + '/.ssh/authorized_keys') }}"
+        path: "{{ ansible_facts['user_id'] | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_facts['user_id'] + '/.ssh/authorized_keys') }}"
       register: attack_box_authorized_keys_check
       when: attack_box_ssh_dir_check.stat.exists
 
