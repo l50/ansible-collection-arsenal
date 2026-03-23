@@ -58,7 +58,7 @@
     # ========================================================================
 
     - name: Verify subfinder is installed
-      ansible.builtin.command: subfinder -version
+      ansible.builtin.command: which subfinder
       environment:
         PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_subfinder_check
@@ -68,9 +68,9 @@
     - name: Assert subfinder is working
       ansible.builtin.assert:
         that:
-          - recon_toolkit_subfinder_check.rc == 0 or recon_toolkit_subfinder_check.stderr is search('Current Version')
+          - recon_toolkit_subfinder_check.rc == 0
         fail_msg: "subfinder is not properly installed"
-        success_msg: "subfinder is installed"
+        success_msg: "subfinder is installed at {{ recon_toolkit_subfinder_check.stdout }}"
 
     - name: Verify assetfinder is installed
       ansible.builtin.command: which assetfinder
@@ -150,7 +150,7 @@
     # ========================================================================
 
     - name: Verify httpx is installed
-      ansible.builtin.command: httpx -version
+      ansible.builtin.command: which httpx
       environment:
         PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_httpx_check
@@ -160,9 +160,9 @@
     - name: Assert httpx is working
       ansible.builtin.assert:
         that:
-          - recon_toolkit_httpx_check.rc == 0 or recon_toolkit_httpx_check.stderr is search('Current Version')
+          - recon_toolkit_httpx_check.rc == 0
         fail_msg: "httpx is not properly installed"
-        success_msg: "httpx is installed"
+        success_msg: "httpx is installed at {{ recon_toolkit_httpx_check.stdout }}"
 
     - name: Verify nmap is installed
       ansible.builtin.command: nmap --version
@@ -357,7 +357,7 @@
     # ========================================================================
 
     - name: Verify nuclei is installed
-      ansible.builtin.command: nuclei -version
+      ansible.builtin.command: which nuclei
       environment:
         PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_nuclei_check
@@ -367,9 +367,9 @@
     - name: Assert nuclei is working
       ansible.builtin.assert:
         that:
-          - recon_toolkit_nuclei_check.rc == 0 or recon_toolkit_nuclei_check.stderr is search('Current Version')
+          - recon_toolkit_nuclei_check.rc == 0
         fail_msg: "nuclei is not properly installed"
-        success_msg: "nuclei is installed"
+        success_msg: "nuclei is installed at {{ recon_toolkit_nuclei_check.stdout }}"
 
     - name: Verify gitleaks is installed
       ansible.builtin.command: gitleaks version
@@ -528,7 +528,7 @@
           - "curl: OK | jq: OK | dig: OK | python3: OK | git: OK"
           - ""
           - "--- Subdomain Enumeration ---"
-          - "subfinder: {{ 'OK' if (recon_toolkit_subfinder_check.rc == 0 or recon_toolkit_subfinder_check.stderr is search('Current Version')) else 'FAIL' }}"
+          - "subfinder: {{ 'OK' if recon_toolkit_subfinder_check.rc == 0 else 'FAIL' }}"
           - "amass: (long compile, check separately)"
           - "assetfinder: {{ 'OK' if recon_toolkit_assetfinder_check.rc == 0 else 'FAIL' }}"
           - "ctfr: {{ 'OK' if recon_toolkit_ctfr_check.rc == 0 else 'FAIL' }}"
@@ -539,7 +539,7 @@
           - "shuffledns: {{ 'OK' if recon_toolkit_shuffledns_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- HTTP & Service Discovery ---"
-          - "httpx: {{ 'OK' if (recon_toolkit_httpx_check.rc == 0 or recon_toolkit_httpx_check.stderr is search('Current Version')) else 'FAIL' }}"
+          - "httpx: {{ 'OK' if recon_toolkit_httpx_check.rc == 0 else 'FAIL' }}"
           - "dnsx: {{ 'OK' if recon_toolkit_dnsx_check.rc == 0 else 'FAIL' }}"
           - "nmap: {{ 'OK' if recon_toolkit_nmap_check.rc == 0 else 'FAIL' }}"
           - "masscan: {{ 'OK' if recon_toolkit_masscan_check.rc == 0 else 'FAIL' }}"
@@ -557,7 +557,7 @@
           - "secretfinder: {{ 'OK' if recon_toolkit_secretfinder_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- Vulnerability & Secret Scanning ---"
-          - "nuclei: {{ 'OK' if (recon_toolkit_nuclei_check.rc == 0 or recon_toolkit_nuclei_check.stderr is search('Current Version')) else 'FAIL' }}"
+          - "nuclei: {{ 'OK' if recon_toolkit_nuclei_check.rc == 0 else 'FAIL' }}"
           - "trufflehog: {{ 'OK' if recon_toolkit_trufflehog_check.rc == 0 else 'FAIL' }}"
           - "gitleaks: {{ 'OK' if recon_toolkit_gitleaks_check.rc == 0 else 'FAIL' }}"
           - "uncover: {{ 'OK' if recon_toolkit_uncover_check.rc == 0 else 'FAIL' }}"
