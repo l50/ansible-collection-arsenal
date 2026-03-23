@@ -1,31 +1,31 @@
 ---
-- name: Get primary group name of the current user "{{ attack_box_user | default(ansible_user_id) }}"
+- name: Get primary group name of the current user "{{ attack_box_user | default(ansible_facts['user_id']) }}"
   ansible.builtin.command:
-    cmd: id -gn "{{ attack_box_user | default(ansible_user_id) }}"
+    cmd: id -gn "{{ attack_box_user | default(ansible_facts['user_id']) }}"
   changed_when: false
   register: attack_box_primary_group_name
 
-- name: Ensure .ssh directory exists for "{{ attack_box_user | default(ansible_user_id) }}"
+- name: Ensure .ssh directory exists for "{{ attack_box_user | default(ansible_facts['user_id']) }}"
   ansible.builtin.file:
-    path: "{{ (attack_box_user | default(ansible_user_id)) | ternary('/root/.ssh', ansible_user_dir + '/.ssh') }}"
+    path: "{{ (attack_box_user | default(ansible_facts['user_id'])) | ternary('/root/.ssh', ansible_facts['user_dir'] + '/.ssh') }}"
     state: directory
-    owner: "{{ attack_box_user | default(ansible_user_id) }}"
+    owner: "{{ attack_box_user | default(ansible_facts['user_id']) }}"
     group: "{{ attack_box_primary_group_name.stdout }}"
     mode: '0700'
   become: true
 
 - name: Get list of public SSH key files
   ansible.builtin.find:
-    paths: "{{ (attack_box_user | default(ansible_user_id)) | ternary('/root/.ssh', ansible_user_dir + '/.ssh') }}"
+    paths: "{{ (attack_box_user | default(ansible_facts['user_id'])) | ternary('/root/.ssh', ansible_facts['user_dir'] + '/.ssh') }}"
     patterns: "*.pub"
   register: attack_box_ssh_key_files
   become: true
 
-- name: Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user | default(ansible_user_id) }}"
+- name: Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user | default(ansible_facts['user_id']) }}"
   ansible.builtin.copy:
     src: "{{ item.path }}"
-    dest: "{{ (attack_box_user | default(ansible_user_id)) | ternary('/root/.ssh/authorized_keys', ansible_user_dir + '/.ssh/authorized_keys') }}"
-    owner: "{{ attack_box_user | default(ansible_user_id) }}"
+    dest: "{{ (attack_box_user | default(ansible_facts['user_id'])) | ternary('/root/.ssh/authorized_keys', ansible_facts['user_dir'] + '/.ssh/authorized_keys') }}"
+    owner: "{{ attack_box_user | default(ansible_facts['user_id']) }}"
     group: "{{ attack_box_primary_group_name.stdout }}"
     mode: '0600'
   loop: "{{ attack_box_ssh_key_files.files }}"

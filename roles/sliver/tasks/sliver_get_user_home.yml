@@ -4,15 +4,15 @@
     database: passwd
     key: "{{ sliver_username }}"
   register: sliver_getent_passwd
-  when: ansible_os_family != 'Darwin'
+  when: ansible_facts['os_family'] != 'Darwin'
   failed_when: false
 
 - name: Set user home directory
   ansible.builtin.set_fact:
     sliver_user_home: "{{ sliver_getent_passwd[sliver_username].home if (sliver_getent_passwd is defined and sliver_username in sliver_getent_passwd) else '/home/' + sliver_username }}"
-  when: ansible_os_family != 'Darwin'
+  when: ansible_facts['os_family'] != 'Darwin'
 
 - name: Set user home directory for macOS
   ansible.builtin.set_fact:
     sliver_user_home: "/Users/{{ sliver_username }}"
-  when: ansible_os_family == 'Darwin'
+  when: ansible_facts['os_family'] == 'Darwin'

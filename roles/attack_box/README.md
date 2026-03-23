@@ -21,7 +21,7 @@ Creates an attack box for penetration testing and red teaming
 | `attack_box_common_install_packages.2` | str | <code>vim</code> | No description |
 | `attack_box_common_install_packages.3` | str | <code>wordlists</code> | No description |
 | `attack_box_common_install_packages.4` | str | <code>zsh</code> | No description |
-| `attack_box_user` | str | <code>{{ ansible_user_id }}</code> | No description |
+| `attack_box_user` | str | <code>{{ ansible_facts&#91;'user_id'&#93; }}</code> | No description |
 
 ## Tasks
 
@@ -41,10 +41,10 @@ Creates an attack box for penetration testing and red teaming
 ### ssh.yml
 
 
-- **Get primary group name of the current user "{{ attack_box_user ¦ default(ansible_user_id) }}"** (ansible.builtin.command)
-- **Ensure .ssh directory exists for "{{ attack_box_user ¦ default(ansible_user_id) }}"** (ansible.builtin.file)
+- **Get primary group name of the current user "{{ attack_box_user ¦ default(ansible_facts['user_id']) }}"** (ansible.builtin.command)
+- **Ensure .ssh directory exists for "{{ attack_box_user ¦ default(ansible_facts['user_id']) }}"** (ansible.builtin.file)
 - **Get list of public SSH key files** (ansible.builtin.find)
-- **Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user ¦ default(ansible_user_id) }}"** (ansible.builtin.copy) - Conditional
+- **Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user ¦ default(ansible_facts['user_id']) }}"** (ansible.builtin.copy) - Conditional
 
 ### wordlists.yml
 

@@ -6,4 +6,4 @@ attack_box_common_install_packages:
   - wordlists
   - zsh
 
-attack_box_user: "{{ ansible_user_id }}"
+attack_box_user: "{{ ansible_facts['user_id'] }}"

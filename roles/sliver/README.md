@@ -27,7 +27,7 @@ Install sliver c2
 | `sliver_unpack_at_build` | bool | <code>True</code> | No description |
 | `sliver_username` | str | <code>sliver</code> | No description |
 | `sliver_usergroup` | str | <code>sliver</code> | No description |
-| `sliver_shell` | str | <code>{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
+| `sliver_shell` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
 | `sliver_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
 | `sliver_asdf_plugins.0` | dict | <code>{}</code> | No description |
 

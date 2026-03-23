@@ -4,15 +4,15 @@
     database: passwd
     key: "{{ recon_toolkit_username }}"
   register: recon_toolkit_getent_passwd
-  when: ansible_os_family != 'Darwin'
+  when: ansible_facts['os_family'] != 'Darwin'
   failed_when: false
 
 - name: Set user home directory
   ansible.builtin.set_fact:
     recon_toolkit_user_home: "{{ recon_toolkit_getent_passwd[recon_toolkit_username].home if (recon_toolkit_getent_passwd is defined and recon_toolkit_username in recon_toolkit_getent_passwd) else '/home/' + recon_toolkit_username }}"
-  when: ansible_os_family != 'Darwin'
+  when: ansible_facts['os_family'] != 'Darwin'
 
 - name: Set user home directory for macOS
   ansible.builtin.set_fact:
     recon_toolkit_user_home: "/Users/{{ recon_toolkit_username }}"
-  when: ansible_os_family == 'Darwin'
+  when: ansible_facts['os_family'] == 'Darwin'

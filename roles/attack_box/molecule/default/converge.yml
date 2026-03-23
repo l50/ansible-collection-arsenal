@@ -2,7 +2,7 @@
 - name: Converge
   hosts: all
   vars:
-    container_user: "{{ ansible_distribution | lower }}"
+    container_user: "{{ ansible_facts['distribution'] | lower }}"
     container_home: "/home/{{ container_user }}"
     attack_box_default_username: "{{ container_user }}"
     attack_box_default_group: "{{ container_user }}"
