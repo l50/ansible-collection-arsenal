@@ -7,8 +7,8 @@ sliver_unpack_at_build: true # Disable to skip unpacking at build time for Docke
 sliver_username: "sliver"
 sliver_usergroup: "sliver"
 sliver_shell: "{% if ansible_facts['os_family'] == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}"
-sliver_asdf_plugins:
+sliver_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
-  - name: golang
+  - name: go
     version: "1.26.1"
     scope: "global"

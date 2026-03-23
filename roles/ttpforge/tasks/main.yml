@@ -33,28 +33,29 @@
   become: true
   when: not ttpforge_bashrc_stat.stat.exists
 
-- name: Check if asdf is installed for ttpforge user
+- name: Check if mise is installed for ttpforge user
   ansible.builtin.stat:
-    path: "{{ ttpforge_user_home }}/.asdf"
-  register: ttpforge_asdf_installed
+    path: "{{ ttpforge_user_home }}/.local/share/mise"
+  register: ttpforge_mise_installed
 
-- name: Check if asdf binary is installed
+- name: Check if mise binary is installed
   ansible.builtin.stat:
-    path: "/usr/local/bin/asdf"
-  register: ttpforge_asdf_binary_installed
+    path: "/usr/local/bin/mise"
+  register: ttpforge_mise_binary_installed
 
-- name: Install asdf and associated plugins for ttpforge user
+- name: Install mise and associated plugins for ttpforge user
   ansible.builtin.include_role:
-    name: cowdogmoo.workstation.asdf
+    name: cowdogmoo.workstation.mise
   vars:
-    asdf_username: "{{ ttpforge_username }}"
-    asdf_usergroup: "{{ ttpforge_usergroup }}"
-    asdf_shell: "{{ ttpforge_shell }}"
-    asdf_plugins: "{{ ttpforge_asdf_plugins }}"
-    asdf_user_home: "{{ ttpforge_user_home }}"
-    asdf_data_dir: "{{ ttpforge_user_home }}/.asdf"
-    asdf_bin_dir: "/usr/local/bin"
-  when: not ttpforge_asdf_installed.stat.exists or not ttpforge_asdf_binary_installed.stat.exists
+    mise_username: "{{ ttpforge_username }}"
+    mise_usergroup: "{{ ttpforge_usergroup }}"
+    mise_shell: "{{ ttpforge_shell }}"
+    mise_plugins: "{{ ttpforge_mise_plugins }}"
+    mise_user_home: "{{ ttpforge_user_home }}"
+    mise_data_dir: "{{ ttpforge_user_home }}/.local/share/mise"
+    mise_config_dir: "{{ ttpforge_user_home }}/.config/mise"
+    mise_bin_dir: "/usr/local/bin"
+  when: not ttpforge_mise_installed.stat.exists or not ttpforge_mise_binary_installed.stat.exists
 
 - name: Include TTPForge setup tasks
   ansible.builtin.include_tasks: setup.yml

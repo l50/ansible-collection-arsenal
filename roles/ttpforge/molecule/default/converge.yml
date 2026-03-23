@@ -26,7 +26,7 @@
         ttpforge_username: "{{ test_username }}"
         ttpforge_usergroup: "{{ test_usergroup }}"
         ttpforge_shell: "{{ test_shell }}"
-        ttpforge_asdf_plugins:
-          - name: golang
+        ttpforge_mise_plugins:
+          - name: go
             version: "1.24.0"
             scope: "global"

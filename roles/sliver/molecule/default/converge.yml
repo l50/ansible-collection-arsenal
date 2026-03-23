@@ -6,7 +6,7 @@
   roles:
     - role: l50.arsenal.sliver
       vars:
-        sliver_asdf_plugins:
-          - name: golang
+        sliver_mise_plugins:
+          - name: go
             version: "1.24.0"
             scope: "global"

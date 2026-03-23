@@ -15,7 +15,7 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 
 - cowdogmoo.workstation.package_management
-- cowdogmoo.workstation.asdf
+- cowdogmoo.workstation.mise
 
 ## Role Variables
 
@@ -28,9 +28,9 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 | `ttpforge_username` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}{{ ansible_facts&#91;'user_id'&#93; }}{% else %}{{ ansible_facts&#91;'distribution'&#93; &#124; lower }}{% endif %}</code> | No description |
 | `ttpforge_usergroup` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}staff{% elif ansible_facts&#91;'os_family'&#93; == 'Debian' %}{{ ansible_facts&#91;'user_id'&#93; }}{% elif ansible_facts&#91;'os_family'&#93; == 'RedHat' %}{{ ansible_facts&#91;'user_id'&#93; }}{% else %}{{ ansible_facts&#91;'distribution'&#93; &#124; lower }}{% endif %}</code> | No description |
 | `ttpforge_shell` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
-| `ttpforge_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
-| `ttpforge_asdf_plugins.0` | dict | <code>{}</code> | No description |
-| `ttpforge_asdf_plugins.1` | dict | <code>{}</code> | No description |
+| `ttpforge_mise_plugins` | list | <code>&#91;&#93;</code> | No description |
+| `ttpforge_mise_plugins.0` | dict | <code>{}</code> | No description |
+| `ttpforge_mise_plugins.1` | dict | <code>{}</code> | No description |
 
 ### Role Variables (main.yml)
 
@@ -53,15 +53,15 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 | `ttpforge_cleanup_paths` | list | `[]` | No description |
 | `ttpforge_cleanup_paths.0` | str | `{{ ttpforge_user_home }}/go` | No description |
 | `ttpforge_cleanup_paths.1` | str | `{{ ttpforge_user_home }}/.cache` | No description |
-| `ttpforge_cleanup_paths.2` | str | `{{ ttpforge_user_home }}/.asdf` | No description |
+| `ttpforge_cleanup_paths.2` | str | `{{ ttpforge_user_home }}/.local/share/mise` | No description |
 | `ttpforge_cleanup_paths.3` | str | `{{ ttpforge_user_home }}/.local` | No description |
 | `ttpforge_cleanup_paths.4` | str | `{{ ttpforge_user_home }}/.config` | No description |
-| `ttpforge_cleanup_paths.5` | str | `{{ ttpforge_user_home }}/.tool-versions` | No description |
+| `ttpforge_cleanup_paths.5` | str | `{{ ttpforge_user_home }}/.config/mise` | No description |
 | `ttpforge_cleanup_paths.6` | str | `/root/go` | No description |
 | `ttpforge_cleanup_paths.7` | str | `/root/.cache` | No description |
-| `ttpforge_cleanup_paths.8` | str | `/root/.asdf` | No description |
+| `ttpforge_cleanup_paths.8` | str | `/root/.local/share/mise` | No description |
 | `ttpforge_cleanup_paths.9` | str | `/root/.local` | No description |
-| `ttpforge_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
+| `ttpforge_cleanup_paths.10` | str | `/root/.config/mise` | No description |
 | `ttpforge_cleanup_paths.11` | str | `/root/.ssh` | No description |
 | `ttpforge_cleanup_paths.12` | str | `/tmp/*` | No description |
 | `ttpforge_cleanup_paths.13` | str | `/var/tmp/*` | No description |
@@ -93,9 +93,9 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 - **Ensure home directory exists for ttpforge user** (ansible.builtin.file)
 - **Check if .bashrc exists for ttpforge user** (ansible.builtin.stat)
 - **Ensure .bashrc exists for ttpforge user** (ansible.builtin.file) - Conditional
-- **Check if asdf is installed for ttpforge user** (ansible.builtin.stat)
-- **Check if asdf binary is installed** (ansible.builtin.stat)
-- **Install asdf and associated plugins for ttpforge user** (ansible.builtin.include_role) - Conditional
+- **Check if mise is installed for ttpforge user** (ansible.builtin.stat)
+- **Check if mise binary is installed** (ansible.builtin.stat)
+- **Install mise and associated plugins for ttpforge user** (ansible.builtin.include_role) - Conditional
 - **Include TTPForge setup tasks** (ansible.builtin.include_tasks)
 
 ### setup.yml
