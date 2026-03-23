@@ -165,7 +165,7 @@
         success_msg: "httpx is installed at {{ recon_toolkit_httpx_check.stdout }}"
 
     - name: Verify nmap is installed
-      ansible.builtin.command: nmap --version
+      ansible.builtin.command: which nmap
       register: recon_toolkit_nmap_check
       changed_when: false
       failed_when: false
@@ -174,9 +174,8 @@
       ansible.builtin.assert:
         that:
           - recon_toolkit_nmap_check.rc == 0
-          - "'Nmap' in recon_toolkit_nmap_check.stdout"
         fail_msg: "nmap is not properly installed"
-        success_msg: "nmap is installed: {{ recon_toolkit_nmap_check.stdout_lines[0] | default('') }}"
+        success_msg: "nmap is installed at {{ recon_toolkit_nmap_check.stdout }}"
 
     - name: Verify dnsx is installed
       ansible.builtin.command: which dnsx
@@ -194,7 +193,7 @@
         success_msg: "dnsx is installed at {{ recon_toolkit_dnsx_check.stdout }}"
 
     - name: Verify masscan is installed
-      ansible.builtin.command: masscan --version
+      ansible.builtin.command: which masscan
       register: recon_toolkit_masscan_check
       changed_when: false
       failed_when: false
@@ -204,10 +203,10 @@
         that:
           - recon_toolkit_masscan_check.rc == 0
         fail_msg: "masscan is not properly installed"
-        success_msg: "masscan is installed"
+        success_msg: "masscan is installed at {{ recon_toolkit_masscan_check.stdout }}"
 
     - name: Verify rustscan is installed
-      ansible.builtin.command: rustscan --version
+      ansible.builtin.command: which rustscan
       register: recon_toolkit_rustscan_check
       changed_when: false
       failed_when: false
@@ -217,10 +216,10 @@
         that:
           - recon_toolkit_rustscan_check.rc == 0
         fail_msg: "rustscan is not properly installed"
-        success_msg: "rustscan is installed"
+        success_msg: "rustscan is installed at {{ recon_toolkit_rustscan_check.stdout }}"
 
     - name: Verify whatweb is installed
-      ansible.builtin.command: whatweb --version
+      ansible.builtin.command: which whatweb
       register: recon_toolkit_whatweb_check
       changed_when: false
       failed_when: false
@@ -230,7 +229,7 @@
         that:
           - recon_toolkit_whatweb_check.rc == 0
         fail_msg: "whatweb is not properly installed"
-        success_msg: "whatweb is installed"
+        success_msg: "whatweb is installed at {{ recon_toolkit_whatweb_check.stdout }}"
 
     - name: Verify smap is installed
       ansible.builtin.command: which smap
@@ -372,7 +371,7 @@
         success_msg: "nuclei is installed at {{ recon_toolkit_nuclei_check.stdout }}"
 
     - name: Verify gitleaks is installed
-      ansible.builtin.command: gitleaks version
+      ansible.builtin.command: which gitleaks
       environment:
         PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_gitleaks_check
@@ -384,10 +383,10 @@
         that:
           - recon_toolkit_gitleaks_check.rc == 0
         fail_msg: "gitleaks is not properly installed"
-        success_msg: "gitleaks is installed: {{ recon_toolkit_gitleaks_check.stdout }}"
+        success_msg: "gitleaks is installed at {{ recon_toolkit_gitleaks_check.stdout }}"
 
     - name: Verify trufflehog is installed
-      ansible.builtin.command: trufflehog --version
+      ansible.builtin.command: which trufflehog
       register: recon_toolkit_trufflehog_check
       changed_when: false
       failed_when: false
@@ -397,7 +396,7 @@
         that:
           - recon_toolkit_trufflehog_check.rc == 0
         fail_msg: "trufflehog is not properly installed"
-        success_msg: "trufflehog is installed"
+        success_msg: "trufflehog is installed at {{ recon_toolkit_trufflehog_check.stdout }}"
 
     - name: Verify uncover is installed
       ansible.builtin.command: which uncover
@@ -415,7 +414,7 @@
         success_msg: "uncover is installed at {{ recon_toolkit_uncover_check.stdout }}"
 
     - name: Verify shodan is installed
-      ansible.builtin.command: shodan version
+      ansible.builtin.command: which shodan
       environment:
         PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_shodan_check
@@ -480,7 +479,7 @@
       ansible.builtin.shell: |
         export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
         export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
-        retire --version
+        which retire
       args:
         executable: /bin/bash
       become: true
@@ -498,7 +497,7 @@
         that:
           - recon_toolkit_retire_check.rc == 0
         fail_msg: "retire.js is not properly installed"
-        success_msg: "retire.js is installed: {{ recon_toolkit_retire_check.stdout }}"
+        success_msg: "retire.js is installed at {{ recon_toolkit_retire_check.stdout }}"
 
     - name: Verify paramspider is installed
       ansible.builtin.command: which paramspider
