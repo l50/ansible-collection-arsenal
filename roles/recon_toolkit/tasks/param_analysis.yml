@@ -38,7 +38,7 @@
       ansible.builtin.git:
         repo: "{{ recon_toolkit_gf_patterns_repo }}"
         dest: /tmp/gf-patterns
-        version: main
+        version: master
         force: true
       become: true
       register: recon_toolkit_gf_patterns_clone
