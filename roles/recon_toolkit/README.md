@@ -42,6 +42,8 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_install_amass` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_assetfinder` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_ctfr` | bool | <code>True</code> | No description |
+| `recon_toolkit_ctfr_repo` | str | <code>https://github.com/UnaPibaGeek/ctfr.git</code> | No description |
+| `recon_toolkit_ctfr_install_dir` | str | <code>/opt/ctfr</code> | No description |
 | `recon_toolkit_install_massdns` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_puredns` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_shuffledns` | bool | <code>True</code> | No description |
@@ -198,11 +200,10 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Install subfinder** (ansible.builtin.shell) - Conditional
 - **Install amass** (ansible.builtin.shell) - Conditional
 - **Install assetfinder** (ansible.builtin.shell) - Conditional
-- **Install ctfr via pipx** (block) - Conditional
-- **Check if pipx is available for ctfr** (ansible.builtin.command)
-- **Install pipx for ctfr** (ansible.builtin.apt) - Conditional
-- **Check if ctfr is already installed via pipx** (ansible.builtin.command)
-- **Install ctfr via pipx** (ansible.builtin.command) - Conditional
+- **Install ctfr** (block) - Conditional
+- **Clone ctfr repository** (ansible.builtin.git)
+- **Install ctfr Python dependencies** (ansible.builtin.pip)
+- **Create ctfr wrapper in /usr/local/bin** (ansible.builtin.copy)
 - **Install massdns** (block) - Conditional
 - **Check if massdns is already installed** (ansible.builtin.command)
 - **Clone massdns repository** (ansible.builtin.git) - Conditional

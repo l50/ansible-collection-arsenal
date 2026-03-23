@@ -64,42 +64,32 @@
   when: recon_toolkit_install_assetfinder | bool
 
 # --- ctfr (certificate transparency subdomain search) ---
-- name: Install ctfr via pipx
+- name: Install ctfr
   when: recon_toolkit_install_ctfr | bool
   block:
-    - name: Check if pipx is available for ctfr
-      ansible.builtin.command: pipx --version
-      register: recon_toolkit_ctfr_pipx_check
-      changed_when: false
-      failed_when: false
-      environment:
-        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+    - name: Clone ctfr repository
+      ansible.builtin.git:
+        repo: "{{ recon_toolkit_ctfr_repo }}"
+        dest: "{{ recon_toolkit_ctfr_install_dir }}"
+        version: master
+        force: true
+      become: true
 
-    - name: Install pipx for ctfr
-      ansible.builtin.apt:
-        name: pipx
+    - name: Install ctfr Python dependencies
+      ansible.builtin.pip:
+        requirements: "{{ recon_toolkit_ctfr_install_dir }}/requirements.txt"
         state: present
+        break_system_packages: true
       become: true
-      when: recon_toolkit_ctfr_pipx_check.rc != 0
 
-    - name: Check if ctfr is already installed via pipx
-      ansible.builtin.command: pipx list
-      register: recon_toolkit_ctfr_pipx_list
-      changed_when: false
-      environment:
-        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+    - name: Create ctfr wrapper in /usr/local/bin
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          python3 {{ recon_toolkit_ctfr_install_dir }}/ctfr.py "$@"
+        dest: /usr/local/bin/ctfr
+        mode: '0755'
       become: true
-      become_user: "{{ recon_toolkit_username }}"
-
-    - name: Install ctfr via pipx
-      ansible.builtin.command: pipx install ctfr
-      environment:
-        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
-        HOME: "{{ recon_toolkit_user_home }}"
-      become: true
-      become_user: "{{ recon_toolkit_username }}"
-      when: "'ctfr' not in (recon_toolkit_ctfr_pipx_list.stdout | default(''))"
-      changed_when: "'ctfr' not in (recon_toolkit_ctfr_pipx_list.stdout | default(''))"
 
 # --- massdns (high-performance DNS stub resolver) ---
 - name: Install massdns

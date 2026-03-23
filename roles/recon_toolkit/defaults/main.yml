@@ -44,6 +44,10 @@ recon_toolkit_install_amass: true
 recon_toolkit_install_assetfinder: true
 recon_toolkit_install_ctfr: true
 
+# ctfr install paths
+recon_toolkit_ctfr_repo: "https://github.com/UnaPibaGeek/ctfr.git"
+recon_toolkit_ctfr_install_dir: "/opt/ctfr"
+
 # DNS Resolution
 recon_toolkit_install_massdns: true
 recon_toolkit_install_puredns: true
