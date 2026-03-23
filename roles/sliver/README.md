@@ -180,6 +180,7 @@ Install sliver c2
 - **Check current ownership of {{ sliver_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the Sliver repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in Sliver directory** (ansible.builtin.copy) - Conditional
+- **Trust mise config in Sliver directory** (ansible.builtin.command) - Conditional
 - **Add Sliver paths to user's bashrc** (ansible.builtin.blockinfile)
 - **Check if Sliver server exists** (ansible.builtin.stat)
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional

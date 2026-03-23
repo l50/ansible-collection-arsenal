@@ -54,6 +54,18 @@
     mode: '0644'
   when: sliver_mise_plugins | selectattr('name', 'equalto', 'go') | list | length > 0
 
+- name: Trust mise config in Sliver directory
+  ansible.builtin.command:
+    cmd: mise trust "{{ sliver_install_path }}/.mise.toml"
+  become: true
+  become_user: "{{ sliver_username }}"
+  environment:
+    HOME: "{{ sliver_user_home }}"
+    MISE_DATA_DIR: "{{ sliver_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ sliver_user_home }}/.config/mise"
+  when: sliver_mise_plugins | selectattr('name', 'equalto', 'go') | list | length > 0
+  changed_when: false
+
 - name: Add Sliver paths to user's bashrc
   ansible.builtin.blockinfile:
     path: "{{ sliver_user_home }}/.bashrc"

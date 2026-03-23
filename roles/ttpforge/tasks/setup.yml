@@ -45,6 +45,18 @@
     mode: '0644'
   when: ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | list | length > 0
 
+- name: Trust mise config in ttpforge directory
+  ansible.builtin.command:
+    cmd: mise trust "{{ ttpforge_install_path }}/.mise.toml"
+  become: true
+  become_user: "{{ ttpforge_username }}"
+  environment:
+    HOME: "{{ ttpforge_user_home }}"
+    MISE_DATA_DIR: "{{ ttpforge_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ ttpforge_user_home }}/.config/mise"
+  when: ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | list | length > 0
+  changed_when: false
+
 - name: Add TTPForge paths to user's bashrc
   ansible.builtin.blockinfile:
     path: "{{ ttpforge_user_home }}/.bashrc"
