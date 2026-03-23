@@ -87,7 +87,7 @@ recon_toolkit_install_linkfinder: true
 recon_toolkit_install_secretfinder: true
 
 # LinkFinder / SecretFinder install paths
-recon_toolkit_linkfinder_repo: "https://github.com/GerbenJavworny/LinkFinder.git"
+recon_toolkit_linkfinder_repo: "https://github.com/GerbenJavado/LinkFinder.git"
 recon_toolkit_linkfinder_install_dir: "/opt/LinkFinder"
 
 recon_toolkit_secretfinder_repo: "https://github.com/m4ll0k/SecretFinder.git"

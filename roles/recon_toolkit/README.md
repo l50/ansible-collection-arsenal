@@ -67,7 +67,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_install_waybackurls` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_linkfinder` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_secretfinder` | bool | <code>True</code> | No description |
-| `recon_toolkit_linkfinder_repo` | str | <code>https://github.com/GerbenJavworny/LinkFinder.git</code> | No description |
+| `recon_toolkit_linkfinder_repo` | str | <code>https://github.com/GerbenJavado/LinkFinder.git</code> | No description |
 | `recon_toolkit_linkfinder_install_dir` | str | <code>/opt/LinkFinder</code> | No description |
 | `recon_toolkit_secretfinder_repo` | str | <code>https://github.com/m4ll0k/SecretFinder.git</code> | No description |
 | `recon_toolkit_secretfinder_install_dir` | str | <code>/opt/SecretFinder</code> | No description |

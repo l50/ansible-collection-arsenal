@@ -116,7 +116,7 @@ jobs:
         run: |
           if [[ "${{ steps.check-event.outputs.test_all }}" == "true" ]]; then
             # Test all roles and playbooks
-            MATRIX_JSON='[{"name":"Role Test - attack_box","path":"roles/attack_box"},{"name":"Role Test - sliver","path":"roles/sliver"},{"name":"Role Test - ttpforge","path":"roles/ttpforge"},{"name":"Playbook Test - atomic-red-team","path":"playbooks/atomic-red-team"},{"name":"Playbook Test - attack_box","path":"playbooks/attack_box"},{"name":"Playbook Test - sliver","path":"playbooks/sliver"},{"name":"Playbook Test - ttpforge","path":"playbooks/ttpforge"}]'
+            MATRIX_JSON='[{"name":"Role Test - attack_box","path":"roles/attack_box"},{"name":"Role Test - recon_toolkit","path":"roles/recon_toolkit"},{"name":"Role Test - sliver","path":"roles/sliver"},{"name":"Role Test - ttpforge","path":"roles/ttpforge"},{"name":"Playbook Test - atomic-red-team","path":"playbooks/atomic-red-team"},{"name":"Playbook Test - attack_box","path":"playbooks/attack_box"},{"name":"Playbook Test - recon_toolkit","path":"playbooks/recon_toolkit"},{"name":"Playbook Test - sliver","path":"playbooks/sliver"},{"name":"Playbook Test - ttpforge","path":"playbooks/ttpforge"}]'
           else
             # Test only changed roles and playbooks
             ROLES="${{ steps.filter.outputs.roles }}"

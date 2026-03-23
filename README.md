@@ -23,7 +23,7 @@ graph TD
     Playbooks --> PB1[sliver 🧪]
     Playbooks --> PB2[atomic-red-team 🧪]
     Playbooks --> PB3[ttpforge 🧪]
-    Playbooks --> PB4[recon_toolkit]
+    Playbooks --> PB4[recon_toolkit 🧪]
 ```
 
 ## Requirements
