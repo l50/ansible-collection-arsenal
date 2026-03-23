@@ -1,0 +1,46 @@
+---
+recon_toolkit_packages:
+  # Packages to keep after build
+  essential:
+    - curl
+    - dnsutils
+    - git
+    - jq
+    - unzip
+    - wget
+
+  # Packages needed for build but removed during cleanup
+  build_only:
+    - build-essential
+    - g++
+    - gcc
+    - make
+    - libffi-dev
+    - libssl-dev
+
+  # Packages that stay installed (runtime dependencies)
+  runtime_debian:
+    - masscan
+    - nmap
+    - whatweb
+
+# Compose installation lists
+recon_toolkit_common_install_packages: "{{ recon_toolkit_packages.essential + recon_toolkit_packages.build_only }}"
+
+recon_toolkit_debian_packages: "{{ recon_toolkit_packages.runtime_debian }}"
+
+# Cleanup lists
+recon_toolkit_cleanup_packages_debian: "{{ recon_toolkit_packages.build_only }}"
+
+# Cleanup paths
+recon_toolkit_cleanup_paths:
+  - "{{ recon_toolkit_user_home }}/go"
+  - "{{ recon_toolkit_user_home }}/.cache"
+  - "{{ recon_toolkit_user_home }}/.local"
+  - "{{ recon_toolkit_user_home }}/.config"
+  - "/root/go"
+  - "/root/.cache"
+  - "/root/.local"
+  - "/root/.ssh"
+  - "/tmp/*"
+  - "/var/tmp/*"

@@ -1,0 +1,99 @@
+---
+- name: Recon Toolkit
+  hosts: all
+  gather_facts: true
+  vars:
+    recon_toolkit_user: "{{ user | default('root') }}"
+    # Default to false, override with -e recon_toolkit_cleanup=true for production containers
+    recon_toolkit_cleanup: false
+  roles:
+    - role: l50.arsenal.recon_toolkit
+
+    - name: Cleanup Recon Toolkit build artifacts
+      role: cowdogmoo.workstation.build_cleanup
+      vars:
+        build_cleanup_enabled: "{{ recon_toolkit_cleanup }}"
+        build_cleanup_install_path: "{{ recon_toolkit_install_path | default('/opt/recon_toolkit') }}"
+        build_cleanup_user_home: "{{ recon_toolkit_user_home | default('/home/' + recon_toolkit_username) }}"
+        build_cleanup_username: "{{ recon_toolkit_username }}"
+        build_cleanup_keep_binaries:
+          - subfinder
+          - amass
+          - assetfinder
+          - puredns
+          - shuffledns
+          - httpx
+          - dnsx
+          - rustscan
+          - smap
+          - katana
+          - gospider
+          - hakrawler
+          - gau
+          - waybackurls
+          - nuclei
+          - gitleaks
+          - uncover
+          - gf
+          - trufflehog
+          - massdns
+        build_cleanup_protected_packages:
+          - ca-certificates
+          - curl
+          - dnsutils
+          - git
+          - gnupg
+          - jq
+          - masscan
+          - nmap
+          - openssl
+          - python3
+          - python3-minimal
+          - libpython3-stdlib
+          - python3-apt
+          - unzip
+          - wget
+          - whatweb
+          - zlib1g
+        build_cleanup_source_directories: []
+        build_cleanup_paths:
+          - "{{ recon_toolkit_user_home | default('/home/' + recon_toolkit_username) }}/go"
+          - "{{ recon_toolkit_user_home | default('/home/' + recon_toolkit_username) }}/.cache"
+          - "{{ recon_toolkit_user_home | default('/home/' + recon_toolkit_username) }}/.local/share/mise"
+          - "{{ recon_toolkit_user_home | default('/home/' + recon_toolkit_username) }}/.config/mise"
+          - /root/go
+          - /root/.cache
+          - /root/.local
+          - /root/.ssh
+          - /tmp/*
+          - /var/tmp/*
+          - /var/cache/debconf
+          - /var/lib/systemd/catalog
+        build_cleanup_packages_debian:
+          - build-essential
+          - g++
+          - gcc
+          - make
+          - libffi-dev
+          - libssl-dev
+          - autoconf
+          - automake
+          - libtool
+          - python3-pip
+          - zlib1g-dev
+          - patch
+        build_cleanup_container_remove_packages:
+          - "*vulkan*"
+          - "*llvm*"
+          - "libicu*"
+          - "snapd"
+          - "libgallium*"
+        build_cleanup_check_unpacked_compilers: true
+        build_cleanup_compiler_paths:
+          - go
+          - node
+          - python
+        build_cleanup_handle_postgresql: false
+        build_cleanup_handle_perl: true
+        build_cleanup_handle_systemd: true
+        build_cleanup_generate_post_script: true

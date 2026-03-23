@@ -1,0 +1,581 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Set recon_toolkit user home directory
+      ansible.builtin.include_tasks: "../../tasks/recon_toolkit_get_user_home.yml"
+
+    - name: Set tool PATH for verification
+      ansible.builtin.set_fact:
+        recon_toolkit_verify_path: "{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:{{ recon_toolkit_user_home }}/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin"
+
+    # ========================================================================
+    # Core tools
+    # ========================================================================
+
+    - name: Verify core tools are installed
+      ansible.builtin.command: "{{ item }} --version"
+      register: recon_toolkit_core_check
+      changed_when: false
+      failed_when: false
+      loop:
+        - curl
+        - jq
+        - python3
+        - git
+
+    - name: Verify dig is installed
+      ansible.builtin.command: dig -v
+      register: recon_toolkit_dig_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert core tools are working
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} is not properly installed"
+        success_msg: "{{ item.item }} is installed"
+      loop: "{{ recon_toolkit_core_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Assert dig is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_dig_check.rc == 0
+        fail_msg: "dig is not properly installed"
+        success_msg: "dig is installed"
+
+    # ========================================================================
+    # Subdomain Enumeration
+    # ========================================================================
+
+    - name: Verify subfinder is installed
+      ansible.builtin.command: which subfinder
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_subfinder_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert subfinder is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_subfinder_check.rc == 0
+        fail_msg: "subfinder is not properly installed"
+        success_msg: "subfinder is installed at {{ recon_toolkit_subfinder_check.stdout }}"
+
+    - name: Verify assetfinder is installed
+      ansible.builtin.command: which assetfinder
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_assetfinder_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert assetfinder is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_assetfinder_check.rc == 0
+        fail_msg: "assetfinder is not properly installed"
+        success_msg: "assetfinder is installed at {{ recon_toolkit_assetfinder_check.stdout }}"
+
+    - name: Verify ctfr is installed
+      ansible.builtin.command: which ctfr
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_ctfr_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert ctfr is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_ctfr_check.rc == 0
+        fail_msg: "ctfr is not properly installed"
+        success_msg: "ctfr is installed at {{ recon_toolkit_ctfr_check.stdout }}"
+
+    - name: Verify massdns is installed
+      ansible.builtin.command: which massdns
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_massdns_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert massdns is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_massdns_check.rc == 0
+        fail_msg: "massdns is not properly installed"
+        success_msg: "massdns is installed at {{ recon_toolkit_massdns_check.stdout }}"
+
+    - name: Verify puredns is installed
+      ansible.builtin.command: which puredns
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_puredns_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert puredns is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_puredns_check.rc == 0
+        fail_msg: "puredns is not properly installed"
+        success_msg: "puredns is installed at {{ recon_toolkit_puredns_check.stdout }}"
+
+    - name: Verify shuffledns is installed
+      ansible.builtin.command: which shuffledns
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_shuffledns_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert shuffledns is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_shuffledns_check.rc == 0
+        fail_msg: "shuffledns is not properly installed"
+        success_msg: "shuffledns is installed at {{ recon_toolkit_shuffledns_check.stdout }}"
+
+    # ========================================================================
+    # HTTP & Service Discovery
+    # ========================================================================
+
+    - name: Verify httpx is installed
+      ansible.builtin.command: which httpx
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_httpx_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert httpx is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_httpx_check.rc == 0
+        fail_msg: "httpx is not properly installed"
+        success_msg: "httpx is installed at {{ recon_toolkit_httpx_check.stdout }}"
+
+    - name: Verify nmap is installed
+      ansible.builtin.command: which nmap
+      register: recon_toolkit_nmap_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert nmap is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_nmap_check.rc == 0
+        fail_msg: "nmap is not properly installed"
+        success_msg: "nmap is installed at {{ recon_toolkit_nmap_check.stdout }}"
+
+    - name: Verify dnsx is installed
+      ansible.builtin.command: which dnsx
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_dnsx_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert dnsx is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_dnsx_check.rc == 0
+        fail_msg: "dnsx is not properly installed"
+        success_msg: "dnsx is installed at {{ recon_toolkit_dnsx_check.stdout }}"
+
+    - name: Verify masscan is installed
+      ansible.builtin.command: which masscan
+      register: recon_toolkit_masscan_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert masscan is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_masscan_check.rc == 0
+        fail_msg: "masscan is not properly installed"
+        success_msg: "masscan is installed at {{ recon_toolkit_masscan_check.stdout }}"
+
+    - name: Verify rustscan is installed
+      ansible.builtin.command: which rustscan
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_rustscan_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert rustscan is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_rustscan_check.rc == 0
+        fail_msg: "rustscan is not properly installed"
+        success_msg: "rustscan is installed at {{ recon_toolkit_rustscan_check.stdout }}"
+
+    - name: Verify whatweb is installed
+      ansible.builtin.command: which whatweb
+      register: recon_toolkit_whatweb_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert whatweb is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_whatweb_check.rc == 0
+        fail_msg: "whatweb is not properly installed"
+        success_msg: "whatweb is installed at {{ recon_toolkit_whatweb_check.stdout }}"
+
+    - name: Verify smap is installed
+      ansible.builtin.command: which smap
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_smap_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert smap is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_smap_check.rc == 0
+        fail_msg: "smap is not properly installed"
+        success_msg: "smap is installed at {{ recon_toolkit_smap_check.stdout }}"
+
+    # ========================================================================
+    # Web Crawling & JS Analysis
+    # ========================================================================
+
+    - name: Verify katana is installed
+      ansible.builtin.command: which katana
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_katana_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert katana is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_katana_check.rc == 0
+        fail_msg: "katana is not properly installed"
+        success_msg: "katana is installed at {{ recon_toolkit_katana_check.stdout }}"
+
+    - name: Verify gospider is installed
+      ansible.builtin.command: which gospider
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_gospider_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert gospider is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_gospider_check.rc == 0
+        fail_msg: "gospider is not properly installed"
+        success_msg: "gospider is installed at {{ recon_toolkit_gospider_check.stdout }}"
+
+    - name: Verify hakrawler is installed
+      ansible.builtin.command: which hakrawler
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_hakrawler_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert hakrawler is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_hakrawler_check.rc == 0
+        fail_msg: "hakrawler is not properly installed"
+        success_msg: "hakrawler is installed at {{ recon_toolkit_hakrawler_check.stdout }}"
+
+    - name: Verify gau is installed
+      ansible.builtin.command: which gau
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_gau_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert gau is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_gau_check.rc == 0
+        fail_msg: "gau is not properly installed"
+        success_msg: "gau is installed at {{ recon_toolkit_gau_check.stdout }}"
+
+    - name: Verify waybackurls is installed
+      ansible.builtin.command: which waybackurls
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_waybackurls_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert waybackurls is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_waybackurls_check.rc == 0
+        fail_msg: "waybackurls is not properly installed"
+        success_msg: "waybackurls is installed at {{ recon_toolkit_waybackurls_check.stdout }}"
+
+    - name: Verify linkfinder is installed
+      ansible.builtin.command: which linkfinder
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_linkfinder_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert linkfinder is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_linkfinder_check.rc == 0
+        fail_msg: "linkfinder is not properly installed"
+        success_msg: "linkfinder is installed at {{ recon_toolkit_linkfinder_check.stdout }}"
+
+    - name: Verify secretfinder is installed
+      ansible.builtin.command: which secretfinder
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_secretfinder_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert secretfinder is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_secretfinder_check.rc == 0
+        fail_msg: "secretfinder is not properly installed"
+        success_msg: "secretfinder is installed at {{ recon_toolkit_secretfinder_check.stdout }}"
+
+    # ========================================================================
+    # Vulnerability & Secret Scanning
+    # ========================================================================
+
+    - name: Verify nuclei is installed
+      ansible.builtin.command: which nuclei
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_nuclei_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert nuclei is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_nuclei_check.rc == 0
+        fail_msg: "nuclei is not properly installed"
+        success_msg: "nuclei is installed at {{ recon_toolkit_nuclei_check.stdout }}"
+
+    - name: Verify gitleaks is installed
+      ansible.builtin.command: which gitleaks
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_gitleaks_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert gitleaks is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_gitleaks_check.rc == 0
+        fail_msg: "gitleaks is not properly installed"
+        success_msg: "gitleaks is installed at {{ recon_toolkit_gitleaks_check.stdout }}"
+
+    - name: Verify trufflehog is installed
+      ansible.builtin.command: which trufflehog
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_trufflehog_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert trufflehog is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_trufflehog_check.rc == 0
+        fail_msg: "trufflehog is not properly installed"
+        success_msg: "trufflehog is installed at {{ recon_toolkit_trufflehog_check.stdout }}"
+
+    - name: Verify uncover is installed
+      ansible.builtin.command: which uncover
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_uncover_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert uncover is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_uncover_check.rc == 0
+        fail_msg: "uncover is not properly installed"
+        success_msg: "uncover is installed at {{ recon_toolkit_uncover_check.stdout }}"
+
+    - name: Verify shodan is installed
+      ansible.builtin.command: which shodan
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_shodan_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert shodan is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_shodan_check.rc == 0
+        fail_msg: "shodan CLI is not properly installed"
+        success_msg: "shodan CLI is installed"
+
+    # ========================================================================
+    # Parameter & Pattern Analysis
+    # ========================================================================
+
+    - name: Verify gf is installed
+      ansible.builtin.command: which gf
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_gf_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert gf is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_gf_check.rc == 0
+        fail_msg: "gf is not properly installed"
+        success_msg: "gf is installed at {{ recon_toolkit_gf_check.stdout }}"
+
+    - name: Check gf patterns are installed
+      ansible.builtin.stat:
+        path: "{{ recon_toolkit_user_home }}/.gf"
+      register: recon_toolkit_gf_patterns_check
+
+    - name: Assert gf patterns directory exists
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_gf_patterns_check.stat.exists
+          - recon_toolkit_gf_patterns_check.stat.isdir
+        fail_msg: "gf patterns directory not found"
+        success_msg: "gf patterns are installed at {{ recon_toolkit_user_home }}/.gf"
+
+    - name: Verify arjun is installed
+      ansible.builtin.command: arjun --help
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_arjun_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert arjun is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_arjun_check.rc == 0
+        fail_msg: "arjun is not properly installed"
+        success_msg: "arjun is installed"
+
+    - name: Verify retire.js is installed
+      ansible.builtin.shell: |
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+        which retire
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+      register: recon_toolkit_retire_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert retire.js is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_retire_check.rc == 0
+        fail_msg: "retire.js is not properly installed"
+        success_msg: "retire.js is installed at {{ recon_toolkit_retire_check.stdout }}"
+
+    - name: Verify paramspider is installed
+      ansible.builtin.command: which paramspider
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_paramspider_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert paramspider is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_paramspider_check.rc == 0
+        fail_msg: "paramspider is not properly installed"
+        success_msg: "paramspider is installed at {{ recon_toolkit_paramspider_check.stdout }}"
+
+    # ========================================================================
+    # Summary
+    # ========================================================================
+
+    - name: Display verification summary
+      ansible.builtin.debug:
+        msg:
+          - "======== Recon Toolkit Verification ========"
+          - ""
+          - "--- Core ---"
+          - "curl: OK | jq: OK | dig: OK | python3: OK | git: OK"
+          - ""
+          - "--- Subdomain Enumeration ---"
+          - "subfinder: {{ 'OK' if recon_toolkit_subfinder_check.rc == 0 else 'FAIL' }}"
+          - "amass: (long compile, check separately)"
+          - "assetfinder: {{ 'OK' if recon_toolkit_assetfinder_check.rc == 0 else 'FAIL' }}"
+          - "ctfr: {{ 'OK' if recon_toolkit_ctfr_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "--- DNS Resolution ---"
+          - "massdns: {{ 'OK' if recon_toolkit_massdns_check.rc == 0 else 'FAIL' }}"
+          - "puredns: {{ 'OK' if recon_toolkit_puredns_check.rc == 0 else 'FAIL' }}"
+          - "shuffledns: {{ 'OK' if recon_toolkit_shuffledns_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "--- HTTP & Service Discovery ---"
+          - "httpx: {{ 'OK' if recon_toolkit_httpx_check.rc == 0 else 'FAIL' }}"
+          - "dnsx: {{ 'OK' if recon_toolkit_dnsx_check.rc == 0 else 'FAIL' }}"
+          - "nmap: {{ 'OK' if recon_toolkit_nmap_check.rc == 0 else 'FAIL' }}"
+          - "masscan: {{ 'OK' if recon_toolkit_masscan_check.rc == 0 else 'FAIL' }}"
+          - "rustscan: {{ 'OK' if recon_toolkit_rustscan_check.rc == 0 else 'FAIL' }}"
+          - "whatweb: {{ 'OK' if recon_toolkit_whatweb_check.rc == 0 else 'FAIL' }}"
+          - "smap: {{ 'OK' if recon_toolkit_smap_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "--- Web Crawling & JS Analysis ---"
+          - "katana: {{ 'OK' if recon_toolkit_katana_check.rc == 0 else 'FAIL' }}"
+          - "gospider: {{ 'OK' if recon_toolkit_gospider_check.rc == 0 else 'FAIL' }}"
+          - "hakrawler: {{ 'OK' if recon_toolkit_hakrawler_check.rc == 0 else 'FAIL' }}"
+          - "gau: {{ 'OK' if recon_toolkit_gau_check.rc == 0 else 'FAIL' }}"
+          - "waybackurls: {{ 'OK' if recon_toolkit_waybackurls_check.rc == 0 else 'FAIL' }}"
+          - "linkfinder: {{ 'OK' if recon_toolkit_linkfinder_check.rc == 0 else 'FAIL' }}"
+          - "secretfinder: {{ 'OK' if recon_toolkit_secretfinder_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "--- Vulnerability & Secret Scanning ---"
+          - "nuclei: {{ 'OK' if recon_toolkit_nuclei_check.rc == 0 else 'FAIL' }}"
+          - "trufflehog: {{ 'OK' if recon_toolkit_trufflehog_check.rc == 0 else 'FAIL' }}"
+          - "gitleaks: {{ 'OK' if recon_toolkit_gitleaks_check.rc == 0 else 'FAIL' }}"
+          - "uncover: {{ 'OK' if recon_toolkit_uncover_check.rc == 0 else 'FAIL' }}"
+          - "shodan: {{ 'OK' if recon_toolkit_shodan_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "--- Parameter & Pattern Analysis ---"
+          - "gf: {{ 'OK' if recon_toolkit_gf_check.rc == 0 else 'FAIL' }}"
+          - "arjun: {{ 'OK' if recon_toolkit_arjun_check.rc == 0 else 'FAIL' }}"
+          - "retire.js: {{ 'OK' if recon_toolkit_retire_check.rc == 0 else 'FAIL' }}"
+          - "paramspider: {{ 'OK' if recon_toolkit_paramspider_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "============================================="

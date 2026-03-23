@@ -1,0 +1,117 @@
+---
+# ============================================================================
+# Recon Toolkit - Default Variables
+# ============================================================================
+
+recon_toolkit_cleanup: false  # Enable for Docker/container builds to minimize image size
+recon_toolkit_install_path: /opt/recon_toolkit
+
+recon_toolkit_username: "{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}"
+recon_toolkit_usergroup: "{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}"
+recon_toolkit_shell: "{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}"
+
+recon_toolkit_mise_plugins:
+  # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
+  - name: go
+    version: "1.26.1"
+    scope: "global"
+  # renovate: datasource=github-tags depName=nodejs packageName=nodejs/node extractVersion=^v(?<version>.*)$
+  - name: node
+    version: "22.16.0"
+    scope: "global"
+  # renovate: datasource=github-tags depName=python packageName=python/cpython extractVersion=^v(?<version>.*)$
+  - name: python
+    version: "3.14.3"
+    scope: "global"
+
+# ============================================================================
+# Core (Always Required)
+# ============================================================================
+recon_toolkit_core_packages:
+  - curl
+  - jq
+  - dnsutils       # dig, host, nslookup
+  - git
+  - wget
+  - unzip
+  - build-essential
+
+# ============================================================================
+# Subdomain Enumeration
+# ============================================================================
+recon_toolkit_install_subfinder: true
+recon_toolkit_install_amass: true
+recon_toolkit_install_assetfinder: true
+recon_toolkit_install_ctfr: true
+
+# ctfr install paths
+recon_toolkit_ctfr_repo: "https://github.com/UnaPibaGeek/ctfr.git"
+recon_toolkit_ctfr_install_dir: "/opt/ctfr"
+
+# DNS Resolution
+recon_toolkit_install_massdns: true
+recon_toolkit_install_puredns: true
+recon_toolkit_install_shuffledns: true
+
+# massdns install paths
+recon_toolkit_massdns_repo: "https://github.com/blechschmidt/massdns.git"
+recon_toolkit_massdns_install_dir: "/opt/massdns"
+
+# ============================================================================
+# HTTP & Service Discovery
+# ============================================================================
+recon_toolkit_install_httpx: true
+recon_toolkit_install_dnsx: true
+recon_toolkit_install_nmap: true
+recon_toolkit_install_rustscan: true
+recon_toolkit_install_masscan: true
+recon_toolkit_install_whatweb: true
+recon_toolkit_install_smap: true
+
+# rustscan release
+# renovate: datasource=github-releases depName=bee-san/RustScan
+recon_toolkit_rustscan_version: "2.4.1"
+recon_toolkit_rustscan_archives:
+  x86_64: "x86_64-linux-rustscan.tar.gz.zip"
+  aarch64: "aarch64-linux-rustscan.zip"
+
+# ============================================================================
+# Web Crawling & JS Analysis
+# ============================================================================
+recon_toolkit_install_katana: true
+recon_toolkit_install_gospider: true
+recon_toolkit_install_hakrawler: true
+recon_toolkit_install_gau: true
+recon_toolkit_install_waybackurls: true
+recon_toolkit_install_linkfinder: true
+recon_toolkit_install_secretfinder: true
+
+# LinkFinder / SecretFinder install paths
+recon_toolkit_linkfinder_repo: "https://github.com/GerbenJavado/LinkFinder.git"
+recon_toolkit_linkfinder_install_dir: "/opt/LinkFinder"
+
+recon_toolkit_secretfinder_repo: "https://github.com/m4ll0k/SecretFinder.git"
+recon_toolkit_secretfinder_install_dir: "/opt/SecretFinder"
+
+# ============================================================================
+# Vulnerability & Secret Scanning
+# ============================================================================
+recon_toolkit_install_nuclei: true
+recon_toolkit_install_trufflehog: true
+recon_toolkit_install_gitleaks: true
+recon_toolkit_install_uncover: true
+recon_toolkit_install_shodan: true
+
+# ============================================================================
+# Parameter & Pattern Analysis
+# ============================================================================
+recon_toolkit_install_gf: true
+recon_toolkit_install_arjun: true
+recon_toolkit_install_retire: true
+recon_toolkit_install_paramspider: true
+
+# gf patterns repository
+recon_toolkit_gf_patterns_repo: "https://github.com/1ndianl33t/Gf-Patterns.git"
+
+# paramspider repository
+recon_toolkit_paramspider_repo: "https://github.com/devanshbatham/ParamSpider.git"

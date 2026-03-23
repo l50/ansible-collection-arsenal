@@ -17,11 +17,13 @@ graph TD
     Roles --> R0[attack_box 🧪]
     Roles --> R1[sliver 🧪]
     Roles --> R2[ttpforge 🧪]
+    Roles --> R3[recon_toolkit 🧪]
     Collection --> Playbooks[📚 Playbooks]
     Playbooks --> PB0[attack_box 🧪]
     Playbooks --> PB1[sliver 🧪]
     Playbooks --> PB2[atomic-red-team 🧪]
     Playbooks --> PB3[ttpforge 🧪]
+    Playbooks --> PB4[recon_toolkit 🧪]
 ```
 
 ## Requirements

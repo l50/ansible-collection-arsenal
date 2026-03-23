@@ -1,0 +1,171 @@
+---
+# ============================================================================
+# Subdomain Enumeration Tools
+# ============================================================================
+
+# --- subfinder (ProjectDiscovery passive subdomain discovery) ---
+- name: Install subfinder
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/subfinder"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_subfinder | bool
+
+# --- amass (OWASP org-level intel + passive enum) ---
+- name: Install amass
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/owasp-amass/amass/v4/...@master
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/amass"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_amass | bool
+  tags:
+    - molecule-idempotence-notest
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+# --- assetfinder (lightweight subdomain finder) ---
+- name: Install assetfinder
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/tomnomnom/assetfinder@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/assetfinder"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_assetfinder | bool
+
+# --- ctfr (certificate transparency subdomain search) ---
+- name: Install ctfr
+  when: recon_toolkit_install_ctfr | bool
+  block:
+    - name: Clone ctfr repository
+      ansible.builtin.git:
+        repo: "{{ recon_toolkit_ctfr_repo }}"
+        dest: "{{ recon_toolkit_ctfr_install_dir }}"
+        version: master
+        force: true
+      become: true
+
+    - name: Install ctfr Python dependencies
+      ansible.builtin.pip:
+        requirements: "{{ recon_toolkit_ctfr_install_dir }}/requirements.txt"
+        state: present
+        break_system_packages: true
+      become: true
+
+    - name: Create ctfr wrapper in /usr/local/bin
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          python3 {{ recon_toolkit_ctfr_install_dir }}/ctfr.py "$@"
+        dest: /usr/local/bin/ctfr
+        mode: '0755'
+      become: true
+
+# --- massdns (high-performance DNS stub resolver) ---
+- name: Install massdns
+  when: recon_toolkit_install_massdns | bool
+  block:
+    - name: Check if massdns is already installed
+      ansible.builtin.command: massdns --version
+      register: recon_toolkit_massdns_check
+      changed_when: false
+      failed_when: false
+
+    - name: Clone massdns repository
+      ansible.builtin.git:
+        repo: "{{ recon_toolkit_massdns_repo }}"
+        dest: "{{ recon_toolkit_massdns_install_dir }}"
+        version: master
+        force: true
+      become: true
+      when: recon_toolkit_massdns_check.rc != 0
+
+    - name: Build massdns
+      ansible.builtin.command: make
+      args:
+        chdir: "{{ recon_toolkit_massdns_install_dir }}"
+      become: true
+      when: recon_toolkit_massdns_check.rc != 0
+      changed_when: recon_toolkit_massdns_check.rc != 0
+
+    - name: Install massdns binary to /usr/local/bin
+      ansible.builtin.copy:
+        src: "{{ recon_toolkit_massdns_install_dir }}/bin/massdns"
+        dest: /usr/local/bin/massdns
+        mode: '0755'
+        remote_src: true
+      become: true
+      when: recon_toolkit_massdns_check.rc != 0
+
+# --- puredns (DNS resolution with wildcard filtering) ---
+- name: Install puredns
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/d3mondev/puredns/v2@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/puredns"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_puredns | bool
+
+# --- shuffledns (ProjectDiscovery DNS resolution) ---
+- name: Install shuffledns
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/projectdiscovery/shuffledns/cmd/shuffledns@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/shuffledns"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_shuffledns | bool
