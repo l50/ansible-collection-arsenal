@@ -10,8 +10,8 @@
     - name: Install gf binary via go install
       ansible.builtin.shell: |
         set -o pipefail
-        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
         export GOPATH="{{ recon_toolkit_user_home }}/go"
         go install github.com/tomnomnom/gf@latest
       args:
@@ -22,7 +22,8 @@
       environment:
         HOME: "{{ recon_toolkit_user_home }}"
         USER: "{{ recon_toolkit_username }}"
-        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
 
     - name: Ensure .gf patterns directory exists
       ansible.builtin.file:
@@ -111,13 +112,13 @@
 - name: Install retire.js
   when: recon_toolkit_install_retire | bool
   block:
-    - name: Ensure nodejs is installed via asdf
+    - name: Ensure nodejs is installed via mise
       ansible.builtin.shell: |
-        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-        export PATH="/usr/local/bin:$PATH"
-        asdf install nodejs {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'nodejs') | first).version }}
-        asdf set --home nodejs {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'nodejs') | first).version }}
-        asdf reshim nodejs
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+        mise install node@{{ (recon_toolkit_mise_plugins | selectattr('name', 'equalto', 'node') | first).version }}
+        mise use --global node@{{ (recon_toolkit_mise_plugins | selectattr('name', 'equalto', 'node') | first).version }}
+        mise reshim
       args:
         executable: /bin/bash
       become: true
@@ -125,13 +126,14 @@
       environment:
         HOME: "{{ recon_toolkit_user_home }}"
         USER: "{{ recon_toolkit_username }}"
-        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
       changed_when: false
 
     - name: Check if retire.js is already installed
       ansible.builtin.shell: |
-        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
         npm list -g retire
       args:
         executable: /bin/bash
@@ -140,15 +142,16 @@
       environment:
         HOME: "{{ recon_toolkit_user_home }}"
         USER: "{{ recon_toolkit_username }}"
-        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
       register: recon_toolkit_retire_npm_check
       changed_when: false
       failed_when: false
 
     - name: Install retire.js globally via npm
       ansible.builtin.shell: |
-        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
         npm install -g retire
       args:
         executable: /bin/bash
@@ -157,7 +160,8 @@
       environment:
         HOME: "{{ recon_toolkit_user_home }}"
         USER: "{{ recon_toolkit_username }}"
-        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
       when: recon_toolkit_retire_npm_check.rc != 0
       changed_when: recon_toolkit_retire_npm_check.rc != 0
 

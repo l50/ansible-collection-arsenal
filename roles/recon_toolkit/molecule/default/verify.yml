@@ -13,7 +13,7 @@
 
     - name: Set tool PATH for verification
       ansible.builtin.set_fact:
-        recon_toolkit_verify_path: "{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:{{ recon_toolkit_user_home }}/.asdf/shims:/usr/local/bin:/usr/bin:/bin"
+        recon_toolkit_verify_path: "{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:{{ recon_toolkit_user_home }}/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin"
 
     # ========================================================================
     # Core tools
@@ -466,8 +466,8 @@
 
     - name: Verify retire.js is installed
       ansible.builtin.shell: |
-        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
         retire --version
       args:
         executable: /bin/bash
@@ -475,7 +475,8 @@
       become_user: "{{ recon_toolkit_username }}"
       environment:
         HOME: "{{ recon_toolkit_user_home }}"
-        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
       register: recon_toolkit_retire_check
       changed_when: false
       failed_when: false

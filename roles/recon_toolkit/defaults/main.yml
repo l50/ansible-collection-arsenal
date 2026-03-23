@@ -10,13 +10,13 @@ recon_toolkit_username: "{% if ansible_os_family == 'Darwin' %}{{ ansible_user_i
 recon_toolkit_usergroup: "{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution | lower }}{% endif %}"
 recon_toolkit_shell: "{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}"
 
-recon_toolkit_asdf_plugins:
+recon_toolkit_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
-  - name: golang
+  - name: go
     version: "1.26.1"
     scope: "global"
   # renovate: datasource=github-tags depName=nodejs packageName=nodejs/node extractVersion=^v(?<version>.*)$
-  - name: nodejs
+  - name: node
     version: "22.16.0"
     scope: "global"
   # renovate: datasource=github-tags depName=python packageName=python/cpython extractVersion=^v(?<version>.*)$

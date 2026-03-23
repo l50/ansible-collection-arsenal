@@ -7,8 +7,8 @@
 - name: Install katana
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/katana/cmd/katana@latest
   args:
@@ -19,15 +19,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_katana | bool
 
 # --- gospider (web spidering) ---
 - name: Install gospider
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/jaeles-project/gospider@latest
   args:
@@ -38,15 +39,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_gospider | bool
 
 # --- hakrawler (web spidering) ---
 - name: Install hakrawler
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/hakluke/hakrawler@latest
   args:
@@ -57,15 +59,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_hakrawler | bool
 
 # --- gau (get all URLs from web archives) ---
 - name: Install gau
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/lc/gau/v2/cmd/gau@latest
   args:
@@ -76,15 +79,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_gau | bool
 
 # --- waybackurls (fetch all URLs from Wayback Machine) ---
 - name: Install waybackurls
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/tomnomnom/waybackurls@latest
   args:
@@ -95,7 +99,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_waybackurls | bool
 
 # --- LinkFinder (JS endpoint extraction) ---

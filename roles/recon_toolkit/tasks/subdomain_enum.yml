@@ -7,8 +7,8 @@
 - name: Install subfinder
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
   args:
@@ -19,15 +19,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_subfinder | bool
 
 # --- amass (OWASP org-level intel + passive enum) ---
 - name: Install amass
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/owasp-amass/amass/v4/...@master
   args:
@@ -38,7 +39,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_amass | bool
   tags:
     - molecule-idempotence-notest
@@ -48,8 +50,8 @@
 - name: Install assetfinder
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/tomnomnom/assetfinder@latest
   args:
@@ -60,7 +62,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_assetfinder | bool
 
 # --- ctfr (certificate transparency subdomain search) ---
@@ -131,8 +134,8 @@
 - name: Install puredns
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/d3mondev/puredns/v2@latest
   args:
@@ -143,15 +146,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_puredns | bool
 
 # --- shuffledns (ProjectDiscovery DNS resolution) ---
 - name: Install shuffledns
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/shuffledns/cmd/shuffledns@latest
   args:
@@ -162,5 +166,6 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_shuffledns | bool

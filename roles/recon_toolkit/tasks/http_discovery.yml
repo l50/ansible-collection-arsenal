@@ -7,8 +7,8 @@
 - name: Install httpx
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
   args:
@@ -19,15 +19,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_httpx | bool
 
 # --- dnsx (ProjectDiscovery fast DNS resolution) ---
 - name: Install dnsx
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
   args:
@@ -38,7 +39,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_dnsx | bool
 
 # --- nmap (network mapper / port scanner) ---
@@ -123,8 +125,8 @@
 - name: Install smap
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/s0md3v/smap/cmd/smap@latest
   args:
@@ -135,5 +137,6 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_smap | bool

@@ -13,7 +13,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 
 
 - cowdogmoo.workstation.package_management
-- cowdogmoo.workstation.asdf
+- cowdogmoo.workstation.mise
 
 ## Role Variables
 
@@ -26,10 +26,10 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_username` | str | <code>{% if ansible_os_family == 'Darwin' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
 | `recon_toolkit_usergroup` | str | <code>{% if ansible_os_family == 'Darwin' %}staff{% elif ansible_os_family == 'Debian' %}{{ ansible_user_id }}{% elif ansible_os_family == 'RedHat' %}{{ ansible_user_id }}{% else %}{{ ansible_distribution &#124; lower }}{% endif %}</code> | No description |
 | `recon_toolkit_shell` | str | <code>{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
-| `recon_toolkit_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
-| `recon_toolkit_asdf_plugins.0` | dict | <code>{}</code> | No description |
-| `recon_toolkit_asdf_plugins.1` | dict | <code>{}</code> | No description |
-| `recon_toolkit_asdf_plugins.2` | dict | <code>{}</code> | No description |
+| `recon_toolkit_mise_plugins` | list | <code>&#91;&#93;</code> | No description |
+| `recon_toolkit_mise_plugins.0` | dict | <code>{}</code> | No description |
+| `recon_toolkit_mise_plugins.1` | dict | <code>{}</code> | No description |
+| `recon_toolkit_mise_plugins.2` | dict | <code>{}</code> | No description |
 | `recon_toolkit_core_packages` | list | <code>&#91;&#93;</code> | No description |
 | `recon_toolkit_core_packages.0` | str | <code>curl</code> | No description |
 | `recon_toolkit_core_packages.1` | str | <code>jq</code> | No description |
@@ -111,18 +111,14 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_cleanup_paths` | list | `[]` | No description |
 | `recon_toolkit_cleanup_paths.0` | str | `{{ recon_toolkit_user_home }}/go` | No description |
 | `recon_toolkit_cleanup_paths.1` | str | `{{ recon_toolkit_user_home }}/.cache` | No description |
-| `recon_toolkit_cleanup_paths.2` | str | `{{ recon_toolkit_user_home }}/.asdf` | No description |
-| `recon_toolkit_cleanup_paths.3` | str | `{{ recon_toolkit_user_home }}/.local` | No description |
-| `recon_toolkit_cleanup_paths.4` | str | `{{ recon_toolkit_user_home }}/.config` | No description |
-| `recon_toolkit_cleanup_paths.5` | str | `{{ recon_toolkit_user_home }}/.tool-versions` | No description |
-| `recon_toolkit_cleanup_paths.6` | str | `/root/go` | No description |
-| `recon_toolkit_cleanup_paths.7` | str | `/root/.cache` | No description |
-| `recon_toolkit_cleanup_paths.8` | str | `/root/.asdf` | No description |
-| `recon_toolkit_cleanup_paths.9` | str | `/root/.local` | No description |
-| `recon_toolkit_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
-| `recon_toolkit_cleanup_paths.11` | str | `/root/.ssh` | No description |
-| `recon_toolkit_cleanup_paths.12` | str | `/tmp/*` | No description |
-| `recon_toolkit_cleanup_paths.13` | str | `/var/tmp/*` | No description |
+| `recon_toolkit_cleanup_paths.2` | str | `{{ recon_toolkit_user_home }}/.local` | No description |
+| `recon_toolkit_cleanup_paths.3` | str | `{{ recon_toolkit_user_home }}/.config` | No description |
+| `recon_toolkit_cleanup_paths.4` | str | `/root/go` | No description |
+| `recon_toolkit_cleanup_paths.5` | str | `/root/.cache` | No description |
+| `recon_toolkit_cleanup_paths.6` | str | `/root/.local` | No description |
+| `recon_toolkit_cleanup_paths.7` | str | `/root/.ssh` | No description |
+| `recon_toolkit_cleanup_paths.8` | str | `/tmp/*` | No description |
+| `recon_toolkit_cleanup_paths.9` | str | `/var/tmp/*` | No description |
 
 ## Tasks
 
@@ -151,9 +147,9 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Ensure home directory exists for recon_toolkit user** (ansible.builtin.file)
 - **Check if .bashrc exists for recon_toolkit user** (ansible.builtin.stat)
 - **Ensure .bashrc exists for recon_toolkit user** (ansible.builtin.file) - Conditional
-- **Check if asdf is installed for recon_toolkit user** (ansible.builtin.stat)
-- **Check if asdf binary is installed** (ansible.builtin.stat)
-- **Install asdf and associated plugins for recon_toolkit user** (ansible.builtin.include_role) - Conditional
+- **Check if mise is installed for recon_toolkit user** (ansible.builtin.stat)
+- **Check if mise binary is installed** (ansible.builtin.stat)
+- **Install mise and associated plugins for recon_toolkit user** (ansible.builtin.include_role) - Conditional
 - **Ensure golang is installed for user** (ansible.builtin.shell)
 - **Add recon toolkit paths to user's bashrc** (ansible.builtin.blockinfile)
 - **Include subdomain enumeration tool tasks** (ansible.builtin.include_tasks)
@@ -178,7 +174,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Check if arjun is already installed via pipx** (ansible.builtin.command)
 - **Install arjun via pipx** (ansible.builtin.command) - Conditional
 - **Install retire.js** (block) - Conditional
-- **Ensure nodejs is installed via asdf** (ansible.builtin.shell)
+- **Ensure nodejs is installed via mise** (ansible.builtin.shell)
 - **Check if retire.js is already installed** (ansible.builtin.shell)
 - **Install retire.js globally via npm** (ansible.builtin.shell) - Conditional
 - **Install paramspider via pipx** (block) - Conditional

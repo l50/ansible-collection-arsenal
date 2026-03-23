@@ -7,8 +7,8 @@
 - name: Install nuclei
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
   args:
@@ -19,7 +19,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_nuclei | bool
 
 # --- trufflehog (secret/credential scanning) ---
@@ -46,8 +47,8 @@
 - name: Install gitleaks
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/zricethezav/gitleaks/v8@latest
   args:
@@ -58,15 +59,16 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_gitleaks | bool
 
 # --- uncover (ProjectDiscovery multi-engine scanning: Shodan, Censys, Fofa) ---
 - name: Install uncover
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
     go install -v github.com/projectdiscovery/uncover/cmd/uncover@latest
   args:
@@ -77,7 +79,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_uncover | bool
 
 # --- shodan CLI (internet-wide device discovery) ---

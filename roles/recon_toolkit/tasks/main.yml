@@ -44,36 +44,37 @@
   become: true
   when: not recon_toolkit_bashrc_stat.stat.exists
 
-- name: Check if asdf is installed for recon_toolkit user
+- name: Check if mise is installed for recon_toolkit user
   ansible.builtin.stat:
-    path: "{{ recon_toolkit_user_home }}/.asdf"
-  register: recon_toolkit_asdf_installed
+    path: "{{ recon_toolkit_user_home }}/.local/share/mise"
+  register: recon_toolkit_mise_installed
 
-- name: Check if asdf binary is installed
+- name: Check if mise binary is installed
   ansible.builtin.stat:
-    path: "/usr/local/bin/asdf"
-  register: recon_toolkit_asdf_binary_installed
+    path: "/usr/local/bin/mise"
+  register: recon_toolkit_mise_binary_installed
 
-- name: Install asdf and associated plugins for recon_toolkit user
+- name: Install mise and associated plugins for recon_toolkit user
   ansible.builtin.include_role:
-    name: cowdogmoo.workstation.asdf
+    name: cowdogmoo.workstation.mise
   vars:
-    asdf_username: "{{ recon_toolkit_username }}"
-    asdf_usergroup: "{{ recon_toolkit_usergroup }}"
-    asdf_shell: "{{ recon_toolkit_shell }}"
-    asdf_plugins: "{{ recon_toolkit_asdf_plugins }}"
-    asdf_user_home: "{{ recon_toolkit_user_home }}"
-    asdf_data_dir: "{{ recon_toolkit_user_home }}/.asdf"
-    asdf_bin_dir: "/usr/local/bin"
-  when: not recon_toolkit_asdf_installed.stat.exists or not recon_toolkit_asdf_binary_installed.stat.exists
+    mise_username: "{{ recon_toolkit_username }}"
+    mise_usergroup: "{{ recon_toolkit_usergroup }}"
+    mise_shell: "{{ recon_toolkit_shell }}"
+    mise_plugins: "{{ recon_toolkit_mise_plugins }}"
+    mise_user_home: "{{ recon_toolkit_user_home }}"
+    mise_data_dir: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    mise_config_dir: "{{ recon_toolkit_user_home }}/.config/mise"
+    mise_bin_dir: "/usr/local/bin"
+  when: not recon_toolkit_mise_installed.stat.exists or not recon_toolkit_mise_binary_installed.stat.exists
 
 - name: Ensure golang is installed for user
   ansible.builtin.shell: |
-    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
-    export PATH="/usr/local/bin:$PATH"
-    asdf install golang {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'golang') | first).version }}
-    asdf set --home golang {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'golang') | first).version }}
-    asdf reshim golang
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    mise install go@{{ (recon_toolkit_mise_plugins | selectattr('name', 'equalto', 'go') | first).version }}
+    mise use --global go@{{ (recon_toolkit_mise_plugins | selectattr('name', 'equalto', 'go') | first).version }}
+    mise reshim
   args:
     executable: /bin/bash
   become: true
@@ -81,7 +82,8 @@
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
-    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   changed_when: false
 
 - name: Add recon toolkit paths to user's bashrc
