@@ -112,3 +112,6 @@ recon_toolkit_install_paramspider: true
 
 # gf patterns repository
 recon_toolkit_gf_patterns_repo: "https://github.com/1ndianl33t/Gf-Patterns.git"
+
+# paramspider repository
+recon_toolkit_paramspider_repo: "https://github.com/devanshbatham/ParamSpider.git"

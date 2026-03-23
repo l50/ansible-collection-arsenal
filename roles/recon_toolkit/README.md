@@ -81,6 +81,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_install_retire` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_paramspider` | bool | <code>True</code> | No description |
 | `recon_toolkit_gf_patterns_repo` | str | <code>https://github.com/1ndianl33t/Gf-Patterns.git</code> | No description |
+| `recon_toolkit_paramspider_repo` | str | <code>https://github.com/devanshbatham/ParamSpider.git</code> | No description |
 
 ### Role Variables (main.yml)
 

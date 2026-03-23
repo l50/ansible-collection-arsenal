@@ -194,7 +194,7 @@
       become_user: "{{ recon_toolkit_username }}"
 
     - name: Install paramspider via pipx
-      ansible.builtin.command: pipx install paramspider
+      ansible.builtin.command: pipx install git+{{ recon_toolkit_paramspider_repo }}
       environment:
         PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
         HOME: "{{ recon_toolkit_user_home }}"
