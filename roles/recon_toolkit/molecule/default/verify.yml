@@ -104,6 +104,8 @@
 
     - name: Verify massdns is installed
       ansible.builtin.command: which massdns
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_massdns_check
       changed_when: false
       failed_when: false
@@ -207,6 +209,8 @@
 
     - name: Verify rustscan is installed
       ansible.builtin.command: which rustscan
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_rustscan_check
       changed_when: false
       failed_when: false
@@ -327,6 +331,8 @@
 
     - name: Verify linkfinder is installed
       ansible.builtin.command: which linkfinder
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_linkfinder_check
       changed_when: false
       failed_when: false
@@ -340,6 +346,8 @@
 
     - name: Verify secretfinder is installed
       ansible.builtin.command: which secretfinder
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_secretfinder_check
       changed_when: false
       failed_when: false
@@ -387,6 +395,8 @@
 
     - name: Verify trufflehog is installed
       ansible.builtin.command: which trufflehog
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
       register: recon_toolkit_trufflehog_check
       changed_when: false
       failed_when: false
