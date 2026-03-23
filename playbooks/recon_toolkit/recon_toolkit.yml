@@ -1,0 +1,8 @@
+---
+- name: Recon Toolkit
+  hosts: all
+  gather_facts: true
+  vars:
+    recon_toolkit_user: "{{ user | default('root') }}"
+  roles:
+    - role: l50.arsenal.recon_toolkit

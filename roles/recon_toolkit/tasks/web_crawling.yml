@@ -1,0 +1,155 @@
+---
+# ============================================================================
+# Web Crawling & JS Analysis Tools
+# ============================================================================
+
+# --- katana (ProjectDiscovery headless JS-aware crawler) ---
+- name: Install katana
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/projectdiscovery/katana/cmd/katana@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/katana"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_katana | bool
+
+# --- gospider (web spidering) ---
+- name: Install gospider
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/jaeles-project/gospider@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/gospider"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_gospider | bool
+
+# --- hakrawler (web spidering) ---
+- name: Install hakrawler
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/hakluke/hakrawler@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/hakrawler"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_hakrawler | bool
+
+# --- gau (get all URLs from web archives) ---
+- name: Install gau
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/lc/gau/v2/cmd/gau@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/gau"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_gau | bool
+
+# --- waybackurls (fetch all URLs from Wayback Machine) ---
+- name: Install waybackurls
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/tomnomnom/waybackurls@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/waybackurls"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_waybackurls | bool
+
+# --- LinkFinder (JS endpoint extraction) ---
+- name: Install LinkFinder
+  when: recon_toolkit_install_linkfinder | bool
+  block:
+    - name: Clone LinkFinder repository
+      ansible.builtin.git:
+        repo: "{{ recon_toolkit_linkfinder_repo }}"
+        dest: "{{ recon_toolkit_linkfinder_install_dir }}"
+        version: master
+        force: true
+      become: true
+
+    - name: Install LinkFinder Python dependencies
+      ansible.builtin.pip:
+        requirements: "{{ recon_toolkit_linkfinder_install_dir }}/requirements.txt"
+        state: present
+        break_system_packages: true
+      become: true
+
+    - name: Create LinkFinder wrapper in /usr/local/bin
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          python3 {{ recon_toolkit_linkfinder_install_dir }}/linkfinder.py "$@"
+        dest: /usr/local/bin/linkfinder
+        mode: '0755'
+      become: true
+
+# --- SecretFinder (JS secret extraction) ---
+- name: Install SecretFinder
+  when: recon_toolkit_install_secretfinder | bool
+  block:
+    - name: Clone SecretFinder repository
+      ansible.builtin.git:
+        repo: "{{ recon_toolkit_secretfinder_repo }}"
+        dest: "{{ recon_toolkit_secretfinder_install_dir }}"
+        version: master
+        force: true
+      become: true
+
+    - name: Install SecretFinder Python dependencies
+      ansible.builtin.pip:
+        requirements: "{{ recon_toolkit_secretfinder_install_dir }}/requirements.txt"
+        state: present
+        break_system_packages: true
+      become: true
+
+    - name: Create SecretFinder wrapper in /usr/local/bin
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          python3 {{ recon_toolkit_secretfinder_install_dir }}/SecretFinder.py "$@"
+        dest: /usr/local/bin/secretfinder
+        mode: '0755'
+      become: true

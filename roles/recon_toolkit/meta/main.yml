@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  role_name: "recon_toolkit"
+  namespace: l50
+  author: Jayson Grace
+  description: Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis
+  company: techvomit
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Kali
+      versions:
+        - all
+  galaxy_tags:
+    - offsec
+    - recon
+    - pentesting
+    - bugbounty
+
+dependencies:
+  - role: cowdogmoo.workstation.package_management
+  - role: cowdogmoo.workstation.asdf

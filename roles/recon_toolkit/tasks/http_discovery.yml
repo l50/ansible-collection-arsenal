@@ -1,0 +1,139 @@
+---
+# ============================================================================
+# HTTP & Service Discovery Tools
+# ============================================================================
+
+# --- httpx (ProjectDiscovery HTTP probing + tech detection) ---
+- name: Install httpx
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/httpx"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_httpx | bool
+
+# --- dnsx (ProjectDiscovery fast DNS resolution) ---
+- name: Install dnsx
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/dnsx"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_dnsx | bool
+
+# --- nmap (network mapper / port scanner) ---
+# Installed via package_management in main.yml (runtime_debian packages)
+
+# --- rustscan (fast port scanner) ---
+- name: Install rustscan
+  when:
+    - recon_toolkit_install_rustscan | bool
+  block:
+    - name: Check if rustscan is already installed
+      ansible.builtin.command: rustscan --version
+      register: recon_toolkit_rustscan_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Set rustscan archive name based on architecture
+      ansible.builtin.set_fact:
+        recon_toolkit_rustscan_archive: "{{ recon_toolkit_rustscan_archives[ansible_architecture] }}"
+      when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Download rustscan binary archive
+      ansible.builtin.get_url:
+        url: "https://github.com/bee-san/RustScan/releases/download/{{ recon_toolkit_rustscan_version }}/{{ recon_toolkit_rustscan_archive }}"
+        dest: "/tmp/{{ recon_toolkit_rustscan_archive }}"
+        mode: '0644'
+      become: true
+      when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Create rustscan temp extraction directory
+      ansible.builtin.file:
+        path: /tmp/rustscan_extract
+        state: directory
+        mode: '0755'
+      become: true
+      when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Extract rustscan archive
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ recon_toolkit_rustscan_archive }}"
+        dest: /tmp/rustscan_extract
+        remote_src: true
+      become: true
+      when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Find rustscan binary in extracted files
+      ansible.builtin.find:
+        paths: /tmp/rustscan_extract
+        patterns: "rustscan"
+        recurse: true
+        file_type: file
+      register: recon_toolkit_rustscan_binary
+      when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Install rustscan binary to /usr/local/bin
+      ansible.builtin.copy:
+        src: "{{ recon_toolkit_rustscan_binary.files[0].path }}"
+        dest: /usr/local/bin/rustscan
+        mode: '0755'
+        remote_src: true
+      become: true
+      when:
+        - recon_toolkit_rustscan_installed.rc != 0
+        - recon_toolkit_rustscan_binary.files | length > 0
+
+    - name: Clean up rustscan temp files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      become: true
+      loop:
+        - "/tmp/{{ recon_toolkit_rustscan_archive | default('') }}"
+        - /tmp/rustscan_extract
+
+# --- masscan (mass IP port scanner) ---
+# Installed via package_management in main.yml (runtime_debian packages)
+
+# --- whatweb (web fingerprinting) ---
+# Installed via package_management in main.yml (runtime_debian packages)
+
+# --- smap (service discovery & fingerprinting using Shodan) ---
+- name: Install smap
+  ansible.builtin.shell: |
+    set -o pipefail
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/s0md3v/smap/cmd/smap@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/smap"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  when: recon_toolkit_install_smap | bool

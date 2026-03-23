@@ -1,0 +1,113 @@
+---
+- name: Set recon_toolkit user home directory
+  ansible.builtin.include_tasks: recon_toolkit_get_user_home.yml
+
+- name: Install required packages for recon_toolkit
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.package_management
+  vars:
+    package_management_common_install_packages: "{{ recon_toolkit_common_install_packages }}"
+    package_management_debian_specific_packages: "{{ recon_toolkit_debian_packages }}"
+
+- name: Create user
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.user_setup
+  vars:
+    user_setup_default_users:
+      - username: "{{ recon_toolkit_username }}"
+        usergroup: "{{ recon_toolkit_usergroup }}"
+        shell: "{{ recon_toolkit_shell }}"
+        sudo: true
+
+- name: Ensure home directory exists for recon_toolkit user
+  ansible.builtin.file:
+    path: "{{ recon_toolkit_user_home }}"
+    state: directory
+    owner: "{{ recon_toolkit_username }}"
+    group: "{{ recon_toolkit_usergroup }}"
+    mode: '0750'
+  become: true
+
+- name: Check if .bashrc exists for recon_toolkit user
+  ansible.builtin.stat:
+    path: "{{ recon_toolkit_user_home }}/.bashrc"
+  register: recon_toolkit_bashrc_stat
+  become: true
+
+- name: Ensure .bashrc exists for recon_toolkit user
+  ansible.builtin.file:
+    path: "{{ recon_toolkit_user_home }}/.bashrc"
+    state: touch
+    owner: "{{ recon_toolkit_username }}"
+    group: "{{ recon_toolkit_usergroup }}"
+    mode: '0644'
+  become: true
+  when: not recon_toolkit_bashrc_stat.stat.exists
+
+- name: Check if asdf is installed for recon_toolkit user
+  ansible.builtin.stat:
+    path: "{{ recon_toolkit_user_home }}/.asdf"
+  register: recon_toolkit_asdf_installed
+
+- name: Check if asdf binary is installed
+  ansible.builtin.stat:
+    path: "/usr/local/bin/asdf"
+  register: recon_toolkit_asdf_binary_installed
+
+- name: Install asdf and associated plugins for recon_toolkit user
+  ansible.builtin.include_role:
+    name: cowdogmoo.workstation.asdf
+  vars:
+    asdf_username: "{{ recon_toolkit_username }}"
+    asdf_usergroup: "{{ recon_toolkit_usergroup }}"
+    asdf_shell: "{{ recon_toolkit_shell }}"
+    asdf_plugins: "{{ recon_toolkit_asdf_plugins }}"
+    asdf_user_home: "{{ recon_toolkit_user_home }}"
+    asdf_data_dir: "{{ recon_toolkit_user_home }}/.asdf"
+    asdf_bin_dir: "/usr/local/bin"
+  when: not recon_toolkit_asdf_installed.stat.exists or not recon_toolkit_asdf_binary_installed.stat.exists
+
+- name: Ensure golang is installed for user
+  ansible.builtin.shell: |
+    export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+    export PATH="/usr/local/bin:$PATH"
+    asdf install golang {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'golang') | first).version }}
+    asdf set --home golang {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'golang') | first).version }}
+    asdf reshim golang
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+  changed_when: false
+
+- name: Add recon toolkit paths to user's bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ recon_toolkit_user_home }}/.bashrc"
+    block: |
+      # Recon toolkit paths
+      export GOPATH="{{ recon_toolkit_user_home }}/go"
+      export PATH="{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:$PATH"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - RECON TOOLKIT PATHS"
+    create: true
+    mode: '0644'
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+
+- name: Include subdomain enumeration tool tasks
+  ansible.builtin.include_tasks: subdomain_enum.yml
+
+- name: Include HTTP and service discovery tool tasks
+  ansible.builtin.include_tasks: http_discovery.yml
+
+- name: Include web crawling and JS analysis tool tasks
+  ansible.builtin.include_tasks: web_crawling.yml
+
+- name: Include vulnerability and secret scanning tool tasks
+  ansible.builtin.include_tasks: vuln_scanning.yml
+
+- name: Include parameter and pattern analysis tool tasks
+  ansible.builtin.include_tasks: param_analysis.yml

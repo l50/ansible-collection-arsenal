@@ -1,0 +1,200 @@
+---
+# ============================================================================
+# Parameter & Pattern Analysis Tools
+# ============================================================================
+
+# --- gf (grep patterns for vuln-prone params: XSS, SQLi, SSRF) ---
+- name: Install gf
+  when: recon_toolkit_install_gf | bool
+  block:
+    - name: Install gf binary via go install
+      ansible.builtin.shell: |
+        set -o pipefail
+        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        export GOPATH="{{ recon_toolkit_user_home }}/go"
+        go install github.com/tomnomnom/gf@latest
+      args:
+        creates: "{{ recon_toolkit_user_home }}/go/bin/gf"
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        USER: "{{ recon_toolkit_username }}"
+        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+
+    - name: Ensure .gf patterns directory exists
+      ansible.builtin.file:
+        path: "{{ recon_toolkit_user_home }}/.gf"
+        state: directory
+        owner: "{{ recon_toolkit_username }}"
+        group: "{{ recon_toolkit_usergroup }}"
+        mode: '0755'
+      become: true
+
+    - name: Clone gf patterns
+      ansible.builtin.git:
+        repo: "{{ recon_toolkit_gf_patterns_repo }}"
+        dest: /tmp/gf-patterns
+        version: main
+        force: true
+      become: true
+      register: recon_toolkit_gf_patterns_clone
+
+    - name: Find gf pattern files  # noqa: no-handler
+      ansible.builtin.find:
+        paths: /tmp/gf-patterns
+        patterns: "*.json"
+      register: recon_toolkit_gf_pattern_files
+      when: recon_toolkit_gf_patterns_clone is changed
+
+    - name: Copy gf pattern files to .gf directory  # noqa: no-handler
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "{{ recon_toolkit_user_home }}/.gf/{{ item.path | basename }}"
+        owner: "{{ recon_toolkit_username }}"
+        group: "{{ recon_toolkit_usergroup }}"
+        mode: '0644'
+        remote_src: true
+      become: true
+      loop: "{{ recon_toolkit_gf_pattern_files.files | default([]) }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+      when: recon_toolkit_gf_patterns_clone is changed
+
+    - name: Clean up gf patterns temp directory
+      ansible.builtin.file:
+        path: /tmp/gf-patterns
+        state: absent
+      become: true
+
+# --- arjun (active HTTP parameter discovery) ---
+- name: Install arjun via pipx
+  when: recon_toolkit_install_arjun | bool
+  block:
+    - name: Check if pipx is available for arjun
+      ansible.builtin.command: pipx --version
+      register: recon_toolkit_arjun_pipx_check
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+    - name: Install pipx for arjun
+      ansible.builtin.apt:
+        name: pipx
+        state: present
+      become: true
+      when: recon_toolkit_arjun_pipx_check.rc != 0
+
+    - name: Check if arjun is already installed via pipx
+      ansible.builtin.command: pipx list
+      register: recon_toolkit_arjun_pipx_list
+      changed_when: false
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+
+    - name: Install arjun via pipx
+      ansible.builtin.command: pipx install arjun
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+        HOME: "{{ recon_toolkit_user_home }}"
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      when: "'arjun' not in (recon_toolkit_arjun_pipx_list.stdout | default(''))"
+      changed_when: "'arjun' not in (recon_toolkit_arjun_pipx_list.stdout | default(''))"
+
+# --- retire.js (JS dependency vulnerability detection) ---
+- name: Install retire.js
+  when: recon_toolkit_install_retire | bool
+  block:
+    - name: Ensure nodejs is installed via asdf
+      ansible.builtin.shell: |
+        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+        export PATH="/usr/local/bin:$PATH"
+        asdf install nodejs {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'nodejs') | first).version }}
+        asdf set --home nodejs {{ (recon_toolkit_asdf_plugins | selectattr('name', 'equalto', 'nodejs') | first).version }}
+        asdf reshim nodejs
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        USER: "{{ recon_toolkit_username }}"
+        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+      changed_when: false
+
+    - name: Check if retire.js is already installed
+      ansible.builtin.shell: |
+        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        npm list -g retire
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        USER: "{{ recon_toolkit_username }}"
+        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+      register: recon_toolkit_retire_npm_check
+      changed_when: false
+      failed_when: false
+
+    - name: Install retire.js globally via npm
+      ansible.builtin.shell: |
+        export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
+        export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
+        npm install -g retire
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        USER: "{{ recon_toolkit_username }}"
+        ASDF_DATA_DIR: "{{ recon_toolkit_user_home }}/.asdf"
+      when: recon_toolkit_retire_npm_check.rc != 0
+      changed_when: recon_toolkit_retire_npm_check.rc != 0
+
+# --- paramspider (parameter discovery from web archives) ---
+- name: Install paramspider via pipx
+  when: recon_toolkit_install_paramspider | bool
+  block:
+    - name: Check if pipx is available for paramspider
+      ansible.builtin.command: pipx --version
+      register: recon_toolkit_paramspider_pipx_check
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+    - name: Install pipx for paramspider
+      ansible.builtin.apt:
+        name: pipx
+        state: present
+      become: true
+      when: recon_toolkit_paramspider_pipx_check.rc != 0
+
+    - name: Check if paramspider is already installed via pipx
+      ansible.builtin.command: pipx list
+      register: recon_toolkit_paramspider_pipx_list
+      changed_when: false
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+
+    - name: Install paramspider via pipx
+      ansible.builtin.command: pipx install paramspider
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+        HOME: "{{ recon_toolkit_user_home }}"
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      when: "'paramspider' not in (recon_toolkit_paramspider_pipx_list.stdout | default(''))"
+      changed_when: "'paramspider' not in (recon_toolkit_paramspider_pipx_list.stdout | default(''))"
