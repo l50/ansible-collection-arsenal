@@ -133,7 +133,9 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Set rustscan archive name based on architecture** (ansible.builtin.set_fact) - Conditional
 - **Download rustscan binary archive** (ansible.builtin.get_url) - Conditional
 - **Create rustscan temp extraction directory** (ansible.builtin.file) - Conditional
-- **Extract rustscan archive** (ansible.builtin.unarchive) - Conditional
+- **Extract rustscan archive (zip layer)** (ansible.builtin.unarchive) - Conditional
+- **Find nested tar.gz in extracted files (x86_64 has zip-wrapped tar.gz)** (ansible.builtin.find) - Conditional
+- **Extract nested tar.gz if present** (ansible.builtin.unarchive) - Conditional
 - **Find rustscan binary in extracted files** (ansible.builtin.find) - Conditional
 - **Install rustscan binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
 - **Clean up rustscan temp files** (ansible.builtin.file)

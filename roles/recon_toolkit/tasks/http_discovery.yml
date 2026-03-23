@@ -78,13 +78,32 @@
       become: true
       when: recon_toolkit_rustscan_installed.rc != 0
 
-    - name: Extract rustscan archive
+    - name: Extract rustscan archive (zip layer)
       ansible.builtin.unarchive:
         src: "/tmp/{{ recon_toolkit_rustscan_archive }}"
         dest: /tmp/rustscan_extract
         remote_src: true
       become: true
       when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Find nested tar.gz in extracted files (x86_64 has zip-wrapped tar.gz)
+      ansible.builtin.find:
+        paths: /tmp/rustscan_extract
+        patterns: "*.tar.gz"
+        recurse: true
+        file_type: file
+      register: recon_toolkit_rustscan_nested_tar
+      when: recon_toolkit_rustscan_installed.rc != 0
+
+    - name: Extract nested tar.gz if present
+      ansible.builtin.unarchive:
+        src: "{{ recon_toolkit_rustscan_nested_tar.files[0].path }}"
+        dest: /tmp/rustscan_extract
+        remote_src: true
+      become: true
+      when:
+        - recon_toolkit_rustscan_installed.rc != 0
+        - recon_toolkit_rustscan_nested_tar.files | length > 0
 
     - name: Find rustscan binary in extracted files
       ansible.builtin.find:
