@@ -36,12 +36,26 @@
 
 - name: Set up Go version in ttpforge directory
   ansible.builtin.copy:
-    dest: "{{ ttpforge_install_path }}/.tool-versions"
-    content: "golang {{ ttpforge_asdf_plugins[0].version }}"
+    dest: "{{ ttpforge_install_path }}/.mise.toml"
+    content: |
+      [tools]
+      go = "{{ (ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | first).version }}"
     owner: "{{ ttpforge_username }}"
     group: "{{ ttpforge_usergroup }}"
     mode: '0644'
-  when: ttpforge_asdf_plugins | selectattr('name', 'equalto', 'golang') | list | length > 0
+  when: ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | list | length > 0
+
+- name: Trust mise config in ttpforge directory
+  ansible.builtin.command:
+    cmd: mise trust "{{ ttpforge_install_path }}/.mise.toml"
+  become: true
+  become_user: "{{ ttpforge_username }}"
+  environment:
+    HOME: "{{ ttpforge_user_home }}"
+    MISE_DATA_DIR: "{{ ttpforge_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ ttpforge_user_home }}/.config/mise"
+  when: ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | list | length > 0
+  changed_when: false
 
 - name: Add TTPForge paths to user's bashrc
   ansible.builtin.blockinfile:
@@ -64,20 +78,11 @@
 
 - name: Ensure golang is installed for user
   ansible.builtin.shell: |
-    export ASDF_DATA_DIR="{{ ttpforge_user_home }}/.asdf"
-    export PATH="/usr/local/bin:$PATH"
-
-    # Uninstall golang first if it exists
-    asdf uninstall golang {{ ttpforge_asdf_plugins[0].version }} || true
-
-    # Install golang version
-    asdf install golang {{ ttpforge_asdf_plugins[0].version }}
-
-    # Set the golang version
-    asdf set --home golang {{ ttpforge_asdf_plugins[0].version }}
-
-    # Reshim to ensure shims are created
-    asdf reshim golang
+    export MISE_DATA_DIR="{{ ttpforge_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    mise install go@{{ (ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | first).version }}
+    mise use --global go@{{ (ttpforge_mise_plugins | selectattr('name', 'equalto', 'go') | first).version }}
+    mise reshim
   args:
     executable: /bin/bash
   become: true
@@ -85,27 +90,25 @@
   environment:
     HOME: "{{ ttpforge_user_home }}"
     USER: "{{ ttpforge_username }}"
-    ASDF_DATA_DIR: "{{ ttpforge_user_home }}/.asdf"
+    MISE_DATA_DIR: "{{ ttpforge_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ ttpforge_user_home }}/.config/mise"
   when: not ttpforge_binary_stat.stat.exists
   changed_when: false
 
 - name: Compile ttpforge
   ansible.builtin.shell: |
     set -o pipefail
-    export ASDF_DATA_DIR="{{ ttpforge_user_home }}/.asdf"
-    export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
-    asdf --version
-    asdf reshim golang
-    asdf current golang
-    GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang/{{ ttpforge_asdf_plugins[0].version }}" -name go -type f -executable | head -1)
+    export MISE_DATA_DIR="{{ ttpforge_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    mise --version
+    mise reshim
+    GO_BIN_PATH=$(mise which go 2>/dev/null || true)
     if [ -z "$GO_BIN_PATH" ]; then
-      echo "Could not find go binary in standard location, checking alternative paths..."
-      GO_BIN_PATH=$(find "${ASDF_DATA_DIR}/installs/golang" -name go -type f -executable | head -1)
+      GO_BIN_PATH=$(find "${MISE_DATA_DIR}/installs/go" -name go -type f -executable | head -1)
     fi
     if [ -z "$GO_BIN_PATH" ]; then
-      echo "Still could not find go binary, checking shims directory..."
-      if [ -x "${ASDF_DATA_DIR}/shims/go" ]; then
-        GO_BIN_PATH="${ASDF_DATA_DIR}/shims/go"
+      if [ -x "${MISE_DATA_DIR}/shims/go" ]; then
+        GO_BIN_PATH="${MISE_DATA_DIR}/shims/go"
       fi
     fi
     if [ -z "$GO_BIN_PATH" ]; then
@@ -127,8 +130,9 @@
   environment:
     HOME: "{{ ttpforge_user_home }}"
     USER: "{{ ttpforge_username }}"
-    ASDF_DATA_DIR: "{{ ttpforge_user_home }}/.asdf"
-    PATH: "/usr/local/bin:{{ ttpforge_user_home }}/.asdf/shims:/usr/bin:/bin"
+    MISE_DATA_DIR: "{{ ttpforge_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ ttpforge_user_home }}/.config/mise"
+    PATH: "/usr/local/bin:{{ ttpforge_user_home }}/.local/share/mise/shims:/usr/bin:/bin"
     GO111MODULE: "on"
     GOPATH: "{{ ttpforge_user_home }}/go"
   when: not ttpforge_binary_stat.stat.exists

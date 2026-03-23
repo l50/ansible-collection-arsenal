@@ -45,32 +45,33 @@
   become: true
   when: not sliver_bashrc_stat.stat.exists
 
-- name: Check if ASDF is installed for sliver user
+- name: Check if mise is installed for sliver user
   ansible.builtin.stat:
-    path: "{{ sliver_user_home }}/.asdf"
-  register: sliver_asdf_installed
+    path: "{{ sliver_user_home }}/.local/share/mise"
+  register: sliver_mise_installed
 
-- name: Check if asdf binary is installed
+- name: Check if mise binary is installed
   ansible.builtin.stat:
-    path: "/usr/local/bin/asdf"
-  register: sliver_asdf_binary_installed
+    path: "/usr/local/bin/mise"
+  register: sliver_mise_binary_installed
 
 - name: Print sliver user info
   ansible.builtin.debug:
     msg: "Sliver user info: {{ sliver_username }}, {{ sliver_usergroup }}, {{ sliver_shell }}, {{ sliver_user_home }}"
 
-- name: Install asdf and golang for sliver user
+- name: Install mise and golang for sliver user
   ansible.builtin.include_role:
-    name: cowdogmoo.workstation.asdf
+    name: cowdogmoo.workstation.mise
   vars:
-    asdf_username: "{{ sliver_username }}"
-    asdf_usergroup: "{{ sliver_usergroup }}"
-    asdf_shell: "{{ sliver_shell }}"
-    asdf_plugins: "{{ sliver_asdf_plugins }}"
-    asdf_user_home: "{{ sliver_user_home }}"
-    asdf_data_dir: "{{ sliver_user_home }}/.asdf"
-    asdf_bin_dir: "/usr/local/bin"
-  when: not sliver_asdf_installed.stat.exists or not sliver_asdf_binary_installed.stat.exists
+    mise_username: "{{ sliver_username }}"
+    mise_usergroup: "{{ sliver_usergroup }}"
+    mise_shell: "{{ sliver_shell }}"
+    mise_plugins: "{{ sliver_mise_plugins }}"
+    mise_user_home: "{{ sliver_user_home }}"
+    mise_data_dir: "{{ sliver_user_home }}/.local/share/mise"
+    mise_config_dir: "{{ sliver_user_home }}/.config/mise"
+    mise_bin_dir: "/usr/local/bin"
+  when: not sliver_mise_installed.stat.exists or not sliver_mise_binary_installed.stat.exists
 
 - name: Include Sliver setup tasks
   ansible.builtin.include_tasks: setup.yml

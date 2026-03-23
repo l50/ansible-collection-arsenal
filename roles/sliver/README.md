@@ -13,7 +13,7 @@ Install sliver c2
 
 
 - cowdogmoo.workstation.package_management
-- cowdogmoo.workstation.asdf
+- cowdogmoo.workstation.mise
 
 ## Role Variables
 
@@ -28,8 +28,8 @@ Install sliver c2
 | `sliver_username` | str | <code>sliver</code> | No description |
 | `sliver_usergroup` | str | <code>sliver</code> | No description |
 | `sliver_shell` | str | <code>{% if ansible_facts&#91;'os_family'&#93; == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}</code> | No description |
-| `sliver_asdf_plugins` | list | <code>&#91;&#93;</code> | No description |
-| `sliver_asdf_plugins.0` | dict | <code>{}</code> | No description |
+| `sliver_mise_plugins` | list | <code>&#91;&#93;</code> | No description |
+| `sliver_mise_plugins.0` | dict | <code>{}</code> | No description |
 
 ### Role Variables (main.yml)
 
@@ -111,15 +111,15 @@ Install sliver c2
 | `sliver_cleanup_paths` | list | `[]` | No description |
 | `sliver_cleanup_paths.0` | str | `{{ sliver_user_home }}/go` | No description |
 | `sliver_cleanup_paths.1` | str | `{{ sliver_user_home }}/.cache` | No description |
-| `sliver_cleanup_paths.2` | str | `{{ sliver_user_home }}/.asdf` | No description |
+| `sliver_cleanup_paths.2` | str | `{{ sliver_user_home }}/.local/share/mise` | No description |
 | `sliver_cleanup_paths.3` | str | `{{ sliver_user_home }}/.local` | No description |
 | `sliver_cleanup_paths.4` | str | `{{ sliver_user_home }}/.config` | No description |
-| `sliver_cleanup_paths.5` | str | `{{ sliver_user_home }}/.tool-versions` | No description |
+| `sliver_cleanup_paths.5` | str | `{{ sliver_user_home }}/.config/mise` | No description |
 | `sliver_cleanup_paths.6` | str | `/root/go` | No description |
 | `sliver_cleanup_paths.7` | str | `/root/.cache` | No description |
-| `sliver_cleanup_paths.8` | str | `/root/.asdf` | No description |
+| `sliver_cleanup_paths.8` | str | `/root/.local/share/mise` | No description |
 | `sliver_cleanup_paths.9` | str | `/root/.local` | No description |
-| `sliver_cleanup_paths.10` | str | `/root/.tool-versions` | No description |
+| `sliver_cleanup_paths.10` | str | `/root/.config/mise` | No description |
 | `sliver_cleanup_paths.11` | str | `/root/.ssh` | No description |
 | `sliver_cleanup_paths.12` | str | `/tmp/*` | No description |
 | `sliver_cleanup_paths.13` | str | `/var/tmp/*` | No description |
@@ -164,10 +164,10 @@ Install sliver c2
 - **Ensure home directory exists for sliver user** (ansible.builtin.file)
 - **Check if .bashrc exists for sliver user** (ansible.builtin.stat)
 - **Ensure .bashrc exists for sliver user** (ansible.builtin.file) - Conditional
-- **Check if ASDF is installed for sliver user** (ansible.builtin.stat)
-- **Check if asdf binary is installed** (ansible.builtin.stat)
+- **Check if mise is installed for sliver user** (ansible.builtin.stat)
+- **Check if mise binary is installed** (ansible.builtin.stat)
 - **Print sliver user info** (ansible.builtin.debug)
-- **Install asdf and golang for sliver user** (ansible.builtin.include_role) - Conditional
+- **Install mise and golang for sliver user** (ansible.builtin.include_role) - Conditional
 - **Include Sliver setup tasks** (ansible.builtin.include_tasks)
 - **Include systemd tasks** (ansible.builtin.include_tasks) - Conditional
 
@@ -180,6 +180,7 @@ Install sliver c2
 - **Check current ownership of {{ sliver_install_path }}** (ansible.builtin.stat)
 - **Ensure correct ownership of the Sliver repository** (ansible.builtin.file) - Conditional
 - **Set up Go version in Sliver directory** (ansible.builtin.copy) - Conditional
+- **Trust mise config in Sliver directory** (ansible.builtin.command) - Conditional
 - **Add Sliver paths to user's bashrc** (ansible.builtin.blockinfile)
 - **Check if Sliver server exists** (ansible.builtin.stat)
 - **Ensure golang is installed for user** (ansible.builtin.shell) - Conditional
