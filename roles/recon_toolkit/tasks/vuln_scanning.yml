@@ -49,7 +49,7 @@
     export ASDF_DATA_DIR="{{ recon_toolkit_user_home }}/.asdf"
     export PATH="/usr/local/bin:${ASDF_DATA_DIR}/shims:$PATH"
     export GOPATH="{{ recon_toolkit_user_home }}/go"
-    go install -v github.com/gitleaks/gitleaks/v8@latest
+    go install -v github.com/zricethezav/gitleaks/v8@latest
   args:
     creates: "{{ recon_toolkit_user_home }}/go/bin/gitleaks"
     executable: /bin/bash
