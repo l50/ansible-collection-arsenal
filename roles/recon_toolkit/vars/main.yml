@@ -6,6 +6,7 @@ recon_toolkit_packages:
     - dnsutils
     - git
     - jq
+    - openssl
     - unzip
     - wget
 
@@ -20,6 +21,7 @@ recon_toolkit_packages:
 
   # Packages that stay installed (runtime dependencies)
   runtime_debian:
+    - dirb
     - masscan
     - nmap
     - whatweb

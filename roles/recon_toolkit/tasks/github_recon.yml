@@ -1,0 +1,24 @@
+---
+# ============================================================================
+# GitHub Recon Tools
+# ============================================================================
+
+# --- github-subdomains (find subdomains via GitHub source code search) ---
+- name: Install github-subdomains
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/gwen001/github-subdomains@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/github-subdomains"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_github_subdomains | bool

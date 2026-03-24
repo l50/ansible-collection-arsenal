@@ -32,6 +32,7 @@ recon_toolkit_core_packages:
   - jq
   - dnsutils       # dig, host, nslookup
   - git
+  - openssl
   - wget
   - unzip
   - build-essential
@@ -67,6 +68,12 @@ recon_toolkit_install_rustscan: true
 recon_toolkit_install_masscan: true
 recon_toolkit_install_whatweb: true
 recon_toolkit_install_smap: true
+recon_toolkit_install_ffuf: true
+recon_toolkit_install_gobuster: true
+recon_toolkit_install_feroxbuster: true
+recon_toolkit_install_dirb: true
+recon_toolkit_install_uncover: true
+recon_toolkit_install_shodan: true
 
 # rustscan release
 # renovate: datasource=github-releases depName=bee-san/RustScan
@@ -74,6 +81,10 @@ recon_toolkit_rustscan_version: "2.4.1"
 recon_toolkit_rustscan_archives:
   x86_64: "x86_64-linux-rustscan.tar.gz.zip"
   aarch64: "aarch64-linux-rustscan.zip"
+
+# feroxbuster release
+# renovate: datasource=github-releases depName=epi052/feroxbuster
+recon_toolkit_feroxbuster_version: "2.11.0"
 
 # ============================================================================
 # Web Crawling & JS Analysis
@@ -85,6 +96,7 @@ recon_toolkit_install_gau: true
 recon_toolkit_install_waybackurls: true
 recon_toolkit_install_linkfinder: true
 recon_toolkit_install_secretfinder: true
+recon_toolkit_install_jsbeautify: true
 
 # LinkFinder / SecretFinder install paths
 recon_toolkit_linkfinder_repo: "https://github.com/GerbenJavado/LinkFinder.git"
@@ -94,13 +106,21 @@ recon_toolkit_secretfinder_repo: "https://github.com/m4ll0k/SecretFinder.git"
 recon_toolkit_secretfinder_install_dir: "/opt/SecretFinder"
 
 # ============================================================================
-# Vulnerability & Secret Scanning
+# Secret Scanning
 # ============================================================================
-recon_toolkit_install_nuclei: true
 recon_toolkit_install_trufflehog: true
 recon_toolkit_install_gitleaks: true
-recon_toolkit_install_uncover: true
-recon_toolkit_install_shodan: true
+recon_toolkit_install_noseyparker: true
+recon_toolkit_install_git_hound: true
+
+# noseyparker release
+# renovate: datasource=github-releases depName=praetorian-inc/noseyparker
+recon_toolkit_noseyparker_version: "0.23.0"
+
+# ============================================================================
+# GitHub Recon
+# ============================================================================
+recon_toolkit_install_github_subdomains: true
 
 # ============================================================================
 # Parameter & Pattern Analysis

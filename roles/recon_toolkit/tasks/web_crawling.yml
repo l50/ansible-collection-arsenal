@@ -103,6 +103,28 @@
     MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_waybackurls | bool
 
+# --- js-beautify (JavaScript beautifier/deobfuscator) ---
+- name: Install js-beautify
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    npm install -g js-beautify
+  args:
+    creates: >-
+      {{ recon_toolkit_user_home }}/.local/share/mise/installs/node/{{
+      (recon_toolkit_mise_plugins | selectattr('name', 'equalto', 'node') | first).version
+      }}/bin/js-beautify
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_jsbeautify | bool
+
 # --- LinkFinder (JS endpoint extraction) ---
 - name: Install LinkFinder
   when: recon_toolkit_install_linkfinder | bool

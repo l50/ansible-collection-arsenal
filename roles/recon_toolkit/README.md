@@ -35,9 +35,10 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_core_packages.1` | str | <code>jq</code> | No description |
 | `recon_toolkit_core_packages.2` | str | <code>dnsutils</code> | No description |
 | `recon_toolkit_core_packages.3` | str | <code>git</code> | No description |
-| `recon_toolkit_core_packages.4` | str | <code>wget</code> | No description |
-| `recon_toolkit_core_packages.5` | str | <code>unzip</code> | No description |
-| `recon_toolkit_core_packages.6` | str | <code>build-essential</code> | No description |
+| `recon_toolkit_core_packages.4` | str | <code>openssl</code> | No description |
+| `recon_toolkit_core_packages.5` | str | <code>wget</code> | No description |
+| `recon_toolkit_core_packages.6` | str | <code>unzip</code> | No description |
+| `recon_toolkit_core_packages.7` | str | <code>build-essential</code> | No description |
 | `recon_toolkit_install_subfinder` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_amass` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_assetfinder` | bool | <code>True</code> | No description |
@@ -56,10 +57,17 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_install_masscan` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_whatweb` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_smap` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_ffuf` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_gobuster` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_feroxbuster` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_dirb` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_uncover` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_shodan` | bool | <code>True</code> | No description |
 | `recon_toolkit_rustscan_version` | str | <code>2.4.1</code> | No description |
 | `recon_toolkit_rustscan_archives` | dict | <code>{}</code> | No description |
 | `recon_toolkit_rustscan_archives.x86_64` | str | <code>x86_64-linux-rustscan.tar.gz.zip</code> | No description |
 | `recon_toolkit_rustscan_archives.aarch64` | str | <code>aarch64-linux-rustscan.zip</code> | No description |
+| `recon_toolkit_feroxbuster_version` | str | <code>2.11.0</code> | No description |
 | `recon_toolkit_install_katana` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_gospider` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_hakrawler` | bool | <code>True</code> | No description |
@@ -67,15 +75,17 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_install_waybackurls` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_linkfinder` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_secretfinder` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_jsbeautify` | bool | <code>True</code> | No description |
 | `recon_toolkit_linkfinder_repo` | str | <code>https://github.com/GerbenJavado/LinkFinder.git</code> | No description |
 | `recon_toolkit_linkfinder_install_dir` | str | <code>/opt/LinkFinder</code> | No description |
 | `recon_toolkit_secretfinder_repo` | str | <code>https://github.com/m4ll0k/SecretFinder.git</code> | No description |
 | `recon_toolkit_secretfinder_install_dir` | str | <code>/opt/SecretFinder</code> | No description |
-| `recon_toolkit_install_nuclei` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_trufflehog` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_gitleaks` | bool | <code>True</code> | No description |
-| `recon_toolkit_install_uncover` | bool | <code>True</code> | No description |
-| `recon_toolkit_install_shodan` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_noseyparker` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_git_hound` | bool | <code>True</code> | No description |
+| `recon_toolkit_noseyparker_version` | str | <code>0.23.0</code> | No description |
+| `recon_toolkit_install_github_subdomains` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_gf` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_arjun` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_retire` | bool | <code>True</code> | No description |
@@ -93,8 +103,9 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_packages.essential.1` | str | `dnsutils` | No description |
 | `recon_toolkit_packages.essential.2` | str | `git` | No description |
 | `recon_toolkit_packages.essential.3` | str | `jq` | No description |
-| `recon_toolkit_packages.essential.4` | str | `unzip` | No description |
-| `recon_toolkit_packages.essential.5` | str | `wget` | No description |
+| `recon_toolkit_packages.essential.4` | str | `openssl` | No description |
+| `recon_toolkit_packages.essential.5` | str | `unzip` | No description |
+| `recon_toolkit_packages.essential.6` | str | `wget` | No description |
 | `recon_toolkit_packages.build_only` | list | `[]` | No description |
 | `recon_toolkit_packages.build_only.0` | str | `build-essential` | No description |
 | `recon_toolkit_packages.build_only.1` | str | `g++` | No description |
@@ -103,9 +114,10 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_packages.build_only.4` | str | `libffi-dev` | No description |
 | `recon_toolkit_packages.build_only.5` | str | `libssl-dev` | No description |
 | `recon_toolkit_packages.runtime_debian` | list | `[]` | No description |
-| `recon_toolkit_packages.runtime_debian.0` | str | `masscan` | No description |
-| `recon_toolkit_packages.runtime_debian.1` | str | `nmap` | No description |
-| `recon_toolkit_packages.runtime_debian.2` | str | `whatweb` | No description |
+| `recon_toolkit_packages.runtime_debian.0` | str | `dirb` | No description |
+| `recon_toolkit_packages.runtime_debian.1` | str | `masscan` | No description |
+| `recon_toolkit_packages.runtime_debian.2` | str | `nmap` | No description |
+| `recon_toolkit_packages.runtime_debian.3` | str | `whatweb` | No description |
 | `recon_toolkit_common_install_packages` | str | `{{ recon_toolkit_packages.essential + recon_toolkit_packages.build_only }}` | No description |
 | `recon_toolkit_debian_packages` | str | `{{ recon_toolkit_packages.runtime_debian }}` | No description |
 | `recon_toolkit_cleanup_packages_debian` | str | `{{ recon_toolkit_packages.build_only }}` | No description |
@@ -123,6 +135,11 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 
 ## Tasks
 
+### github_recon.yml
+
+
+- **Install github-subdomains** (ansible.builtin.shell) - Conditional
+
 ### http_discovery.yml
 
 
@@ -139,7 +156,24 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Find rustscan binary in extracted files** (ansible.builtin.find) - Conditional
 - **Install rustscan binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
 - **Clean up rustscan temp files** (ansible.builtin.file)
+- **Install ffuf** (ansible.builtin.shell) - Conditional
+- **Install gobuster** (ansible.builtin.shell) - Conditional
+- **Install feroxbuster** (block) - Conditional
+- **Check if feroxbuster is already installed** (ansible.builtin.command)
+- **Set feroxbuster architecture string** (ansible.builtin.set_fact) - Conditional
+- **Set feroxbuster download URL** (ansible.builtin.set_fact) - Conditional
+- **Download feroxbuster binary** (ansible.builtin.get_url) - Conditional
+- **Create feroxbuster temp extraction directory** (ansible.builtin.file) - Conditional
+- **Extract feroxbuster archive** (ansible.builtin.unarchive) - Conditional
+- **Install feroxbuster binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
+- **Clean up feroxbuster temp files** (ansible.builtin.file)
 - **Install smap** (ansible.builtin.shell) - Conditional
+- **Install uncover** (ansible.builtin.shell) - Conditional
+- **Install shodan CLI** (block) - Conditional
+- **Check if pipx is available for shodan** (ansible.builtin.command)
+- **Install pipx for shodan** (ansible.builtin.apt) - Conditional
+- **Check if shodan is already installed via pipx** (ansible.builtin.command)
+- **Install shodan via pipx** (ansible.builtin.command) - Conditional
 
 ### main.yml
 
@@ -158,7 +192,8 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Include subdomain enumeration tool tasks** (ansible.builtin.include_tasks)
 - **Include HTTP and service discovery tool tasks** (ansible.builtin.include_tasks)
 - **Include web crawling and JS analysis tool tasks** (ansible.builtin.include_tasks)
-- **Include vulnerability and secret scanning tool tasks** (ansible.builtin.include_tasks)
+- **Include secret scanning tool tasks** (ansible.builtin.include_tasks)
+- **Include GitHub recon tool tasks** (ansible.builtin.include_tasks)
 - **Include parameter and pattern analysis tool tasks** (ansible.builtin.include_tasks)
 
 ### param_analysis.yml
@@ -193,6 +228,25 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Set user home directory** (ansible.builtin.set_fact) - Conditional
 - **Set user home directory for macOS** (ansible.builtin.set_fact) - Conditional
 
+### secret_scanning.yml
+
+
+- **Install trufflehog** (block) - Conditional
+- **Check if trufflehog is already installed** (ansible.builtin.command)
+- **Install trufflehog via install script** (ansible.builtin.shell) - Conditional
+- **Install gitleaks** (ansible.builtin.shell) - Conditional
+- **Install noseyparker** (block) - Conditional
+- **Check if noseyparker is already installed** (ansible.builtin.command)
+- **Set noseyparker architecture string** (ansible.builtin.set_fact) - Conditional
+- **Set noseyparker download URL** (ansible.builtin.set_fact) - Conditional
+- **Download noseyparker binary archive** (ansible.builtin.get_url) - Conditional
+- **Create noseyparker temp extraction directory** (ansible.builtin.file) - Conditional
+- **Extract noseyparker archive** (ansible.builtin.unarchive) - Conditional
+- **Find noseyparker binary in extracted files** (ansible.builtin.find) - Conditional
+- **Install noseyparker binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
+- **Clean up noseyparker temp files** (ansible.builtin.file)
+- **Install git-hound** (ansible.builtin.shell) - Conditional
+
 ### subdomain_enum.yml
 
 
@@ -211,21 +265,6 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Install puredns** (ansible.builtin.shell) - Conditional
 - **Install shuffledns** (ansible.builtin.shell) - Conditional
 
-### vuln_scanning.yml
-
-
-- **Install nuclei** (ansible.builtin.shell) - Conditional
-- **Install trufflehog** (block) - Conditional
-- **Check if trufflehog is already installed** (ansible.builtin.command)
-- **Install trufflehog via install script** (ansible.builtin.shell) - Conditional
-- **Install gitleaks** (ansible.builtin.shell) - Conditional
-- **Install uncover** (ansible.builtin.shell) - Conditional
-- **Install shodan CLI** (block) - Conditional
-- **Check if pipx is available for shodan** (ansible.builtin.command)
-- **Install pipx for shodan** (ansible.builtin.apt) - Conditional
-- **Check if shodan is already installed via pipx** (ansible.builtin.command)
-- **Install shodan via pipx** (ansible.builtin.command) - Conditional
-
 ### web_crawling.yml
 
 
@@ -234,6 +273,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Install hakrawler** (ansible.builtin.shell) - Conditional
 - **Install gau** (ansible.builtin.shell) - Conditional
 - **Install waybackurls** (ansible.builtin.shell) - Conditional
+- **Install js-beautify** (ansible.builtin.shell) - Conditional
 - **Install LinkFinder** (block) - Conditional
 - **Clone LinkFinder repository** (ansible.builtin.git)
 - **Install LinkFinder Python dependencies** (ansible.builtin.pip)
