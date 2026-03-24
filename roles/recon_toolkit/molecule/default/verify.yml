@@ -36,6 +36,12 @@
       changed_when: false
       failed_when: false
 
+    - name: Verify openssl is installed
+      ansible.builtin.command: openssl version
+      register: recon_toolkit_openssl_check
+      changed_when: false
+      failed_when: false
+
     - name: Assert core tools are working
       ansible.builtin.assert:
         that:
@@ -52,6 +58,13 @@
           - recon_toolkit_dig_check.rc == 0
         fail_msg: "dig is not properly installed"
         success_msg: "dig is installed"
+
+    - name: Assert openssl is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_openssl_check.rc == 0
+        fail_msg: "openssl is not properly installed"
+        success_msg: "openssl is installed"
 
     # ========================================================================
     # Subdomain Enumeration
@@ -250,6 +263,64 @@
         fail_msg: "smap is not properly installed"
         success_msg: "smap is installed at {{ recon_toolkit_smap_check.stdout }}"
 
+    - name: Verify ffuf is installed
+      ansible.builtin.command: which ffuf
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_ffuf_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert ffuf is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_ffuf_check.rc == 0
+        fail_msg: "ffuf is not properly installed"
+        success_msg: "ffuf is installed at {{ recon_toolkit_ffuf_check.stdout }}"
+
+    - name: Verify gobuster is installed
+      ansible.builtin.command: which gobuster
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_gobuster_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert gobuster is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_gobuster_check.rc == 0
+        fail_msg: "gobuster is not properly installed"
+        success_msg: "gobuster is installed at {{ recon_toolkit_gobuster_check.stdout }}"
+
+    - name: Verify feroxbuster is installed
+      ansible.builtin.command: which feroxbuster
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_feroxbuster_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert feroxbuster is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_feroxbuster_check.rc == 0
+        fail_msg: "feroxbuster is not properly installed"
+        success_msg: "feroxbuster is installed at {{ recon_toolkit_feroxbuster_check.stdout }}"
+
+    - name: Verify dirb is installed
+      ansible.builtin.command: which dirb
+      register: recon_toolkit_dirb_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert dirb is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_dirb_check.rc == 0
+        fail_msg: "dirb is not properly installed"
+        success_msg: "dirb is installed at {{ recon_toolkit_dirb_check.stdout }}"
+
     # ========================================================================
     # Web Crawling & JS Analysis
     # ========================================================================
@@ -328,6 +399,30 @@
           - recon_toolkit_waybackurls_check.rc == 0
         fail_msg: "waybackurls is not properly installed"
         success_msg: "waybackurls is installed at {{ recon_toolkit_waybackurls_check.stdout }}"
+
+    - name: Verify js-beautify is installed
+      ansible.builtin.shell: |
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+        which js-beautify
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+      register: recon_toolkit_jsbeautify_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert js-beautify is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_jsbeautify_check.rc == 0
+        fail_msg: "js-beautify is not properly installed"
+        success_msg: "js-beautify is installed at {{ recon_toolkit_jsbeautify_check.stdout }}"
 
     - name: Verify linkfinder is installed
       ansible.builtin.command: which linkfinder
@@ -408,6 +503,36 @@
         fail_msg: "trufflehog is not properly installed"
         success_msg: "trufflehog is installed at {{ recon_toolkit_trufflehog_check.stdout }}"
 
+    - name: Verify noseyparker is installed
+      ansible.builtin.command: which noseyparker
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_noseyparker_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert noseyparker is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_noseyparker_check.rc == 0
+        fail_msg: "noseyparker is not properly installed"
+        success_msg: "noseyparker is installed at {{ recon_toolkit_noseyparker_check.stdout }}"
+
+    - name: Verify git-hound is installed
+      ansible.builtin.command: which git-hound
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_git_hound_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert git-hound is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_git_hound_check.rc == 0
+        fail_msg: "git-hound is not properly installed"
+        success_msg: "git-hound is installed at {{ recon_toolkit_git_hound_check.stdout }}"
+
     - name: Verify uncover is installed
       ansible.builtin.command: which uncover
       environment:
@@ -437,6 +562,25 @@
           - recon_toolkit_shodan_check.rc == 0
         fail_msg: "shodan CLI is not properly installed"
         success_msg: "shodan CLI is installed"
+
+    # ========================================================================
+    # GitHub Recon
+    # ========================================================================
+
+    - name: Verify github-subdomains is installed
+      ansible.builtin.command: which github-subdomains
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_github_subdomains_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert github-subdomains is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_github_subdomains_check.rc == 0
+        fail_msg: "github-subdomains is not properly installed"
+        success_msg: "github-subdomains is installed at {{ recon_toolkit_github_subdomains_check.stdout }}"
 
     # ========================================================================
     # Parameter & Pattern Analysis
@@ -534,7 +678,7 @@
           - "======== Recon Toolkit Verification ========"
           - ""
           - "--- Core ---"
-          - "curl: OK | jq: OK | dig: OK | python3: OK | git: OK"
+          - "curl: OK | jq: OK | dig: OK | python3: OK | git: OK | openssl: {{ 'OK' if recon_toolkit_openssl_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- Subdomain Enumeration ---"
           - "subfinder: {{ 'OK' if recon_toolkit_subfinder_check.rc == 0 else 'FAIL' }}"
@@ -556,6 +700,12 @@
           - "whatweb: {{ 'OK' if recon_toolkit_whatweb_check.rc == 0 else 'FAIL' }}"
           - "smap: {{ 'OK' if recon_toolkit_smap_check.rc == 0 else 'FAIL' }}"
           - ""
+          - "--- HTTP/Content Discovery ---"
+          - "ffuf: {{ 'OK' if recon_toolkit_ffuf_check.rc == 0 else 'FAIL' }}"
+          - "gobuster: {{ 'OK' if recon_toolkit_gobuster_check.rc == 0 else 'FAIL' }}"
+          - "feroxbuster: {{ 'OK' if recon_toolkit_feroxbuster_check.rc == 0 else 'FAIL' }}"
+          - "dirb: {{ 'OK' if recon_toolkit_dirb_check.rc == 0 else 'FAIL' }}"
+          - ""
           - "--- Web Crawling & JS Analysis ---"
           - "katana: {{ 'OK' if recon_toolkit_katana_check.rc == 0 else 'FAIL' }}"
           - "gospider: {{ 'OK' if recon_toolkit_gospider_check.rc == 0 else 'FAIL' }}"
@@ -564,13 +714,19 @@
           - "waybackurls: {{ 'OK' if recon_toolkit_waybackurls_check.rc == 0 else 'FAIL' }}"
           - "linkfinder: {{ 'OK' if recon_toolkit_linkfinder_check.rc == 0 else 'FAIL' }}"
           - "secretfinder: {{ 'OK' if recon_toolkit_secretfinder_check.rc == 0 else 'FAIL' }}"
+          - "js-beautify: {{ 'OK' if recon_toolkit_jsbeautify_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- Vulnerability & Secret Scanning ---"
           - "nuclei: {{ 'OK' if recon_toolkit_nuclei_check.rc == 0 else 'FAIL' }}"
           - "trufflehog: {{ 'OK' if recon_toolkit_trufflehog_check.rc == 0 else 'FAIL' }}"
           - "gitleaks: {{ 'OK' if recon_toolkit_gitleaks_check.rc == 0 else 'FAIL' }}"
+          - "noseyparker: {{ 'OK' if recon_toolkit_noseyparker_check.rc == 0 else 'FAIL' }}"
+          - "git-hound: {{ 'OK' if recon_toolkit_git_hound_check.rc == 0 else 'FAIL' }}"
           - "uncover: {{ 'OK' if recon_toolkit_uncover_check.rc == 0 else 'FAIL' }}"
           - "shodan: {{ 'OK' if recon_toolkit_shodan_check.rc == 0 else 'FAIL' }}"
+          - ""
+          - "--- GitHub Recon ---"
+          - "github-subdomains: {{ 'OK' if recon_toolkit_github_subdomains_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- Parameter & Pattern Analysis ---"
           - "gf: {{ 'OK' if recon_toolkit_gf_check.rc == 0 else 'FAIL' }}"

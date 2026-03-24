@@ -111,5 +111,8 @@
 - name: Include vulnerability and secret scanning tool tasks
   ansible.builtin.include_tasks: vuln_scanning.yml
 
+- name: Include GitHub recon tool tasks
+  ansible.builtin.include_tasks: github_recon.yml
+
 - name: Include parameter and pattern analysis tool tasks
   ansible.builtin.include_tasks: param_analysis.yml

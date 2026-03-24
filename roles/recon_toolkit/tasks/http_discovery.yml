@@ -140,6 +140,115 @@
 # --- whatweb (web fingerprinting) ---
 # Installed via package_management in main.yml (runtime_debian packages)
 
+# --- ffuf (fast web fuzzer) ---
+- name: Install ffuf
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/ffuf/ffuf/v2@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/ffuf"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_ffuf | bool
+
+# --- gobuster (directory/DNS brute-forcer) ---
+- name: Install gobuster
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/OJ/gobuster/v3@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/gobuster"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_gobuster | bool
+
+# --- feroxbuster (fast content discovery) ---
+- name: Install feroxbuster
+  when:
+    - recon_toolkit_install_feroxbuster | bool
+  block:
+    - name: Check if feroxbuster is already installed
+      ansible.builtin.command: feroxbuster --version
+      register: recon_toolkit_feroxbuster_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Set feroxbuster architecture string
+      ansible.builtin.set_fact:
+        recon_toolkit_feroxbuster_arch: "{{ 'x86_64' if ansible_facts['architecture'] == 'x86_64' else 'aarch64' }}"
+      when: recon_toolkit_feroxbuster_installed.rc != 0
+
+    - name: Set feroxbuster download URL
+      ansible.builtin.set_fact:
+        recon_toolkit_feroxbuster_url: >-
+          https://github.com/epi052/feroxbuster/releases/download/v{{
+          recon_toolkit_feroxbuster_version }}/{{
+          recon_toolkit_feroxbuster_arch }}-linux-feroxbuster.zip
+      when: recon_toolkit_feroxbuster_installed.rc != 0
+
+    - name: Download feroxbuster binary
+      ansible.builtin.get_url:
+        url: "{{ recon_toolkit_feroxbuster_url }}"
+        dest: "/tmp/feroxbuster.zip"
+        mode: '0644'
+      become: true
+      when: recon_toolkit_feroxbuster_installed.rc != 0
+
+    - name: Create feroxbuster temp extraction directory
+      ansible.builtin.file:
+        path: /tmp/feroxbuster_extract
+        state: directory
+        mode: '0755'
+      become: true
+      when: recon_toolkit_feroxbuster_installed.rc != 0
+
+    - name: Extract feroxbuster archive
+      ansible.builtin.unarchive:
+        src: /tmp/feroxbuster.zip
+        dest: /tmp/feroxbuster_extract
+        remote_src: true
+      become: true
+      when: recon_toolkit_feroxbuster_installed.rc != 0
+
+    - name: Install feroxbuster binary to /usr/local/bin
+      ansible.builtin.copy:
+        src: /tmp/feroxbuster_extract/feroxbuster
+        dest: /usr/local/bin/feroxbuster
+        mode: '0755'
+        remote_src: true
+      become: true
+      when: recon_toolkit_feroxbuster_installed.rc != 0
+
+    - name: Clean up feroxbuster temp files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      become: true
+      loop:
+        - /tmp/feroxbuster.zip
+        - /tmp/feroxbuster_extract
+
+# --- dirb (web content scanner) ---
+# Installed via package_management in main.yml (runtime_debian packages)
+
 # --- smap (service discovery & fingerprinting using Shodan) ---
 - name: Install smap
   ansible.builtin.shell: |
