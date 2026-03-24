@@ -61,6 +61,8 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_install_gobuster` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_feroxbuster` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_dirb` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_uncover` | bool | <code>True</code> | No description |
+| `recon_toolkit_install_shodan` | bool | <code>True</code> | No description |
 | `recon_toolkit_rustscan_version` | str | <code>2.4.1</code> | No description |
 | `recon_toolkit_rustscan_archives` | dict | <code>{}</code> | No description |
 | `recon_toolkit_rustscan_archives.x86_64` | str | <code>x86_64-linux-rustscan.tar.gz.zip</code> | No description |
@@ -78,13 +80,10 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_linkfinder_install_dir` | str | <code>/opt/LinkFinder</code> | No description |
 | `recon_toolkit_secretfinder_repo` | str | <code>https://github.com/m4ll0k/SecretFinder.git</code> | No description |
 | `recon_toolkit_secretfinder_install_dir` | str | <code>/opt/SecretFinder</code> | No description |
-| `recon_toolkit_install_nuclei` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_trufflehog` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_gitleaks` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_noseyparker` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_git_hound` | bool | <code>True</code> | No description |
-| `recon_toolkit_install_uncover` | bool | <code>True</code> | No description |
-| `recon_toolkit_install_shodan` | bool | <code>True</code> | No description |
 | `recon_toolkit_noseyparker_version` | str | <code>0.23.0</code> | No description |
 | `recon_toolkit_install_github_subdomains` | bool | <code>True</code> | No description |
 | `recon_toolkit_install_gf` | bool | <code>True</code> | No description |
@@ -169,6 +168,12 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Install feroxbuster binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
 - **Clean up feroxbuster temp files** (ansible.builtin.file)
 - **Install smap** (ansible.builtin.shell) - Conditional
+- **Install uncover** (ansible.builtin.shell) - Conditional
+- **Install shodan CLI** (block) - Conditional
+- **Check if pipx is available for shodan** (ansible.builtin.command)
+- **Install pipx for shodan** (ansible.builtin.apt) - Conditional
+- **Check if shodan is already installed via pipx** (ansible.builtin.command)
+- **Install shodan via pipx** (ansible.builtin.command) - Conditional
 
 ### main.yml
 
@@ -187,7 +192,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Include subdomain enumeration tool tasks** (ansible.builtin.include_tasks)
 - **Include HTTP and service discovery tool tasks** (ansible.builtin.include_tasks)
 - **Include web crawling and JS analysis tool tasks** (ansible.builtin.include_tasks)
-- **Include vulnerability and secret scanning tool tasks** (ansible.builtin.include_tasks)
+- **Include secret scanning tool tasks** (ansible.builtin.include_tasks)
 - **Include GitHub recon tool tasks** (ansible.builtin.include_tasks)
 - **Include parameter and pattern analysis tool tasks** (ansible.builtin.include_tasks)
 
@@ -223,6 +228,25 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Set user home directory** (ansible.builtin.set_fact) - Conditional
 - **Set user home directory for macOS** (ansible.builtin.set_fact) - Conditional
 
+### secret_scanning.yml
+
+
+- **Install trufflehog** (block) - Conditional
+- **Check if trufflehog is already installed** (ansible.builtin.command)
+- **Install trufflehog via install script** (ansible.builtin.shell) - Conditional
+- **Install gitleaks** (ansible.builtin.shell) - Conditional
+- **Install noseyparker** (block) - Conditional
+- **Check if noseyparker is already installed** (ansible.builtin.command)
+- **Set noseyparker architecture string** (ansible.builtin.set_fact) - Conditional
+- **Set noseyparker download URL** (ansible.builtin.set_fact) - Conditional
+- **Download noseyparker binary archive** (ansible.builtin.get_url) - Conditional
+- **Create noseyparker temp extraction directory** (ansible.builtin.file) - Conditional
+- **Extract noseyparker archive** (ansible.builtin.unarchive) - Conditional
+- **Find noseyparker binary in extracted files** (ansible.builtin.find) - Conditional
+- **Install noseyparker binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
+- **Clean up noseyparker temp files** (ansible.builtin.file)
+- **Install git-hound** (ansible.builtin.shell) - Conditional
+
 ### subdomain_enum.yml
 
 
@@ -240,32 +264,6 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Install massdns binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
 - **Install puredns** (ansible.builtin.shell) - Conditional
 - **Install shuffledns** (ansible.builtin.shell) - Conditional
-
-### vuln_scanning.yml
-
-
-- **Install nuclei** (ansible.builtin.shell) - Conditional
-- **Install trufflehog** (block) - Conditional
-- **Check if trufflehog is already installed** (ansible.builtin.command)
-- **Install trufflehog via install script** (ansible.builtin.shell) - Conditional
-- **Install gitleaks** (ansible.builtin.shell) - Conditional
-- **Install noseyparker** (block) - Conditional
-- **Check if noseyparker is already installed** (ansible.builtin.command)
-- **Set noseyparker architecture string** (ansible.builtin.set_fact) - Conditional
-- **Set noseyparker download URL** (ansible.builtin.set_fact) - Conditional
-- **Download noseyparker binary archive** (ansible.builtin.get_url) - Conditional
-- **Create noseyparker temp extraction directory** (ansible.builtin.file) - Conditional
-- **Extract noseyparker archive** (ansible.builtin.unarchive) - Conditional
-- **Find noseyparker binary in extracted files** (ansible.builtin.find) - Conditional
-- **Install noseyparker binary to /usr/local/bin** (ansible.builtin.copy) - Conditional
-- **Clean up noseyparker temp files** (ansible.builtin.file)
-- **Install git-hound** (ansible.builtin.shell) - Conditional
-- **Install uncover** (ansible.builtin.shell) - Conditional
-- **Install shodan CLI** (block) - Conditional
-- **Check if pipx is available for shodan** (ansible.builtin.command)
-- **Install pipx for shodan** (ansible.builtin.apt) - Conditional
-- **Check if shodan is already installed via pipx** (ansible.builtin.command)
-- **Install shodan via pipx** (ansible.builtin.command) - Conditional
 
 ### web_crawling.yml
 

@@ -108,8 +108,8 @@
 - name: Include web crawling and JS analysis tool tasks
   ansible.builtin.include_tasks: web_crawling.yml
 
-- name: Include vulnerability and secret scanning tool tasks
-  ansible.builtin.include_tasks: vuln_scanning.yml
+- name: Include secret scanning tool tasks
+  ansible.builtin.include_tasks: secret_scanning.yml
 
 - name: Include GitHub recon tool tasks
   ansible.builtin.include_tasks: github_recon.yml

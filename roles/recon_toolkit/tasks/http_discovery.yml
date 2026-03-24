@@ -268,3 +268,61 @@
     MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
     MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
   when: recon_toolkit_install_smap | bool
+
+# --- uncover (ProjectDiscovery multi-engine search: Shodan, Censys, Fofa) ---
+- name: Install uncover
+  ansible.builtin.shell: |
+    set -o pipefail
+    export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+    export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+    export GOPATH="{{ recon_toolkit_user_home }}/go"
+    go install -v github.com/projectdiscovery/uncover/cmd/uncover@latest
+  args:
+    creates: "{{ recon_toolkit_user_home }}/go/bin/uncover"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ recon_toolkit_username }}"
+  environment:
+    HOME: "{{ recon_toolkit_user_home }}"
+    USER: "{{ recon_toolkit_username }}"
+    MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+    MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+  when: recon_toolkit_install_uncover | bool
+
+# --- shodan CLI (internet-wide device discovery) ---
+- name: Install shodan CLI
+  when: recon_toolkit_install_shodan | bool
+  block:
+    - name: Check if pipx is available for shodan
+      ansible.builtin.command: pipx --version
+      register: recon_toolkit_shodan_pipx_check
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+    - name: Install pipx for shodan
+      ansible.builtin.apt:
+        name: pipx
+        state: present
+      become: true
+      when: recon_toolkit_shodan_pipx_check.rc != 0
+
+    - name: Check if shodan is already installed via pipx
+      ansible.builtin.command: pipx list
+      register: recon_toolkit_shodan_pipx_list
+      changed_when: false
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+
+    - name: Install shodan via pipx
+      ansible.builtin.command: pipx install shodan
+      environment:
+        PATH: "{{ recon_toolkit_user_home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+        HOME: "{{ recon_toolkit_user_home }}"
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      when: "'shodan' not in (recon_toolkit_shodan_pipx_list.stdout | default(''))"
+      changed_when: "'shodan' not in (recon_toolkit_shodan_pipx_list.stdout | default(''))"

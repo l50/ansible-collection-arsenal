@@ -72,6 +72,8 @@ recon_toolkit_install_ffuf: true
 recon_toolkit_install_gobuster: true
 recon_toolkit_install_feroxbuster: true
 recon_toolkit_install_dirb: true
+recon_toolkit_install_uncover: true
+recon_toolkit_install_shodan: true
 
 # rustscan release
 # renovate: datasource=github-releases depName=bee-san/RustScan
@@ -104,15 +106,12 @@ recon_toolkit_secretfinder_repo: "https://github.com/m4ll0k/SecretFinder.git"
 recon_toolkit_secretfinder_install_dir: "/opt/SecretFinder"
 
 # ============================================================================
-# Vulnerability & Secret Scanning
+# Secret Scanning
 # ============================================================================
-recon_toolkit_install_nuclei: true
 recon_toolkit_install_trufflehog: true
 recon_toolkit_install_gitleaks: true
 recon_toolkit_install_noseyparker: true
 recon_toolkit_install_git_hound: true
-recon_toolkit_install_uncover: true
-recon_toolkit_install_shodan: true
 
 # noseyparker release
 # renovate: datasource=github-releases depName=praetorian-inc/noseyparker
