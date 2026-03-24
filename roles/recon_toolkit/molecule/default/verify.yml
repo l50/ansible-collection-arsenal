@@ -455,23 +455,8 @@
         success_msg: "secretfinder is installed at {{ recon_toolkit_secretfinder_check.stdout }}"
 
     # ========================================================================
-    # Vulnerability & Secret Scanning
+    # Secret Scanning
     # ========================================================================
-
-    - name: Verify nuclei is installed
-      ansible.builtin.command: which nuclei
-      environment:
-        PATH: "{{ recon_toolkit_verify_path }}"
-      register: recon_toolkit_nuclei_check
-      changed_when: false
-      failed_when: false
-
-    - name: Assert nuclei is working
-      ansible.builtin.assert:
-        that:
-          - recon_toolkit_nuclei_check.rc == 0
-        fail_msg: "nuclei is not properly installed"
-        success_msg: "nuclei is installed at {{ recon_toolkit_nuclei_check.stdout }}"
 
     - name: Verify gitleaks is installed
       ansible.builtin.command: which gitleaks
