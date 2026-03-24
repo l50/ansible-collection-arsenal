@@ -321,6 +321,36 @@
         fail_msg: "dirb is not properly installed"
         success_msg: "dirb is installed at {{ recon_toolkit_dirb_check.stdout }}"
 
+    - name: Verify uncover is installed
+      ansible.builtin.command: which uncover
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_uncover_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert uncover is available
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_uncover_check.rc == 0
+        fail_msg: "uncover is not properly installed"
+        success_msg: "uncover is installed at {{ recon_toolkit_uncover_check.stdout }}"
+
+    - name: Verify shodan is installed
+      ansible.builtin.command: which shodan
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      register: recon_toolkit_shodan_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert shodan is working
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_shodan_check.rc == 0
+        fail_msg: "shodan CLI is not properly installed"
+        success_msg: "shodan CLI is installed"
+
     # ========================================================================
     # Web Crawling & JS Analysis
     # ========================================================================
@@ -518,36 +548,6 @@
         fail_msg: "git-hound is not properly installed"
         success_msg: "git-hound is installed at {{ recon_toolkit_git_hound_check.stdout }}"
 
-    - name: Verify uncover is installed
-      ansible.builtin.command: which uncover
-      environment:
-        PATH: "{{ recon_toolkit_verify_path }}"
-      register: recon_toolkit_uncover_check
-      changed_when: false
-      failed_when: false
-
-    - name: Assert uncover is available
-      ansible.builtin.assert:
-        that:
-          - recon_toolkit_uncover_check.rc == 0
-        fail_msg: "uncover is not properly installed"
-        success_msg: "uncover is installed at {{ recon_toolkit_uncover_check.stdout }}"
-
-    - name: Verify shodan is installed
-      ansible.builtin.command: which shodan
-      environment:
-        PATH: "{{ recon_toolkit_verify_path }}"
-      register: recon_toolkit_shodan_check
-      changed_when: false
-      failed_when: false
-
-    - name: Assert shodan is working
-      ansible.builtin.assert:
-        that:
-          - recon_toolkit_shodan_check.rc == 0
-        fail_msg: "shodan CLI is not properly installed"
-        success_msg: "shodan CLI is installed"
-
     # ========================================================================
     # GitHub Recon
     # ========================================================================
@@ -690,6 +690,8 @@
           - "gobuster: {{ 'OK' if recon_toolkit_gobuster_check.rc == 0 else 'FAIL' }}"
           - "feroxbuster: {{ 'OK' if recon_toolkit_feroxbuster_check.rc == 0 else 'FAIL' }}"
           - "dirb: {{ 'OK' if recon_toolkit_dirb_check.rc == 0 else 'FAIL' }}"
+          - "uncover: {{ 'OK' if recon_toolkit_uncover_check.rc == 0 else 'FAIL' }}"
+          - "shodan: {{ 'OK' if recon_toolkit_shodan_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- Web Crawling & JS Analysis ---"
           - "katana: {{ 'OK' if recon_toolkit_katana_check.rc == 0 else 'FAIL' }}"
@@ -701,14 +703,11 @@
           - "secretfinder: {{ 'OK' if recon_toolkit_secretfinder_check.rc == 0 else 'FAIL' }}"
           - "js-beautify: {{ 'OK' if recon_toolkit_jsbeautify_check.rc == 0 else 'FAIL' }}"
           - ""
-          - "--- Vulnerability & Secret Scanning ---"
-          - "nuclei: {{ 'OK' if recon_toolkit_nuclei_check.rc == 0 else 'FAIL' }}"
+          - "--- Secret Scanning ---"
           - "trufflehog: {{ 'OK' if recon_toolkit_trufflehog_check.rc == 0 else 'FAIL' }}"
           - "gitleaks: {{ 'OK' if recon_toolkit_gitleaks_check.rc == 0 else 'FAIL' }}"
           - "noseyparker: {{ 'OK' if recon_toolkit_noseyparker_check.rc == 0 else 'FAIL' }}"
           - "git-hound: {{ 'OK' if recon_toolkit_git_hound_check.rc == 0 else 'FAIL' }}"
-          - "uncover: {{ 'OK' if recon_toolkit_uncover_check.rc == 0 else 'FAIL' }}"
-          - "shodan: {{ 'OK' if recon_toolkit_shodan_check.rc == 0 else 'FAIL' }}"
           - ""
           - "--- GitHub Recon ---"
           - "github-subdomains: {{ 'OK' if recon_toolkit_github_subdomains_check.rc == 0 else 'FAIL' }}"
