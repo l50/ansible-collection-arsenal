@@ -1,0 +1,8 @@
+---
+- name: Converge (cleanup mode)
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: l50.arsenal.recon_toolkit
+      recon_toolkit_cleanup: true

@@ -67,6 +67,40 @@
         success_msg: "openssl is installed"
 
     # ========================================================================
+    # Shell Environment (bashrc)
+    # ========================================================================
+
+    - name: Read user bashrc
+      ansible.builtin.slurp:
+        src: "{{ recon_toolkit_user_home }}/.bashrc"
+      register: recon_toolkit_bashrc_content
+
+    - name: Decode bashrc content
+      ansible.builtin.set_fact:
+        recon_toolkit_bashrc_decoded: "{{ recon_toolkit_bashrc_content.content | b64decode }}"
+
+    - name: Assert MISE_DATA_DIR is exported in bashrc
+      ansible.builtin.assert:
+        that:
+          - "'export MISE_DATA_DIR=' in recon_toolkit_bashrc_decoded"
+        fail_msg: "MISE_DATA_DIR export not found in bashrc"
+        success_msg: "MISE_DATA_DIR is exported in bashrc"
+
+    - name: Assert mise shims path is in bashrc PATH
+      ansible.builtin.assert:
+        that:
+          - "'${MISE_DATA_DIR}/shims' in recon_toolkit_bashrc_decoded"
+        fail_msg: "mise shims path not found in bashrc PATH"
+        success_msg: "mise shims path is present in bashrc"
+
+    - name: Assert recon toolkit managed block markers exist
+      ansible.builtin.assert:
+        that:
+          - "'ANSIBLE MANAGED BLOCK - RECON TOOLKIT PATHS' in recon_toolkit_bashrc_decoded"
+        fail_msg: "Recon toolkit managed block not found in bashrc"
+        success_msg: "Recon toolkit managed block is present in bashrc"
+
+    # ========================================================================
     # Subdomain Enumeration
     # ========================================================================
 

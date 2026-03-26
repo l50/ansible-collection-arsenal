@@ -195,6 +195,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Include secret scanning tool tasks** (ansible.builtin.include_tasks)
 - **Include GitHub recon tool tasks** (ansible.builtin.include_tasks)
 - **Include parameter and pattern analysis tool tasks** (ansible.builtin.include_tasks)
+- **Relocate Node.js packages before cleanup** (ansible.builtin.include_tasks)
 
 ### param_analysis.yml
 
@@ -227,6 +228,17 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Gather available local users** (ansible.builtin.getent) - Conditional
 - **Set user home directory** (ansible.builtin.set_fact) - Conditional
 - **Set user home directory for macOS** (ansible.builtin.set_fact) - Conditional
+
+### relocate_node_packages.yml
+
+
+- **Relocate Node.js packages for cleanup survival** (block) - Conditional
+- **Get mise node installation path** (ansible.builtin.shell)
+- **Copy node binary to /usr/local/bin** (ansible.builtin.copy)
+- **Build list of npm packages to relocate** (ansible.builtin.set_fact)
+- **Reinstall npm packages to /usr/local prefix** (ansible.builtin.shell) - Conditional
+- **Verify relocated binaries** (ansible.builtin.command)
+- **Display relocation results** (ansible.builtin.debug)
 
 ### secret_scanning.yml
 
