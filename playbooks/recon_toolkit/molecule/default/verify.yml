@@ -1,0 +1,204 @@
+---
+- name: Verify recon_toolkit playbook
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../../../roles/recon_toolkit/defaults/main.yml"
+
+    - name: Set recon_toolkit user home directory
+      ansible.builtin.include_tasks: "../../../../roles/recon_toolkit/tasks/recon_toolkit_get_user_home.yml"
+
+    - name: Set tool PATH for verification
+      ansible.builtin.set_fact:
+        recon_toolkit_verify_path: "{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:{{ recon_toolkit_user_home }}/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin"
+
+    # ========================================================================
+    # Shell Environment (bashrc)
+    # ========================================================================
+
+    - name: Read user bashrc
+      ansible.builtin.slurp:
+        src: "{{ recon_toolkit_user_home }}/.bashrc"
+      register: recon_toolkit_bashrc_content
+
+    - name: Decode bashrc content
+      ansible.builtin.set_fact:
+        recon_toolkit_bashrc_decoded: "{{ recon_toolkit_bashrc_content.content | b64decode }}"
+
+    - name: Assert MISE_DATA_DIR is exported in bashrc
+      ansible.builtin.assert:
+        that:
+          - "'export MISE_DATA_DIR=' in recon_toolkit_bashrc_decoded"
+        fail_msg: "MISE_DATA_DIR export not found in bashrc"
+        success_msg: "MISE_DATA_DIR is exported in bashrc"
+
+    - name: Assert mise shims path is in bashrc PATH
+      ansible.builtin.assert:
+        that:
+          - "'${MISE_DATA_DIR}/shims' in recon_toolkit_bashrc_decoded"
+        fail_msg: "mise shims path not found in bashrc PATH"
+        success_msg: "mise shims path is present in bashrc"
+
+    # ========================================================================
+    # Go binaries (~/go/bin)
+    # ========================================================================
+
+    - name: Verify Go-installed binaries
+      ansible.builtin.command: "which {{ item }}"
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      loop:
+        - subfinder
+        - assetfinder
+        - puredns
+        - shuffledns
+        - httpx
+        - dnsx
+        - smap
+        - katana
+        - gospider
+        - hakrawler
+        - gau
+        - waybackurls
+        - gitleaks
+        - uncover
+        - gf
+        - ffuf
+        - gobuster
+        - git-hound
+        - github-subdomains
+      register: recon_toolkit_go_bins_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert Go binaries are installed
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} is not installed"
+        success_msg: "{{ item.item }} is installed at {{ item.stdout }}"
+      loop: "{{ recon_toolkit_go_bins_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # ========================================================================
+    # Binary releases (/usr/local/bin)
+    # ========================================================================
+
+    - name: Verify binary release tools
+      ansible.builtin.command: "which {{ item }}"
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      loop:
+        - massdns
+        - trufflehog
+        - noseyparker
+        - rustscan
+        - feroxbuster
+        - ctfr
+        - linkfinder
+        - secretfinder
+      register: recon_toolkit_bin_release_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert binary release tools are installed
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} is not installed"
+        success_msg: "{{ item.item }} is installed at {{ item.stdout }}"
+      loop: "{{ recon_toolkit_bin_release_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # ========================================================================
+    # Python tools (pipx in ~/.local/bin)
+    # ========================================================================
+
+    - name: Verify pipx-installed tools
+      ansible.builtin.command: "which {{ item }}"
+      environment:
+        PATH: "{{ recon_toolkit_verify_path }}"
+      loop:
+        - arjun
+        - paramspider
+        - shodan
+      register: recon_toolkit_pipx_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert pipx tools are installed
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} is not installed"
+        success_msg: "{{ item.item }} is installed at {{ item.stdout }}"
+      loop: "{{ recon_toolkit_pipx_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # ========================================================================
+    # NPM tools (mise shims or /usr/local/bin after relocation)
+    # ========================================================================
+
+    - name: Verify npm-installed tools
+      ansible.builtin.shell: |
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+        which {{ item }}
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+      loop:
+        - retire
+        - js-beautify
+      register: recon_toolkit_npm_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert npm tools are installed
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} is not installed"
+        success_msg: "{{ item.item }} is installed at {{ item.stdout }}"
+      loop: "{{ recon_toolkit_npm_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # ========================================================================
+    # System packages (apt)
+    # ========================================================================
+
+    - name: Verify system packages
+      ansible.builtin.command: "which {{ item }}"
+      loop:
+        - curl
+        - jq
+        - git
+        - nmap
+        - masscan
+        - whatweb
+        - dirb
+      register: recon_toolkit_sys_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert system packages are installed
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} is not installed"
+        success_msg: "{{ item.item }} is installed at {{ item.stdout }}"
+      loop: "{{ recon_toolkit_sys_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"

@@ -31,15 +31,24 @@
           - hakrawler
           - gau
           - waybackurls
-          - nuclei
           - gitleaks
           - uncover
           - gf
           - trufflehog
           - massdns
+          - ffuf
+          - gobuster
+          - feroxbuster
+          - noseyparker
+          - git-hound
+          - github-subdomains
+          - arjun
+          - paramspider
+          - shodan
         build_cleanup_protected_packages:
           - ca-certificates
           - curl
+          - dirb
           - dnsutils
           - git
           - gnupg
