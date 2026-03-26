@@ -46,7 +46,7 @@
         set -o pipefail
         export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
         export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
-        npm install -g --prefix /usr/local {{ recon_toolkit_npm_relocate_packages | join(' ') }}
+        npm install -g --force --prefix /usr/local {{ recon_toolkit_npm_relocate_packages | join(' ') }}
       args:
         executable: /bin/bash
       become: true
