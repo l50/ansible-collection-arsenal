@@ -1,0 +1,53 @@
+---
+# Relocate pipx binaries to /usr/local/bin
+# ==================================================
+# pipx installs binaries as symlinks in ~/.local/bin pointing to
+# venvs in ~/.local/share/pipx/venvs/. Both survive cleanup, but
+# ~/.local/bin is not on PATH in non-interactive shells (e.g. Docker).
+# Create symlinks in /usr/local/bin so tools are always accessible.
+
+- name: Relocate pipx packages for cleanup survival
+  when: recon_toolkit_cleanup | bool
+  block:
+    - name: Build list of pipx packages to relocate
+      ansible.builtin.set_fact:
+        recon_toolkit_pipx_relocate_packages: >-
+          {{
+            ((recon_toolkit_install_arjun | bool) | ternary(['arjun'], [])) +
+            ((recon_toolkit_install_paramspider | bool) | ternary(['paramspider'], [])) +
+            ((recon_toolkit_install_shodan | bool) | ternary(['shodan'], []))
+          }}
+
+    - name: Check pipx venv binaries exist
+      ansible.builtin.stat:
+        path: "{{ recon_toolkit_user_home }}/.local/share/pipx/venvs/{{ item }}/bin/{{ item }}"
+      loop: "{{ recon_toolkit_pipx_relocate_packages }}"
+      register: recon_toolkit_pipx_bin_stats
+
+    - name: Symlink pipx venv binaries to /usr/local/bin
+      ansible.builtin.file:
+        src: "{{ recon_toolkit_user_home }}/.local/share/pipx/venvs/{{ item.item }}/bin/{{ item.item }}"
+        dest: "/usr/local/bin/{{ item.item }}"
+        state: link
+      become: true
+      loop: "{{ recon_toolkit_pipx_bin_stats.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: item.stat.exists
+
+    - name: Verify relocated pipx binaries
+      ansible.builtin.command: "which {{ item }}"
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:/bin"
+      loop: "{{ recon_toolkit_pipx_relocate_packages }}"
+      become: true
+      changed_when: false
+      failed_when: false
+      register: recon_toolkit_pipx_relocate_verify
+
+    - name: Display pipx relocation results
+      ansible.builtin.debug:
+        msg: >-
+          Symlinked {{ recon_toolkit_pipx_relocate_packages | length }} pipx binaries
+          to /usr/local/bin for PATH accessibility.
+          Verification: {{ recon_toolkit_pipx_relocate_verify.results | map(attribute='rc') | list }}

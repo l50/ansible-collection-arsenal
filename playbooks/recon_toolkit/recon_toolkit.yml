@@ -13,7 +13,8 @@
       role: cowdogmoo.workstation.build_cleanup
       vars:
         build_cleanup_enabled: "{{ recon_toolkit_cleanup }}"
-        build_cleanup_install_path: "{{ recon_toolkit_install_path | default('/opt/recon_toolkit') }}"
+        build_cleanup_relocate_go_binaries: true
+        build_cleanup_install_path: /usr/local/bin
         build_cleanup_user_home: "{{ recon_toolkit_user_home | default('/home/' + recon_toolkit_username) }}"
         build_cleanup_username: "{{ recon_toolkit_username }}"
         build_cleanup_keep_binaries:

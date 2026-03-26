@@ -118,5 +118,8 @@
 - name: Include parameter and pattern analysis tool tasks
   ansible.builtin.include_tasks: param_analysis.yml
 
+- name: Relocate pipx packages before cleanup
+  ansible.builtin.include_tasks: relocate_pipx_packages.yml
+
 - name: Relocate Node.js packages before cleanup
   ansible.builtin.include_tasks: relocate_node_packages.yml

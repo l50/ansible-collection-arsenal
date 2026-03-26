@@ -195,6 +195,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Include secret scanning tool tasks** (ansible.builtin.include_tasks)
 - **Include GitHub recon tool tasks** (ansible.builtin.include_tasks)
 - **Include parameter and pattern analysis tool tasks** (ansible.builtin.include_tasks)
+- **Relocate pipx packages before cleanup** (ansible.builtin.include_tasks)
 - **Relocate Node.js packages before cleanup** (ansible.builtin.include_tasks)
 
 ### param_analysis.yml
@@ -239,6 +240,16 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 - **Reinstall npm packages to /usr/local prefix** (ansible.builtin.shell) - Conditional
 - **Verify relocated binaries** (ansible.builtin.command)
 - **Display relocation results** (ansible.builtin.debug)
+
+### relocate_pipx_packages.yml
+
+
+- **Relocate pipx packages for cleanup survival** (block) - Conditional
+- **Build list of pipx packages to relocate** (ansible.builtin.set_fact)
+- **Check pipx venv binaries exist** (ansible.builtin.stat)
+- **Symlink pipx venv binaries to /usr/local/bin** (ansible.builtin.file) - Conditional
+- **Verify relocated pipx binaries** (ansible.builtin.command)
+- **Display pipx relocation results** (ansible.builtin.debug)
 
 ### secret_scanning.yml
 
