@@ -92,7 +92,8 @@
     block: |
       # Recon toolkit paths
       export GOPATH="{{ recon_toolkit_user_home }}/go"
-      export PATH="{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:$PATH"
+      export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+      export PATH="{{ recon_toolkit_user_home }}/go/bin:{{ recon_toolkit_user_home }}/.local/bin:${MISE_DATA_DIR}/shims:$PATH"
     marker: "# {mark} ANSIBLE MANAGED BLOCK - RECON TOOLKIT PATHS"
     create: true
     mode: '0644'
@@ -116,3 +117,6 @@
 
 - name: Include parameter and pattern analysis tool tasks
   ansible.builtin.include_tasks: param_analysis.yml
+
+- name: Relocate Node.js packages before cleanup
+  ansible.builtin.include_tasks: relocate_node_packages.yml

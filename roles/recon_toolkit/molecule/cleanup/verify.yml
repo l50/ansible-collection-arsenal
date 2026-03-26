@@ -1,0 +1,90 @@
+---
+- name: Verify (cleanup mode)
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Set recon_toolkit user home directory
+      ansible.builtin.include_tasks: "../../tasks/recon_toolkit_get_user_home.yml"
+
+    # ========================================================================
+    # Node.js relocation verification
+    # ========================================================================
+
+    - name: Verify node binary exists in /usr/local/bin
+      ansible.builtin.stat:
+        path: /usr/local/bin/node
+      register: recon_toolkit_node_relocated
+
+    - name: Assert node binary was relocated to /usr/local/bin
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_node_relocated.stat.exists
+          - recon_toolkit_node_relocated.stat.executable
+        fail_msg: "node binary was not relocated to /usr/local/bin"
+        success_msg: "node binary is present and executable at /usr/local/bin/node"
+
+    - name: Verify node binary works
+      ansible.builtin.command: /usr/local/bin/node --version
+      register: recon_toolkit_node_version
+      changed_when: false
+
+    - name: Assert node binary is functional
+      ansible.builtin.assert:
+        that:
+          - recon_toolkit_node_version.rc == 0
+          - "'v' in recon_toolkit_node_version.stdout"
+        fail_msg: "Relocated node binary is not functional"
+        success_msg: "Relocated node binary works: {{ recon_toolkit_node_version.stdout }}"
+
+    - name: Check for relocated npm packages in /usr/local
+      ansible.builtin.command: "which {{ item }}"
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:/bin"
+      loop:
+        - retire
+        - js-beautify
+      register: recon_toolkit_npm_relocated_check
+      changed_when: false
+      failed_when: false
+
+    - name: Assert npm packages were relocated
+      ansible.builtin.assert:
+        that:
+          - item.rc == 0
+        fail_msg: "{{ item.item }} was not relocated to /usr/local"
+        success_msg: "{{ item.item }} is available at {{ item.stdout }}"
+      loop: "{{ recon_toolkit_npm_relocated_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # ========================================================================
+    # Shell Environment (bashrc) - same as default scenario
+    # ========================================================================
+
+    - name: Read user bashrc
+      ansible.builtin.slurp:
+        src: "{{ recon_toolkit_user_home }}/.bashrc"
+      register: recon_toolkit_bashrc_content
+
+    - name: Decode bashrc content
+      ansible.builtin.set_fact:
+        recon_toolkit_bashrc_decoded: "{{ recon_toolkit_bashrc_content.content | b64decode }}"
+
+    - name: Assert MISE_DATA_DIR is exported in bashrc
+      ansible.builtin.assert:
+        that:
+          - "'export MISE_DATA_DIR=' in recon_toolkit_bashrc_decoded"
+        fail_msg: "MISE_DATA_DIR export not found in bashrc"
+        success_msg: "MISE_DATA_DIR is exported in bashrc"
+
+    - name: Assert mise shims path is in bashrc PATH
+      ansible.builtin.assert:
+        that:
+          - "'${MISE_DATA_DIR}/shims' in recon_toolkit_bashrc_decoded"
+        fail_msg: "mise shims path not found in bashrc PATH"
+        success_msg: "mise shims path is present in bashrc"

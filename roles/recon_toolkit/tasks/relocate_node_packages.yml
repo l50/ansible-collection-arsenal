@@ -1,0 +1,75 @@
+---
+# Relocate Node.js runtime and npm global packages
+# ==================================================
+# Before cleanup deletes mise directories, copy the Node.js binary
+# and reinstall npm packages to /usr/local so they survive.
+
+- name: Relocate Node.js packages for cleanup survival
+  when: recon_toolkit_cleanup | bool
+  block:
+    - name: Get mise node installation path
+      ansible.builtin.shell: |
+        set -o pipefail
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+        mise where node
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ recon_toolkit_username }}"
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        USER: "{{ recon_toolkit_username }}"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+      register: recon_toolkit_node_install_path
+      changed_when: false
+
+    - name: Copy node binary to /usr/local/bin
+      ansible.builtin.copy:
+        src: "{{ recon_toolkit_node_install_path.stdout | trim }}/bin/node"
+        dest: /usr/local/bin/node
+        remote_src: true
+        mode: '0755'
+      become: true
+
+    - name: Build list of npm packages to relocate
+      ansible.builtin.set_fact:
+        recon_toolkit_npm_relocate_packages: >-
+          {{
+            ((recon_toolkit_install_retire | bool) | ternary(['retire'], [])) +
+            ((recon_toolkit_install_jsbeautify | bool) | ternary(['js-beautify'], []))
+          }}
+
+    - name: Reinstall npm packages to /usr/local prefix
+      ansible.builtin.shell: |
+        set -o pipefail
+        export MISE_DATA_DIR="{{ recon_toolkit_user_home }}/.local/share/mise"
+        export PATH="/usr/local/bin:${MISE_DATA_DIR}/shims:$PATH"
+        npm install -g --prefix /usr/local {{ recon_toolkit_npm_relocate_packages | join(' ') }}
+      args:
+        executable: /bin/bash
+      become: true
+      environment:
+        HOME: "{{ recon_toolkit_user_home }}"
+        MISE_DATA_DIR: "{{ recon_toolkit_user_home }}/.local/share/mise"
+        MISE_CONFIG_DIR: "{{ recon_toolkit_user_home }}/.config/mise"
+      when: recon_toolkit_npm_relocate_packages | length > 0
+      changed_when: true
+
+    - name: Verify relocated binaries
+      ansible.builtin.command: "which {{ item }}"
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:/bin"
+      loop: "{{ recon_toolkit_npm_relocate_packages }}"
+      become: true
+      changed_when: false
+      failed_when: false
+      register: recon_toolkit_relocate_verify
+
+    - name: Display relocation results
+      ansible.builtin.debug:
+        msg: >-
+          Relocated {{ recon_toolkit_npm_relocate_packages | length }} npm packages
+          and node binary to /usr/local for cleanup survival.
+          Verification: {{ recon_toolkit_relocate_verify.results | map(attribute='rc') | list }}
