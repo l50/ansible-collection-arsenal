@@ -10,5 +10,5 @@ sliver_shell: "{% if ansible_facts['os_family'] == 'Darwin' %}/bin/zsh{% else %}
 sliver_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
   - name: go
-    version: "1.26.1"
+    version: "1.26.2"
     scope: "global"
