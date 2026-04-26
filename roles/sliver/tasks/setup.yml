@@ -148,10 +148,6 @@
     echo "Running Go version check:"
     "$GO_BIN_PATH" version
 
-    # Run go mod tidy to update dependencies
-    echo "Running go mod tidy to update dependencies:"
-    "$GO_BIN_PATH" mod tidy
-
     # Build the sliver binary using the direct path to Go
     echo "Building sliver binary:"
     {{ 'make' if ansible_facts['distribution'] == 'Kali GNU/Linux' else 'gmake' }} -C {{ sliver_install_path }} -j{{ ansible_facts['processor_vcpus'] | default(2) }}
@@ -167,6 +163,7 @@
     MISE_CONFIG_DIR: "{{ sliver_user_home }}/.config/mise"
     PATH: "/usr/local/bin:{{ sliver_user_home }}/.local/share/mise/shims:/usr/bin:/bin"
     GO111MODULE: "on"
+    GOFLAGS: "-mod=mod"
     GOPATH: "{{ sliver_user_home }}/go"
     CURL_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
     GIT_SSL_CAINFO: "/etc/ssl/certs/ca-certificates.crt"
