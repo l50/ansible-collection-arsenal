@@ -49,7 +49,10 @@ repos:
     rev: v26.4.0
     hooks:
       - id: ansible-lint
-        entry: ansible-lint -v --force-color -c .hooks/linters/ansible-lint.yaml
+        # env -u GIT_INDEX_FILE prevents ansible-galaxy (called internally by
+        # ansible-lint) from inheriting the commit-time index file and
+        # corrupting it with stale blob references.
+        entry: env -u GIT_INDEX_FILE ansible-lint -v --force-color -c .hooks/linters/ansible-lint.yaml
         language: python
         # do not pass files to ansible-lint, see:
         # https://github.com/ansible-community/ansible-lint/issues/611
