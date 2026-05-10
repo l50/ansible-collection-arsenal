@@ -24,7 +24,7 @@ class AnsibleCollectionAnalyzer:
         # Analyze roles
         roles_path = self.collection_path / 'roles'
         if roles_path.exists():
-            for role_dir in roles_path.iterdir():
+            for role_dir in sorted(roles_path.iterdir(), key=lambda p: p.name):
                 if role_dir.is_dir() and not role_dir.name.startswith('.'):
                     self.structure['roles'].append({
                         'name': role_dir.name,
@@ -34,14 +34,14 @@ class AnsibleCollectionAnalyzer:
         # Analyze plugins
         plugins_path = self.collection_path / 'plugins' / 'modules'
         if plugins_path.exists():
-            for plugin_file in plugins_path.glob('*.py'):
+            for plugin_file in sorted(plugins_path.glob('*.py'), key=lambda p: p.name):
                 if not plugin_file.name.startswith('__'):
                     self.structure['plugins'].append(plugin_file.stem)
 
         # Analyze playbooks
         playbooks_path = self.collection_path / 'playbooks'
         if playbooks_path.exists():
-            for item in playbooks_path.iterdir():
+            for item in sorted(playbooks_path.iterdir(), key=lambda p: p.name):
                 if item.is_dir() and not item.name.startswith('.'):
                     self.structure['playbooks'].append({
                         'name': item.name,
@@ -141,13 +141,15 @@ def main():
         print(f"  • Plugins: {len(structure['plugins'])}")
         print(f"  • Playbooks: {len(structure['playbooks'])}")
 
-        # Stage the README.md file for commit
+        # Check if the README was actually modified (unstaged changes)
         import subprocess
-        try:
-            subprocess.run(['git', 'add', 'README.md'], check=True)
-            print("✅ README.md staged for commit")
-        except subprocess.CalledProcessError:
-            print("⚠️ Could not stage README.md - you may need to add it manually")
+        result = subprocess.run(
+            ['git', 'diff', '--name-only', 'README.md'],
+            capture_output=True, text=True
+        )
+        if result.stdout.strip():
+            print("⚠️ README.md was updated. Please stage and re-commit.")
+            return 1
 
         return 0
     else:
