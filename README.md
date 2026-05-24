@@ -15,15 +15,15 @@ graph TD
     Collection[Ansible Collection]
     Collection --> Roles[⚙️ Roles]
     Roles --> R0[attack_box 🧪]
-    Roles --> R1[sliver 🧪]
-    Roles --> R2[ttpforge 🧪]
-    Roles --> R3[recon_toolkit 🧪]
+    Roles --> R1[recon_toolkit 🧪]
+    Roles --> R2[sliver 🧪]
+    Roles --> R3[ttpforge 🧪]
     Collection --> Playbooks[📚 Playbooks]
-    Playbooks --> PB0[attack_box 🧪]
-    Playbooks --> PB1[sliver 🧪]
-    Playbooks --> PB2[atomic-red-team 🧪]
-    Playbooks --> PB3[ttpforge 🧪]
-    Playbooks --> PB4[recon_toolkit 🧪]
+    Playbooks --> PB0[atomic-red-team 🧪]
+    Playbooks --> PB1[attack_box 🧪]
+    Playbooks --> PB2[recon_toolkit 🧪]
+    Playbooks --> PB3[sliver 🧪]
+    Playbooks --> PB4[ttpforge 🧪]
 ```
 
 ## Requirements
