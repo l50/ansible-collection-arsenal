@@ -11,3 +11,4 @@ changelogs/.plugin-cache.yaml
 *.log
 .tool-versions
 .backups
+playbooks/workstation/inventory
