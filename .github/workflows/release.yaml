@@ -15,7 +15,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 env:
   ANSIBLE_GALAXY_TOKEN: ${{ secrets.GALAXY_API_KEY }}
-  PYTHON_VERSION: "3.14.5"
+  PYTHON_VERSION: "3.14.6"
   WORKING_DIRECTORY: ansible_collections/l50/arsenal
 
 jobs:
