@@ -6,15 +6,6 @@
     value: "{{ sliver_install_path }}"
   become: true
 
-- name: Get current Sliver repo HEAD
-  ansible.builtin.command:
-    cmd: git rev-parse HEAD
-    chdir: "{{ sliver_install_path }}"
-  become: true
-  register: sliver_repo_head_before
-  changed_when: false
-  failed_when: false
-
 - name: Clone Sliver repo
   ansible.builtin.git:
     repo: 'https://github.com/bishopfox/sliver.git'
@@ -23,7 +14,7 @@
     force: true
   become: true
   register: sliver_git_result
-  changed_when: sliver_repo_head_before.rc != 0 or sliver_git_result.before != sliver_git_result.after
+  changed_when: sliver_git_result.before is none or sliver_git_result.before != sliver_git_result.after
 
 - name: Check current ownership of {{ sliver_install_path }}
   ansible.builtin.stat:
@@ -56,7 +47,7 @@
 
 - name: Trust mise config in Sliver directory
   ansible.builtin.command:
-    cmd: mise trust "{{ sliver_install_path }}/.mise.toml"
+    cmd: /usr/local/bin/mise trust "{{ sliver_install_path }}/.mise.toml"
   become: true
   become_user: "{{ sliver_username }}"
   environment:
