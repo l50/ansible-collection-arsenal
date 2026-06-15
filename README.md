@@ -48,6 +48,17 @@ ansible-galaxy collection build --force && \
 
 ## Roles
 
+<!-- ROLES TABLE START -->
+
+| Role | Description |
+| ---- | ----------- |
+| [`attack_box`](roles/attack_box/README.md) | Creates an attack box for penetration testing and red teaming |
+| [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
+| [`sliver`](roles/sliver/README.md) | Install sliver c2 |
+| [`ttpforge`](roles/ttpforge/README.md) | \| |
+
+<!-- ROLES TABLE END -->
+
 ### Sliver
 
 Installs and configures [Sliver](https://github.com/BishopFox/sliver), a
