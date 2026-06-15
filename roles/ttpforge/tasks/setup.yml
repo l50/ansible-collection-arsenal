@@ -47,7 +47,7 @@
 
 - name: Trust mise config in ttpforge directory
   ansible.builtin.command:
-    cmd: mise trust "{{ ttpforge_install_path }}/.mise.toml"
+    cmd: /usr/local/bin/mise trust "{{ ttpforge_install_path }}/.mise.toml"
   become: true
   become_user: "{{ ttpforge_username }}"
   environment:
