@@ -55,7 +55,7 @@ ansible-galaxy collection build --force && \
 | [`attack_box`](roles/attack_box/README.md) | Creates an attack box for penetration testing and red teaming |
 | [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
 | [`sliver`](roles/sliver/README.md) | Install sliver c2 |
-| [`ttpforge`](roles/ttpforge/README.md) | \| |
+| [`ttpforge`](roles/ttpforge/README.md) | TTPForge is a Cybersecurity Framework for developing, automating, and executing attacker Tactics, Techniques, and Procedures (TTPs) |
 
 <!-- ROLES TABLE END -->
 
