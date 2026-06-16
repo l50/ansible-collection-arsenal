@@ -13,19 +13,14 @@ on:
         default: "debug"
         required: false
 
-  schedule:
-    # Run on the 1st of every month at 00:00 UTC
-    - cron: "0 0 1 * *"
+  # Fan-out from CowDogMoo/ansible-collection-workstation's Template Sync
+  # Dispatch workflow; fires within minutes of a template change there.
+  repository_dispatch:
+    types: [template-sync]
 
-  push:
-    branches: ["main"]
-    paths:
-      - '.github/**'
-      - '.hooks/**'
-      - '.pre-commit-config.yaml'
-      - '.mdlrc'
-      - '.editorconfig'
-      - 'Taskfile.yaml'
+  schedule:
+    # Monthly safety net in case a dispatch event is missed.
+    - cron: "0 0 1 * *"
 
 concurrency:
   cancel-in-progress: true
@@ -64,12 +59,12 @@ jobs:
           pr_body: |
             🤖 A new version of the ansible collection template files is available.
 
-            This PR was automatically created to sync the following:
-            - GitHub Actions workflows
-            - Pre-commit hooks and configurations
-            - Ansible-lint configurations
-            - Task definitions
-            - Editor configs and linter rules
+            This PR was automatically created to sync shared infrastructure:
+            - Pre-commit hooks (`.hooks/**`, `.pre-commit-config.yaml`)
+            - Task definitions (`Taskfile.yaml`)
+            - Editor configs (`.editorconfig`)
+
+            Workflow files are managed by Renovate and excluded from this sync.
 
             Please review the changes carefully before merging.
           source_repo_path: CowDogMoo/ansible-collection-workstation
