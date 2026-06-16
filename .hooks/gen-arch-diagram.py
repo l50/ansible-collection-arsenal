@@ -53,9 +53,16 @@ class AnsibleCollectionAnalyzer:
 
     @staticmethod
     def _read_role_description(role_dir: Path) -> str:
-        """Extract galaxy_info.description from a role's meta/main.yml.
+        """Extract ``galaxy_info.description`` from a role's ``meta/main.yml``.
 
-        Uses a simple regex so we don't pull in PyYAML as a hook dep.
+        Hand-rolled so we don't pull in PyYAML as a hook dep. Anchors on the
+        ``galaxy_info:`` block specifically so an unrelated ``description:``
+        key elsewhere in the file (e.g. ``argument_specs``) can't shadow it.
+        Handles plain values, quoted values, and YAML block scalars (``|`` /
+        ``>`` with optional ``-`` / ``+`` chomping). Inline ``# …`` comments
+        are stripped from every value form — strictly YAML keeps ``#``
+        literal inside block scalars, but the output here is a README table
+        cell, not program input, so user-friendlier wins.
         """
         meta_path = role_dir / 'meta' / 'main.yml'
         if not meta_path.exists():
@@ -64,14 +71,54 @@ class AnsibleCollectionAnalyzer:
             text = meta_path.read_text()
         except OSError:
             return ''
-        match = re.search(r'^\s+description:\s*(.+)$', text, re.MULTILINE)
-        if not match:
+
+        lines = text.splitlines()
+        galaxy_info_re = re.compile(r'^galaxy_info:\s*$')
+        # Match real top-level keys (an identifier at col 0 followed by ``:``)
+        # so comments and ``---``/``...`` document markers don't end the block.
+        top_key_re = re.compile(r'^[A-Za-z_][\w-]*\s*:')
+        desc_re = re.compile(r'^(\s+)description:\s*(.*)$')
+        block_indicator_re = re.compile(r'^[|>][-+]?\s*$')
+        comment_re = re.compile(r'\s+#.*$')
+
+        start_idx = next(
+            (i + 1 for i, line in enumerate(lines) if galaxy_info_re.match(line)),
+            None,
+        )
+        if start_idx is None:
             return ''
-        desc = match.group(1).strip()
-        # Strip surrounding quotes if present
-        if len(desc) >= 2 and desc[0] == desc[-1] and desc[0] in ('"', "'"):
-            desc = desc[1:-1]
-        return desc
+        end_idx = next(
+            (j for j in range(start_idx, len(lines)) if top_key_re.match(lines[j])),
+            len(lines),
+        )
+
+        for i in range(start_idx, end_idx):
+            m = desc_re.match(lines[i])
+            if not m:
+                continue
+            key_indent = len(m.group(1))
+            value = m.group(2).strip()
+
+            if value and not block_indicator_re.match(value):
+                value = comment_re.sub('', value).strip()
+                if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+                    value = value[1:-1]
+                return value
+
+            # Block scalar — collect more-indented continuation lines and
+            # fold into a single line; table cells can't render newlines.
+            parts = []
+            for cont in lines[i + 1:end_idx]:
+                if not cont.strip():
+                    continue
+                stripped = cont.lstrip()
+                cont_indent = len(cont) - len(stripped)
+                if cont_indent <= key_indent:
+                    break
+                parts.append(comment_re.sub('', stripped.rstrip()))
+            return ' '.join(p for p in parts if p)
+
+        return ''
 
 def generate_mermaid(structure):
     """Generate Mermaid diagram"""
