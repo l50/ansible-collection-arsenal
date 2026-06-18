@@ -1,4 +1,24 @@
 ---
+# Rolling-release base images (Kali, Ubuntu-latest) periodically ship with
+# half-configured dpkg state or transitive apt deps that can't be resolved
+# until apt-get -f install runs. Recover that state before invoking the
+# package_management role so the bulk install isn't the first thing apt sees.
+- name: Recover from interrupted dpkg state
+  ansible.builtin.command: dpkg --configure -a
+  become: true
+  changed_when: false
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Repair broken apt dependencies before bulk install
+  ansible.builtin.apt:
+    name: '*'
+    state: fixed
+    update_cache: true
+  become: true
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  when: ansible_facts['os_family'] == 'Debian'
+
 - name: Install required packages for Sliver
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.package_management

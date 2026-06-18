@@ -158,6 +158,8 @@ Install sliver c2
 ### main.yml
 
 
+- **Recover from interrupted dpkg state** (ansible.builtin.command) - Conditional
+- **Repair broken apt dependencies before bulk install** (ansible.builtin.apt) - Conditional
 - **Install required packages for Sliver** (ansible.builtin.include_role)
 - **Create user** (ansible.builtin.include_role)
 - **Set sliver user home directory** (ansible.builtin.include_tasks)
