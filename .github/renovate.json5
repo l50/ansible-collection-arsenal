@@ -54,6 +54,7 @@
       automerge: true,
       automergeType: 'pr',
       matchUpdateTypes: [
+        'major',
         'minor',
         'patch',
       ],
