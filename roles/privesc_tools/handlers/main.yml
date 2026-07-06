@@ -1,0 +1,3 @@
+---
+# Handlers for privesc_tools role
+# Currently no handlers needed as tools are statically downloaded

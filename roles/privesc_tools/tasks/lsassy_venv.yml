@@ -1,0 +1,25 @@
+---
+- name: Install lsassy in an isolated virtualenv
+  ansible.builtin.pip:
+    name: lsassy
+    virtualenv: "{{ privesc_tools_lsassy_install_dir }}/venv"
+    virtualenv_command: python3 -m venv
+  become: true
+
+- name: Create wrapper script for lsassy
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      exec {{ privesc_tools_lsassy_install_dir }}/venv/bin/lsassy "$@"
+    dest: /usr/local/bin/lsassy
+    mode: '0755'
+  become: true
+
+- name: Symlink lsassy into /usr/bin
+  ansible.builtin.file:
+    src: /usr/local/bin/lsassy
+    dest: /usr/bin/lsassy
+    state: link
+    force: true
+    follow: false
+  become: true
