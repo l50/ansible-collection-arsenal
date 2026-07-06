@@ -19,10 +19,11 @@ graph TD
     Roles --> R2[coercion_tools 🧪]
     Roles --> R3[cracking_tools 🧪]
     Roles --> R4[credential_access_tools 🧪]
-    Roles --> R5[mythic 🧪]
-    Roles --> R6[recon_toolkit 🧪]
-    Roles --> R7[sliver 🧪]
-    Roles --> R8[ttpforge 🧪]
+    Roles --> R5[lateral_movement_tools 🧪]
+    Roles --> R6[mythic 🧪]
+    Roles --> R7[recon_toolkit 🧪]
+    Roles --> R8[sliver 🧪]
+    Roles --> R9[ttpforge 🧪]
     Collection --> Playbooks[📚 Playbooks]
     Playbooks --> PB0[atomic-red-team 🧪]
     Playbooks --> PB1[attack_box 🧪]
@@ -62,6 +63,7 @@ ansible-galaxy collection build --force && \
 | [`coercion_tools`](roles/coercion_tools/README.md) | Install and configure network poisoning and relay attack tools |
 | [`cracking_tools`](roles/cracking_tools/README.md) | Install and configure password cracking tools |
 | [`credential_access_tools`](roles/credential_access_tools/README.md) | Install and configure credential access tooling |
+| [`lateral_movement_tools`](roles/lateral_movement_tools/README.md) | Install and configure lateral movement and credential extraction tools |
 | [`mythic`](roles/mythic/README.md) | Install and configure the Mythic C2 framework |
 | [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
 | [`sliver`](roles/sliver/README.md) | Install sliver c2 |
