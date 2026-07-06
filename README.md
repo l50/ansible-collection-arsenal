@@ -15,9 +15,10 @@ graph TD
     Collection[Ansible Collection]
     Collection --> Roles[⚙️ Roles]
     Roles --> R0[attack_box 🧪]
-    Roles --> R1[recon_toolkit 🧪]
-    Roles --> R2[sliver 🧪]
-    Roles --> R3[ttpforge 🧪]
+    Roles --> R1[mythic 🧪]
+    Roles --> R2[recon_toolkit 🧪]
+    Roles --> R3[sliver 🧪]
+    Roles --> R4[ttpforge 🧪]
     Collection --> Playbooks[📚 Playbooks]
     Playbooks --> PB0[atomic-red-team 🧪]
     Playbooks --> PB1[attack_box 🧪]
@@ -53,6 +54,7 @@ ansible-galaxy collection build --force && \
 | Role | Description |
 | ---- | ----------- |
 | [`attack_box`](roles/attack_box/README.md) | Creates an attack box for penetration testing and red teaming |
+| [`mythic`](roles/mythic/README.md) | Install and configure the Mythic C2 framework |
 | [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
 | [`sliver`](roles/sliver/README.md) | Install sliver c2 |
 | [`ttpforge`](roles/ttpforge/README.md) | TTPForge is a Cybersecurity Framework for developing, automating, and executing attacker Tactics, Techniques, and Procedures (TTPs) |
