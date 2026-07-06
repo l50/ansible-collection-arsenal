@@ -14,8 +14,8 @@ that I employ regularly.
 graph TD
     Collection[Ansible Collection]
     Collection --> Roles[⚙️ Roles]
-    Roles --> R0[attack_box 🧪]
-    Roles --> R1[mythic 🧪]
+    Roles --> R0[acl_tools 🧪]
+    Roles --> R1[attack_box 🧪]
     Roles --> R2[recon_toolkit 🧪]
     Roles --> R3[sliver 🧪]
     Roles --> R4[ttpforge 🧪]
@@ -53,8 +53,8 @@ ansible-galaxy collection build --force && \
 
 | Role | Description |
 | ---- | ----------- |
+| [`acl_tools`](roles/acl_tools/README.md) | Install and configure Active Directory ACL exploitation tools |
 | [`attack_box`](roles/attack_box/README.md) | Creates an attack box for penetration testing and red teaming |
-| [`mythic`](roles/mythic/README.md) | Install and configure the Mythic C2 framework |
 | [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
 | [`sliver`](roles/sliver/README.md) | Install sliver c2 |
 | [`ttpforge`](roles/ttpforge/README.md) | TTPForge is a Cybersecurity Framework for developing, automating, and executing attacker Tactics, Techniques, and Procedures (TTPs) |
