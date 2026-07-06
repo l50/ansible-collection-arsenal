@@ -45,8 +45,6 @@ acl_tools_targetedkerberoast_version: "main"
 
 acl_tools_update_cache: true
 
-# Passed as --break-system-packages to pip3 when installing bloodyAD system-wide.
-# Ares wires this to its base role's base_pip_break_required.
 acl_tools_pip_break_system_packages: false
 
 # Tool binary paths (for verification)
