@@ -1,0 +1,25 @@
+---
+- name: Install mitm6 in an isolated virtualenv
+  ansible.builtin.pip:
+    name: mitm6
+    virtualenv: "{{ coercion_tools_mitm6_install_dir }}/venv"
+    virtualenv_command: python3 -m venv
+  become: true
+
+- name: Create wrapper script for mitm6
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      exec {{ coercion_tools_mitm6_install_dir }}/venv/bin/mitm6 "$@"
+    dest: /usr/local/bin/mitm6
+    mode: '0755'
+  become: true
+
+- name: Symlink mitm6 into /usr/bin
+  ansible.builtin.file:
+    src: /usr/local/bin/mitm6
+    dest: /usr/bin/mitm6
+    state: link
+    force: true
+    follow: false
+  become: true
