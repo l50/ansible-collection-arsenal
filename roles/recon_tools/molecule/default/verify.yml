@@ -382,7 +382,7 @@
     - name: Display verification summary
       ansible.builtin.debug:
         msg:
-          - "======== Ares Network Tools Verification ========"
+          - "======== Recon Tools Verification ========"
           - ""
           - "--- Core Tools ---"
           - "nmap: Installed and functional"
