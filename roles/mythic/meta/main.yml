@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  role_name: mythic
+  namespace: l50
+  author: Jayson Grace
+  description: Install and configure the Mythic C2 framework
+  company: techvomit
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - mythic
+    - c2
+    - security
+    - redteam
+    - commandcontrol
+
+dependencies: []
