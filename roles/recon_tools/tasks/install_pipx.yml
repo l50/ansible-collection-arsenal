@@ -1,0 +1,22 @@
+---
+- name: Install pipx via apt
+  ansible.builtin.apt:
+    name: pipx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
+- name: Check pipx version after apt install
+  ansible.builtin.command: pipx --version
+  register: recon_tools_pipx_version
+  changed_when: false
+
+- name: Upgrade pipx to a version supporting --global (>= 1.5.0)
+  ansible.builtin.pip:
+    name: "pipx>=1.5.0"
+    executable: pip3
+    extra_args: --break-system-packages --ignore-installed
+    state: present
+  become: true
+  when: recon_tools_pipx_version.stdout is version('1.5.0', '<')
