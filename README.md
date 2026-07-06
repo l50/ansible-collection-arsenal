@@ -17,10 +17,11 @@ graph TD
     Roles --> R0[acl_tools 🧪]
     Roles --> R1[attack_box 🧪]
     Roles --> R2[coercion_tools 🧪]
-    Roles --> R3[mythic 🧪]
-    Roles --> R4[recon_toolkit 🧪]
-    Roles --> R5[sliver 🧪]
-    Roles --> R6[ttpforge 🧪]
+    Roles --> R3[cracking_tools 🧪]
+    Roles --> R4[mythic 🧪]
+    Roles --> R5[recon_toolkit 🧪]
+    Roles --> R6[sliver 🧪]
+    Roles --> R7[ttpforge 🧪]
     Collection --> Playbooks[📚 Playbooks]
     Playbooks --> PB0[atomic-red-team 🧪]
     Playbooks --> PB1[attack_box 🧪]
@@ -58,6 +59,7 @@ ansible-galaxy collection build --force && \
 | [`acl_tools`](roles/acl_tools/README.md) | Install and configure Active Directory ACL exploitation tools |
 | [`attack_box`](roles/attack_box/README.md) | Creates an attack box for penetration testing and red teaming |
 | [`coercion_tools`](roles/coercion_tools/README.md) | Install and configure network poisoning and relay attack tools |
+| [`cracking_tools`](roles/cracking_tools/README.md) | Install and configure password cracking tools |
 | [`mythic`](roles/mythic/README.md) | Install and configure the Mythic C2 framework |
 | [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
 | [`sliver`](roles/sliver/README.md) | Install sliver c2 |
