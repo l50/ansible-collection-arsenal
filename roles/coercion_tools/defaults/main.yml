@@ -27,9 +27,9 @@ coercion_tools_responder_install_dir: "/opt/Responder"
 # Pin to latest stable release for reproducibility
 coercion_tools_responder_version: "v3.1.4.0"
 
-# Responder lifecycle (challenge pinning, NetNTLMv1 downgrade, listener
-# start/stop) is owned by the ares worker via `start_responder` and the
-# auto-responder path in coercer/petitpotam/dfscoerce, not by ansible.
+# This role installs Responder only. Runtime lifecycle (challenge pinning,
+# NetNTLMv1 downgrade, listener start/stop) is expected to be driven by the
+# consuming playbook or operator tooling, not by this role.
 
 # mitm6 configuration (DHCPv6 poisoning)
 coercion_tools_install_mitm6: true
