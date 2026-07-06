@@ -14,11 +14,12 @@ that I employ regularly.
 graph TD
     Collection[Ansible Collection]
     Collection --> Roles[⚙️ Roles]
-    Roles --> R0[attack_box 🧪]
-    Roles --> R1[mythic 🧪]
-    Roles --> R2[recon_toolkit 🧪]
-    Roles --> R3[sliver 🧪]
-    Roles --> R4[ttpforge 🧪]
+    Roles --> R0[acl_tools 🧪]
+    Roles --> R1[attack_box 🧪]
+    Roles --> R2[mythic 🧪]
+    Roles --> R3[recon_toolkit 🧪]
+    Roles --> R4[sliver 🧪]
+    Roles --> R5[ttpforge 🧪]
     Collection --> Playbooks[📚 Playbooks]
     Playbooks --> PB0[atomic-red-team 🧪]
     Playbooks --> PB1[attack_box 🧪]
@@ -53,6 +54,7 @@ ansible-galaxy collection build --force && \
 
 | Role | Description |
 | ---- | ----------- |
+| [`acl_tools`](roles/acl_tools/README.md) | Install and configure Active Directory ACL exploitation tools |
 | [`attack_box`](roles/attack_box/README.md) | Creates an attack box for penetration testing and red teaming |
 | [`mythic`](roles/mythic/README.md) | Install and configure the Mythic C2 framework |
 | [`recon_toolkit`](roles/recon_toolkit/README.md) | Install reconnaissance tools for subdomain enumeration, HTTP discovery, web crawling, vulnerability scanning, and parameter analysis |
