@@ -1,0 +1,17 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: l50.arsenal.recon_tools
+      vars:
+        recon_tools_pip_break_system_packages: true
+        # NetExec needs a Rust toolchain to build aardwolf; not worth setting
+        # up in molecule. Kali still exercises the apt-installed netexec path.
+        recon_tools_install_netexec: "{{ ansible_facts['distribution'] == 'Kali' }}"

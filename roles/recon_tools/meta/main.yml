@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  role_name: recon_tools
+  namespace: l50
+  author: Jayson Grace
+  description: Install and configure network reconnaissance tools
+  company: techvomit
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Kali
+      versions:
+        - all
+  galaxy_tags:
+    - security
+    - pentesting
+    - network
+    - reconnaissance
+    - kali
+    - offsec
+
+dependencies: []
