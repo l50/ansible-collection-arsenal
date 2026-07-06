@@ -1,0 +1,14 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include default variables
+      ansible.builtin.include_vars:
+        file: "../../defaults/main.yml"
+
+    - name: Include role under test
+      ansible.builtin.include_role:
+        name: l50.arsenal.credential_access_tools
+      vars:
+        credential_access_tools_pip_break_system_packages: true
