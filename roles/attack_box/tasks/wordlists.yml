@@ -12,10 +12,3 @@
     dest: /usr/share/wordlists/rockyou.txt
     mode: '0644'
   become: true
-
-- name: Extract wordlists
-  ansible.builtin.command:
-    cmd: gzip -d /usr/share/wordlists/rockyou.txt.gz
-  args:
-    creates: /usr/share/wordlists/rockyou.txt
-  become: true

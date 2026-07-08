@@ -10,23 +10,35 @@
     - name: Check if required packages are installed
       ansible.builtin.package_facts:
 
-    - name: Assert required packages are installed
+    - name: Assert required packages are installed (Kali only)
       ansible.builtin.assert:
         that:
           - item in ansible_facts.packages
+        fail_msg: "Required attack_box package '{{ item }}' is not installed"
+        success_msg: "Required attack_box package '{{ item }}' is installed"
       loop: "{{ attack_box_common_install_packages }}"
       when: ansible_facts['distribution_release'] == "kali-rolling"
 
-    - name: Check wordlists directory exists
+    # ===== Wordlists (Kali only) =====
+
+    - name: Check wordlists directory exists with expected permissions
       ansible.builtin.stat:
         path: /usr/share/wordlists
       register: attack_box_wordlists_dir
       when: ansible_facts['distribution_release'] == "kali-rolling"
 
-    - name: Assert wordlists directory exists
+    - name: Assert wordlists directory exists and is a directory
       ansible.builtin.assert:
         that:
           - attack_box_wordlists_dir.stat.exists
+          - attack_box_wordlists_dir.stat.isdir
+          - attack_box_wordlists_dir.stat.mode == '0755'
+        fail_msg: >-
+          /usr/share/wordlists missing, not a directory, or wrong mode
+          (exists={{ attack_box_wordlists_dir.stat.exists }},
+          isdir={{ attack_box_wordlists_dir.stat.isdir | default(false) }},
+          mode={{ attack_box_wordlists_dir.stat.mode | default('n/a') }})
+        success_msg: "/usr/share/wordlists exists with mode 0755"
       when: ansible_facts['distribution_release'] == "kali-rolling"
 
     - name: Check rockyou wordlist file exists
@@ -35,11 +47,28 @@
       register: attack_box_rockyou_file
       when: ansible_facts['distribution_release'] == "kali-rolling"
 
-    - name: Assert rockyou wordlist file exists
+    # rockyou.txt is ~134 MB uncompressed; if it's suspiciously small the
+    # download either partially failed or the gzip extraction didn't happen.
+    # 10 MB is a conservative lower bound that still catches the common
+    # failure modes (empty file, single-line placeholder, HTML error page).
+    - name: Assert rockyou wordlist file exists with real content
       ansible.builtin.assert:
         that:
           - attack_box_rockyou_file.stat.exists
+          - attack_box_rockyou_file.stat.isreg
+          - attack_box_rockyou_file.stat.size > 10485760
+        fail_msg: >-
+          /usr/share/wordlists/rockyou.txt missing, not a regular file, or
+          suspiciously small
+          (exists={{ attack_box_rockyou_file.stat.exists }},
+          size={{ attack_box_rockyou_file.stat.size | default(0) }} bytes;
+          expected > 10 MB)
+        success_msg: >-
+          /usr/share/wordlists/rockyou.txt present
+          ({{ attack_box_rockyou_file.stat.size }} bytes)
       when: ansible_facts['distribution_release'] == "kali-rolling"
+
+    # ===== SSH setup =====
 
     - name: Check user exists
       ansible.builtin.command:
@@ -48,24 +77,59 @@
       changed_when: false
       failed_when: attack_box_user_check.rc != 0
 
-    - name: Check .ssh directory exists for the user
+    - name: Compute expected .ssh directory path
+      ansible.builtin.set_fact:
+        attack_box_ssh_dir: >-
+          {{ '/root/.ssh'
+             if ansible_facts['user_id'] == 'root'
+             else '/home/' + ansible_facts['user_id'] + '/.ssh' }}
+
+    - name: Check .ssh directory for the user
       ansible.builtin.stat:
-        path: "{{ ansible_facts['user_id'] | ternary('/root/.ssh', '/home/' + ansible_facts['user_id'] + '/.ssh') }}"
+        path: "{{ attack_box_ssh_dir }}"
       register: attack_box_ssh_dir_check
 
-    - name: Assert .ssh directory exists
+    # ssh.yml creates .ssh with mode 0700 and owns it to the target user.
+    # A wrong mode here is a real security regression (world-readable private
+    # key material is trivially exfiltrable), so we assert on mode and owner
+    # rather than just existence.
+    - name: Assert .ssh directory has mode 0700 and correct owner
       ansible.builtin.assert:
         that:
           - attack_box_ssh_dir_check.stat.exists
+          - attack_box_ssh_dir_check.stat.isdir
+          - attack_box_ssh_dir_check.stat.mode == '0700'
+          - attack_box_ssh_dir_check.stat.pw_name == ansible_facts['user_id']
+        fail_msg: >-
+          {{ attack_box_ssh_dir }} missing or has wrong mode/owner
+          (exists={{ attack_box_ssh_dir_check.stat.exists }},
+          mode={{ attack_box_ssh_dir_check.stat.mode | default('n/a') }},
+          owner={{ attack_box_ssh_dir_check.stat.pw_name | default('n/a') }};
+          expected mode=0700 owner={{ ansible_facts['user_id'] }})
+        success_msg: >-
+          {{ attack_box_ssh_dir }} present with mode 0700 owned by
+          {{ ansible_facts['user_id'] }}
 
-    - name: Check authorized_keys file exists for the user
+    - name: Check authorized_keys file for the user
       ansible.builtin.stat:
-        path: "{{ ansible_facts['user_id'] | ternary('/root/.ssh/authorized_keys', '/home/' + ansible_facts['user_id'] + '/.ssh/authorized_keys') }}"
+        path: "{{ attack_box_ssh_dir }}/authorized_keys"
       register: attack_box_authorized_keys_check
-      when: attack_box_ssh_dir_check.stat.exists
 
-    - name: Assert authorized_keys file exists
+    # The role only copies authorized_keys when it finds *.pub files in the
+    # .ssh directory — a clean molecule run with no pre-seeded keys won't
+    # produce this file. Skip the assertion in that case rather than fail.
+    - name: Assert authorized_keys has mode 0600 and correct owner (only if it was written)
       ansible.builtin.assert:
         that:
-          - attack_box_authorized_keys_check.stat.exists
+          - attack_box_authorized_keys_check.stat.isreg
+          - attack_box_authorized_keys_check.stat.mode == '0600'
+          - attack_box_authorized_keys_check.stat.pw_name == ansible_facts['user_id']
+        fail_msg: >-
+          {{ attack_box_ssh_dir }}/authorized_keys has wrong mode/owner
+          (mode={{ attack_box_authorized_keys_check.stat.mode | default('n/a') }},
+          owner={{ attack_box_authorized_keys_check.stat.pw_name | default('n/a') }};
+          expected mode=0600 owner={{ ansible_facts['user_id'] }})
+        success_msg: >-
+          {{ attack_box_ssh_dir }}/authorized_keys has mode 0600 owned by
+          {{ ansible_facts['user_id'] }}
       when: attack_box_authorized_keys_check.stat.exists

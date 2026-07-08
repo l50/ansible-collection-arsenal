@@ -334,7 +334,6 @@
     virtualenv: "{{ privesc_tools_nopac_install_dir }}/venv"
   become: true
   when: privesc_tools_install_nopac
-  failed_when: false
 
 - name: Create wrapper script for noPac
   ansible.builtin.copy:

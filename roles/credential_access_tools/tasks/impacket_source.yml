@@ -89,7 +89,7 @@
   ansible.builtin.pip:
     name: "pycryptodome>=3.19.1"
     virtualenv: "{{ credential_access_tools_impacket_venv }}"
-    state: latest  # noqa: package-latest
+    state: latest  # noqa: package-latest - pinned via version spec; keeps ahead of CVE fix
   become: true
   when: credential_access_tools_needs_impacket_install | bool
 

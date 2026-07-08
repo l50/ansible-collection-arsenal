@@ -149,6 +149,93 @@
         - acl_tools_install_dacledit | default(true)
         - acl_tools_impacket_version_check.rc == 0
 
+    # targetedKerberoast wrapper — created by linux.yml at /usr/local/bin, with
+    # a companion .py symlink so tools that call the script by its file name
+    # still resolve. Verify both, plus that the wrapper actually launches.
+    - name: Check targetedKerberoast wrapper script exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/targetedKerberoast
+      register: acl_tools_targetedkerberoast_wrapper
+      when: acl_tools_install_targetedkerberoast | default(true)
+
+    - name: Assert targetedKerberoast wrapper is executable
+      ansible.builtin.assert:
+        that:
+          - acl_tools_targetedkerberoast_wrapper.stat.exists
+          - acl_tools_targetedkerberoast_wrapper.stat.executable
+          - acl_tools_targetedkerberoast_wrapper.stat.mode == '0755'
+        fail_msg: >-
+          /usr/local/bin/targetedKerberoast missing, non-executable, or wrong mode
+          (exists={{ acl_tools_targetedkerberoast_wrapper.stat.exists }},
+          exec={{ acl_tools_targetedkerberoast_wrapper.stat.executable | default(false) }},
+          mode={{ acl_tools_targetedkerberoast_wrapper.stat.mode | default('n/a') }})
+        success_msg: "/usr/local/bin/targetedKerberoast present with mode 0755"
+      when: acl_tools_install_targetedkerberoast | default(true)
+
+    - name: Check targetedKerberoast.py symlink follows to the wrapper
+      ansible.builtin.stat:
+        path: /usr/local/bin/targetedKerberoast.py
+        follow: false
+      register: acl_tools_targetedkerberoast_py_symlink
+      when: acl_tools_install_targetedkerberoast | default(true)
+
+    - name: Assert targetedKerberoast.py is a symlink to the wrapper
+      ansible.builtin.assert:
+        that:
+          - acl_tools_targetedkerberoast_py_symlink.stat.exists
+          - acl_tools_targetedkerberoast_py_symlink.stat.islnk
+          - acl_tools_targetedkerberoast_py_symlink.stat.lnk_target == '/usr/local/bin/targetedKerberoast'
+        fail_msg: >-
+          /usr/local/bin/targetedKerberoast.py is not a symlink pointing at the
+          wrapper (islnk={{ acl_tools_targetedkerberoast_py_symlink.stat.islnk | default(false) }},
+          target='{{ acl_tools_targetedkerberoast_py_symlink.stat.lnk_target | default('') }}')
+        success_msg: "/usr/local/bin/targetedKerberoast.py symlinks to the wrapper"
+      when: acl_tools_install_targetedkerberoast | default(true)
+
+    - name: Functional smoke test — targetedKerberoast --help
+      ansible.builtin.command: /usr/local/bin/targetedKerberoast --help
+      register: acl_tools_targetedkerberoast_help
+      changed_when: false
+      failed_when: false
+      when: acl_tools_install_targetedkerberoast | default(true)
+
+    - name: Assert targetedKerberoast wrapper launches without an import error
+      ansible.builtin.assert:
+        that:
+          # Rely on rc/stdout rather than an exact banner string: upstream can
+          # change the argparse prologue but a real --help output is never
+          # empty. Non-zero rc AND empty stdout means the venv-python couldn't
+          # import the script.
+          - acl_tools_targetedkerberoast_help.stdout | length > 0
+        fail_msg: >-
+          targetedKerberoast --help produced no output
+          (rc={{ acl_tools_targetedkerberoast_help.rc }},
+          stderr={{ acl_tools_targetedkerberoast_help.stderr }})
+        success_msg: "targetedKerberoast wrapper launches and prints help"
+      when: acl_tools_install_targetedkerberoast | default(true)
+
+    # Impacket dacledit entrypoint — installed by impacket_source.yml under
+    # the /opt/impacket venv, then wired to /usr/local/bin as a wrapper. The
+    # regsecrets import check above proves the impacket source install is
+    # correct; this proves the dacledit CLI is wired up on PATH.
+    - name: Check impacket-dacledit wrapper exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/impacket-dacledit
+      register: acl_tools_dacledit_wrapper
+      when: acl_tools_install_dacledit | default(true)
+
+    - name: Assert impacket-dacledit wrapper is executable
+      ansible.builtin.assert:
+        that:
+          - acl_tools_dacledit_wrapper.stat.exists
+          - acl_tools_dacledit_wrapper.stat.executable
+        fail_msg: >-
+          /usr/local/bin/impacket-dacledit missing or non-executable
+          (exists={{ acl_tools_dacledit_wrapper.stat.exists }},
+          exec={{ acl_tools_dacledit_wrapper.stat.executable | default(false) }})
+        success_msg: "/usr/local/bin/impacket-dacledit is executable"
+      when: acl_tools_install_dacledit | default(true)
+
     - name: Verify rpcclient is installed
       ansible.builtin.command: which rpcclient
       environment:

@@ -9,6 +9,11 @@ Creates an attack box for penetration testing and red teaming
 
 - Ansible >= 2.14
 
+## Dependencies
+
+
+- cowdogmoo.workstation.package_management
+
 ## Role Variables
 
 ### Default Variables (main.yml)
@@ -41,17 +46,17 @@ Creates an attack box for penetration testing and red teaming
 ### ssh.yml
 
 
-- **Get primary group name of the current user "{{ attack_box_user ¦ default(ansible_facts['user_id']) }}"** (ansible.builtin.command)
-- **Ensure .ssh directory exists for "{{ attack_box_user ¦ default(ansible_facts['user_id']) }}"** (ansible.builtin.file)
+- **Compute target user and .ssh directory** (ansible.builtin.set_fact)
+- **Get primary group name of the current user "{{ attack_box_target_user }}"** (ansible.builtin.command)
+- **Ensure .ssh directory exists for "{{ attack_box_target_user }}"** (ansible.builtin.file)
 - **Get list of public SSH key files** (ansible.builtin.find)
-- **Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user ¦ default(ansible_facts['user_id']) }}"** (ansible.builtin.copy) - Conditional
+- **Add optionally provided public SSH key files to authorized_keys "{{ attack_box_target_user }}"** (ansible.builtin.copy) - Conditional
 
 ### wordlists.yml
 
 
 - **Ensure wordlists directory exists** (ansible.builtin.file)
 - **Download rockyou wordlist if not present** (ansible.builtin.get_url)
-- **Extract wordlists** (ansible.builtin.command)
 
 ## Example Playbook
 

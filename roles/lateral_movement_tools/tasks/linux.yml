@@ -147,8 +147,19 @@
     - ansible_facts['distribution'] != 'Kali'
     - lateral_movement_tools_install_evil_winrm
 
-# Force reinstall gcc packages - the dpkg database may say installed but files are missing
-# Use apt-get install --reinstall to force file restoration
+# Check whether gcc is functional before invoking the reinstall repair path.
+# The dpkg database may say gcc is installed while libgcc files are missing;
+# in that case `gcc --version` exits non-zero and we force a reinstall.
+- name: Check whether gcc is functional
+  ansible.builtin.command: gcc --version
+  register: lateral_movement_tools_gcc_check
+  failed_when: false
+  changed_when: false
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - ansible_facts['distribution'] != 'Kali'
+    - lateral_movement_tools_install_evil_winrm
+
 - name: Force reinstall gcc packages to restore missing libgcc files
   ansible.builtin.shell: |
     set -e
@@ -162,6 +173,7 @@
     - ansible_facts['os_family'] == 'Debian'
     - ansible_facts['distribution'] != 'Kali'
     - lateral_movement_tools_install_evil_winrm
+    - lateral_movement_tools_gcc_check.rc | default(1) != 0
 
 # Test that gcc can actually compile
 - name: Test gcc can compile a simple program

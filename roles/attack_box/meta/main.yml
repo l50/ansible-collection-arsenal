@@ -13,3 +13,6 @@ galaxy_info:
         - all
   galaxy_tags:
     - offsec
+
+dependencies:
+  - role: cowdogmoo.workstation.package_management
