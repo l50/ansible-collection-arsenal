@@ -18,7 +18,7 @@ Install and configure the Mythic C2 framework
 | `mythic_user` | str | <code>mythic</code> | No description |
 | `mythic_home` | str | <code>/home/{{ mythic_user }}</code> | No description |
 | `mythic_repo` | str | <code>https://github.com/its-a-feature/Mythic.git</code> | No description |
-| `mythic_repo_version` | str | <code>master</code> | No description |
+| `mythic_repo_version` | str | <code>v3.4.0.61</code> | No description |
 | `mythic_install_dir` | str | <code>{{ mythic_home }}/Mythic</code> | No description |
 | `mythic_go_version` | str | <code>1.21</code> | No description |
 | `mythic_install_dev_tools` | bool | <code>True</code> | No description |

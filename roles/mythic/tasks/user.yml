@@ -14,8 +14,7 @@
     cmd: |
       set -o pipefail
       if id -nG "{{ mythic_user }}" | tr ' ' '\n' | grep -qx sudo; then
-        gpasswd -d "{{ mythic_user }}" sudo
-        echo REMOVED
+        gpasswd -d "{{ mythic_user }}" sudo && echo REMOVED
       fi
     executable: /bin/bash
   become: true
@@ -31,9 +30,11 @@
       # Scoped sudo permissions for the mythic service user.
       # Runtime docker and mythic-cli operations are covered by the mythic
       # user's docker-group membership (granted in docker.yml); those paths
-      # do NOT need sudo. Only service-lifecycle commands are permitted
-      # here so that a compromise of the mythic user cannot trivially
-      # escalate to full root on the host.
+      # do NOT need sudo. Only service-lifecycle commands are permitted here.
+      # Note: docker-group membership is itself root-equivalent (docker
+      # socket -> root pivot is trivial), so this scoping is defense-in-depth
+      # against non-docker escalation paths, not a containment boundary for
+      # a compromised mythic user.
       Cmnd_Alias MYTHIC_SVC = /usr/bin/systemctl start mythic.service, \
                               /usr/bin/systemctl stop mythic.service, \
                               /usr/bin/systemctl restart mythic.service, \
