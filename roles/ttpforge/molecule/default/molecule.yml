@@ -42,3 +42,19 @@ provisioner:
 
 verifier:
   name: ansible
+
+# Skip idempotence: cowdogmoo.workstation.mise re-generates plugin bin dirs
+# and installation scripts on every run — that behavior lives upstream and
+# cannot be resolved from this role.
+scenario:
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy
