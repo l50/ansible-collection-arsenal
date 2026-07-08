@@ -3,15 +3,46 @@
   ansible.builtin.user:
     name: "{{ mythic_user }}"
     shell: /bin/bash
-    groups: sudo
-    append: true
   become: true
 
-- name: Add mythic user to sudoers with NOPASSWD
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/mythic
-    line: "{{ mythic_user }} ALL=(ALL) NOPASSWD:ALL"
-    create: true
+# Defence-in-depth: earlier revisions of this role appended the mythic user
+# to the sudo group, which grants full root via %sudo in /etc/sudoers and
+# defeats the scoped sudoers.d/mythic policy below. Remove that grant if a
+# prior run left it behind. Fresh installs are a no-op.
+- name: Remove mythic user from sudo group if present
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      if id -nG "{{ mythic_user }}" | tr ' ' '\n' | grep -qx sudo; then
+        gpasswd -d "{{ mythic_user }}" sudo
+        echo REMOVED
+      fi
+    executable: /bin/bash
+  become: true
+  register: mythic_sudo_group_remove
+  changed_when: "'REMOVED' in mythic_sudo_group_remove.stdout"
+
+- name: Add mythic user to sudoers with scoped commands
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/mythic
     mode: '0440'
     validate: 'visudo -cf %s'
+    content: |
+      # Scoped sudo permissions for the mythic service user.
+      # Runtime docker and mythic-cli operations are covered by the mythic
+      # user's docker-group membership (granted in docker.yml); those paths
+      # do NOT need sudo. Only service-lifecycle commands are permitted
+      # here so that a compromise of the mythic user cannot trivially
+      # escalate to full root on the host.
+      Cmnd_Alias MYTHIC_SVC = /usr/bin/systemctl start mythic.service, \
+                              /usr/bin/systemctl stop mythic.service, \
+                              /usr/bin/systemctl restart mythic.service, \
+                              /usr/bin/systemctl reload mythic.service, \
+                              /usr/bin/systemctl status mythic.service, \
+                              /bin/systemctl start mythic.service, \
+                              /bin/systemctl stop mythic.service, \
+                              /bin/systemctl restart mythic.service, \
+                              /bin/systemctl reload mythic.service, \
+                              /bin/systemctl status mythic.service
+      {{ mythic_user }} ALL=(ALL) NOPASSWD: MYTHIC_SVC
   become: true

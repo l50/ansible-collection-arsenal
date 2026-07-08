@@ -18,6 +18,7 @@ Install and configure the Mythic C2 framework
 | `mythic_user` | str | <code>mythic</code> | No description |
 | `mythic_home` | str | <code>/home/{{ mythic_user }}</code> | No description |
 | `mythic_repo` | str | <code>https://github.com/its-a-feature/Mythic.git</code> | No description |
+| `mythic_repo_version` | str | <code>master</code> | No description |
 | `mythic_install_dir` | str | <code>{{ mythic_home }}/Mythic</code> | No description |
 | `mythic_go_version` | str | <code>1.21</code> | No description |
 | `mythic_install_dev_tools` | bool | <code>True</code> | No description |
@@ -135,7 +136,8 @@ Install and configure the Mythic C2 framework
 
 
 - **Create mythic user** (ansible.builtin.user)
-- **Add mythic user to sudoers with NOPASSWD** (ansible.builtin.lineinfile)
+- **Remove mythic user from sudo group if present** (ansible.builtin.shell)
+- **Add mythic user to sudoers with scoped commands** (ansible.builtin.copy)
 
 ## Example Playbook
 

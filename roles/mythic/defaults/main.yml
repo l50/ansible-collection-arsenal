@@ -2,6 +2,7 @@
 mythic_user: mythic
 mythic_home: "/home/{{ mythic_user }}"
 mythic_repo: "https://github.com/its-a-feature/Mythic.git"
+mythic_repo_version: master
 mythic_install_dir: "{{ mythic_home }}/Mythic"
 mythic_go_version: "1.21"
 mythic_install_dev_tools: true

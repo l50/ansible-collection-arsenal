@@ -25,11 +25,11 @@
       changed_when: false
       failed_when: "'/bin/bash' not in mythic_user_shell.stdout"
 
-    - name: Verify mythic user is in sudo group
+    - name: Verify mythic user is NOT in sudo group
       ansible.builtin.command: "groups {{ mythic_user }}"
       register: mythic_user_groups
       changed_when: false
-      failed_when: "'sudo' not in mythic_user_groups.stdout"
+      failed_when: "'sudo' in mythic_user_groups.stdout.split()"
 
     - name: Check sudoers file exists for mythic user
       ansible.builtin.stat:
@@ -38,6 +38,23 @@
       failed_when: >
         not mythic_sudoers.stat.exists or
         mythic_sudoers.stat.mode != '0440'
+
+    - name: Read scoped sudoers policy for mythic user
+      ansible.builtin.slurp:
+        src: /etc/sudoers.d/mythic
+      register: mythic_sudoers_content
+
+    - name: Verify sudoers policy is scoped to mythic.service systemctl only
+      ansible.builtin.assert:
+        that:
+          - "'Cmnd_Alias MYTHIC_SVC' in sudoers_body"
+          - "'mythic.service' in sudoers_body"
+          - "'NOPASSWD: MYTHIC_SVC' in sudoers_body"
+          - "'NOPASSWD:ALL' not in sudoers_body"
+          - "'NOPASSWD: ALL' not in sudoers_body"
+        fail_msg: "/etc/sudoers.d/mythic is not scoped to the MYTHIC_SVC alias"
+      vars:
+        sudoers_body: "{{ mythic_sudoers_content.content | b64decode }}"
 
     # ===== Package Installation Verification =====
 

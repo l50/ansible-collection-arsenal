@@ -6,7 +6,7 @@
         path: "{{ mythic_install_dir }}"
         owner: "{{ mythic_user }}"
         group: "{{ mythic_user }}"
-        recurse: yes
+        recurse: true
         mode: '0755'
       become: true
 
@@ -27,7 +27,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_http_install_start
-      changed_when: mythic_http_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for HTTP container
       ansible.builtin.shell:
@@ -49,7 +49,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_apollo_install_start
-      changed_when: mythic_apollo_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Apollo container
       ansible.builtin.shell:
@@ -71,7 +71,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_poseidon_install_start
-      changed_when: mythic_poseidon_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Poseidon container
       ansible.builtin.shell:
@@ -93,7 +93,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_forge_install_start
-      changed_when: mythic_forge_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Forge container
       ansible.builtin.shell:
@@ -115,7 +115,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_bloodhound_install_start
-      changed_when: mythic_bloodhound_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Bloodhound container
       ansible.builtin.shell:
