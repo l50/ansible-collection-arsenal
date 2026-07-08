@@ -18,25 +18,9 @@
       changed_when: false
       failed_when: ttpforge_user_check.rc != 0
 
-    - name: Check sudoers drop-in file for ttpforge user
-      ansible.builtin.stat:
-        path: "/etc/sudoers.d/{{ ttpforge_username }}"
-      register: ttpforge_sudoers_check
-      when: ttpforge_username != 'root'
-
-    - name: Assert sudoers drop-in has correct owner and mode
-      ansible.builtin.assert:
-        that:
-          - ttpforge_sudoers_check.stat.exists
-          - ttpforge_sudoers_check.stat.mode == '0440'
-          - ttpforge_sudoers_check.stat.pw_name == 'root'
-        fail_msg: >-
-          /etc/sudoers.d/{{ ttpforge_username }} missing or has wrong owner/mode
-          (exists={{ ttpforge_sudoers_check.stat.exists }},
-          mode={{ ttpforge_sudoers_check.stat.mode | default('n/a') }},
-          owner={{ ttpforge_sudoers_check.stat.pw_name | default('n/a') }})
-        success_msg: "/etc/sudoers.d/{{ ttpforge_username }} exists with 0440 root:root"
-      when: ttpforge_username != 'root'
+    # NOTE: the ttpforge role does not manage /etc/sudoers.d/<user> — it only
+    # runs as the target user, never grants them sudo. Asserting a sudoers
+    # drop-in exists would be checking behavior the role never performs.
 
     # ===== Install path ownership =====
 

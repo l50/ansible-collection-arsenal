@@ -131,24 +131,14 @@
           sliver-client binary present, executable, and owned by
           {{ sliver_username }}
 
-    # ===== Sliver runtime state (unpack + operator config) =====
-
-    - name: Stat unpacked server config directory
-      ansible.builtin.stat:
-        path: "{{ sliver_install_path }}/configs/server"
-      register: sliver_server_configs
-      when: sliver_unpack_at_build | default(true) | bool
-
-    - name: Assert sliver-server unpack completed
-      ansible.builtin.assert:
-        that:
-          - sliver_server_configs.stat.exists
-          - sliver_server_configs.stat.isdir
-        fail_msg: >-
-          {{ sliver_install_path }}/configs/server is missing — the
-          `sliver-server unpack --force` step did not complete successfully
-        success_msg: "sliver-server unpack directory is present"
-      when: sliver_unpack_at_build | default(true) | bool
+    # ===== Sliver runtime state (operator config) =====
+    #
+    # We don't stat the `sliver-server unpack` output directory here — the
+    # unpack path is an internal implementation detail that has moved between
+    # Sliver versions (~/.sliver-server, ~/.sliver, etc.). Successful operator
+    # config generation below implicitly proves the unpack step ran, since
+    # `sliver-server operator` refuses to run against an un-initialized asset
+    # tree.
 
     - name: Stat operator config file
       ansible.builtin.stat:
