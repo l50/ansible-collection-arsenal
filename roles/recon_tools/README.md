@@ -157,14 +157,6 @@ Install and configure network reconnaissance tools
 
 - **Include Linux tasks** (ansible.builtin.include_tasks) - Conditional
 
-### netexec_pip.yml
-
-
-- **Check pip version** (ansible.builtin.command)
-- **Set fact for pip supports break-system-packages** (ansible.builtin.set_fact)
-- **Install netexec from pip** (ansible.builtin.pip)
-- **Warn if netexec installation failed** (ansible.builtin.debug) - Conditional
-
 ### netexec_pipx.yml
 
 

@@ -15,7 +15,6 @@
   ansible.builtin.command: pipx install --global certipy-ad
   register: recon_tools_certipy_pipx_install
   changed_when: "'installed package certipy-ad' in recon_tools_certipy_pipx_install.stdout"
-  failed_when: false
   become: true
   environment:
     HOME: /root
