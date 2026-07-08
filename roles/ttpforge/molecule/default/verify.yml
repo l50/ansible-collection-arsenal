@@ -7,6 +7,16 @@
       ansible.builtin.include_vars:
         file: "../../defaults/main.yml"
 
+    # Mirror the overrides converge.yml passes to the role so ownership /
+    # home-path assertions compare against the same identity the role was
+    # actually invoked with. Without this, defaults/main.yml would evaluate
+    # ttpforge_usergroup to `ansible_facts['user_id']` (`root` inside the
+    # container) even though converge sets it to the distro-lowercase user.
+    - name: Align verify-time identity with converge-time overrides
+      ansible.builtin.set_fact:
+        ttpforge_username: "{{ ansible_facts['distribution'] | lower }}"
+        ttpforge_usergroup: "{{ ansible_facts['distribution'] | lower }}"
+
     - name: Set ttpforge user home directory
       ansible.builtin.include_tasks: "../../tasks/ttpforge_get_user_home.yml"
 
