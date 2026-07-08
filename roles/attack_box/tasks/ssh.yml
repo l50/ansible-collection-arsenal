@@ -24,7 +24,10 @@
 - name: Add optionally provided public SSH key files to authorized_keys "{{ attack_box_user | default(ansible_facts['user_id']) }}"
   ansible.builtin.copy:
     src: "{{ item.path }}"
-    dest: "{{ (attack_box_user | default(ansible_facts['user_id'])) | ternary('/root/.ssh/authorized_keys', ansible_facts['user_dir'] + '/.ssh/authorized_keys') }}"
+    dest: "{{
+      (attack_box_user | default(ansible_facts['user_id']))
+      | ternary('/root/.ssh/authorized_keys',
+                ansible_facts['user_dir'] + '/.ssh/authorized_keys') }}"
     owner: "{{ attack_box_user | default(ansible_facts['user_id']) }}"
     group: "{{ attack_box_primary_group_name.stdout }}"
     mode: '0600'

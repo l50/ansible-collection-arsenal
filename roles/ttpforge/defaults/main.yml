@@ -1,9 +1,18 @@
 ---
 ttpforge_cleanup: false  # Enable for Docker/container builds to minimize image size
 ttpforge_install_path: /opt/ttpforge
-ttpforge_username: "{% if ansible_facts['os_family'] == 'Darwin' %}{{ ansible_facts['user_id'] }}{% else %}{{ ansible_facts['distribution'] | lower }}{% endif %}"
-ttpforge_usergroup: "{% if ansible_facts['os_family'] == 'Darwin' %}staff{% elif ansible_facts['os_family'] == 'Debian' %}{{ ansible_facts['user_id'] }}{% elif ansible_facts['os_family'] == 'RedHat' %}{{ ansible_facts['user_id'] }}{% else %}{{ ansible_facts['distribution'] | lower }}{% endif %}"
-ttpforge_shell: "{% if ansible_facts['os_family'] == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}"
+ttpforge_username: "{{
+  ansible_facts['user_id']
+  if ansible_facts['os_family'] == 'Darwin'
+  else ansible_facts['distribution'] | lower }}"
+ttpforge_usergroup: "{{
+  'staff'
+  if ansible_facts['os_family'] == 'Darwin'
+  else ansible_facts['user_id']
+  if ansible_facts['os_family'] in ['Debian', 'RedHat']
+  else ansible_facts['distribution'] | lower }}"
+ttpforge_shell: "{{
+  '/bin/zsh' if ansible_facts['os_family'] == 'Darwin' else '/bin/bash' }}"
 ttpforge_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
   - name: go

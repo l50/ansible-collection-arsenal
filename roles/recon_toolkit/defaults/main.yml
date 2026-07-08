@@ -6,9 +6,18 @@
 recon_toolkit_cleanup: false  # Enable for Docker/container builds to minimize image size
 recon_toolkit_install_path: /opt/recon_toolkit
 
-recon_toolkit_username: "{% if ansible_facts['os_family'] == 'Darwin' %}{{ ansible_facts['user_id'] }}{% else %}{{ ansible_facts['distribution'] | lower }}{% endif %}"
-recon_toolkit_usergroup: "{% if ansible_facts['os_family'] == 'Darwin' %}staff{% elif ansible_facts['os_family'] == 'Debian' %}{{ ansible_facts['user_id'] }}{% elif ansible_facts['os_family'] == 'RedHat' %}{{ ansible_facts['user_id'] }}{% else %}{{ ansible_facts['distribution'] | lower }}{% endif %}"
-recon_toolkit_shell: "{% if ansible_facts['os_family'] == 'Darwin' %}/bin/zsh{% else %}/bin/bash{% endif %}"
+recon_toolkit_username: "{{
+  ansible_facts['user_id']
+  if ansible_facts['os_family'] == 'Darwin'
+  else ansible_facts['distribution'] | lower }}"
+recon_toolkit_usergroup: "{{
+  'staff'
+  if ansible_facts['os_family'] == 'Darwin'
+  else ansible_facts['user_id']
+  if ansible_facts['os_family'] in ['Debian', 'RedHat']
+  else ansible_facts['distribution'] | lower }}"
+recon_toolkit_shell: "{{
+  '/bin/zsh' if ansible_facts['os_family'] == 'Darwin' else '/bin/bash' }}"
 
 recon_toolkit_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$

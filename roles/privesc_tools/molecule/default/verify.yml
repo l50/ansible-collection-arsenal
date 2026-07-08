@@ -361,6 +361,139 @@
         success_msg: "zerologon wrapper is available at /usr/local/bin/zerologon"
       when: privesc_tools_install_zerologon | default(true)
 
+    # Certipy verification (AD CS abuse)
+    - name: Check certipy wrapper script exists at /usr/local/bin
+      ansible.builtin.stat:
+        path: /usr/local/bin/certipy
+      register: privesc_tools_certipy_wrapper
+      when: privesc_tools_install_certipy | default(true)
+
+    - name: Assert certipy wrapper script is executable
+      ansible.builtin.assert:
+        that:
+          - privesc_tools_certipy_wrapper.stat.exists
+          - privesc_tools_certipy_wrapper.stat.executable
+          - privesc_tools_certipy_wrapper.stat.mode == '0755'
+        fail_msg: >-
+          /usr/local/bin/certipy missing, non-executable, or wrong mode
+          (exists={{ privesc_tools_certipy_wrapper.stat.exists }},
+          exec={{ privesc_tools_certipy_wrapper.stat.executable | default(false) }},
+          mode={{ privesc_tools_certipy_wrapper.stat.mode | default('n/a') }})
+        success_msg: "/usr/local/bin/certipy present with mode 0755"
+      when: privesc_tools_install_certipy | default(true)
+
+    - name: Verify /usr/bin/certipy symlinks to /usr/local/bin/certipy
+      ansible.builtin.stat:
+        path: /usr/bin/certipy
+        follow: false
+      register: privesc_tools_certipy_symlink
+      when: privesc_tools_install_certipy | default(true)
+
+    - name: Assert /usr/bin/certipy is a symlink pointing at /usr/local/bin/certipy
+      ansible.builtin.assert:
+        that:
+          - privesc_tools_certipy_symlink.stat.exists
+          - privesc_tools_certipy_symlink.stat.islnk
+          - privesc_tools_certipy_symlink.stat.lnk_target == '/usr/local/bin/certipy'
+        fail_msg: >-
+          /usr/bin/certipy is not the expected symlink to /usr/local/bin/certipy
+          (islnk={{ privesc_tools_certipy_symlink.stat.islnk | default(false) }},
+          target='{{ privesc_tools_certipy_symlink.stat.lnk_target | default('') }}')
+        success_msg: "/usr/bin/certipy correctly symlinks to /usr/local/bin/certipy"
+      when: privesc_tools_install_certipy | default(true)
+
+    - name: Functional smoke test — certipy --help
+      ansible.builtin.command: /usr/bin/certipy --help
+      register: privesc_tools_certipy_help
+      changed_when: false
+      failed_when: privesc_tools_certipy_help.rc != 0
+      when: privesc_tools_install_certipy | default(true)
+
+    - name: Assert certipy --help output looks sane
+      ansible.builtin.assert:
+        that:
+          # `certipy` prints a subcommand table; `usage:` is the canonical
+          # marker across the entire certipy-ad CLI (auth, cert, find, req,
+          # relay, etc.), so it's a stable regression guard.
+          - "'usage' in (privesc_tools_certipy_help.stdout | lower) or 'usage' in (privesc_tools_certipy_help.stderr | lower)"
+        fail_msg: >-
+          certipy --help did not produce recognizable CLI output
+          (stdout={{ privesc_tools_certipy_help.stdout }})
+        success_msg: "certipy CLI is functional"
+      when: privesc_tools_install_certipy | default(true)
+
+    # krbrelayx auxiliary wrappers (addspn, dnstool) — installed alongside
+    # krbrelayx/printerbug by the same loop in linux.yml. If the loop breaks
+    # for any reason (e.g. wrong item shape), catching one wrapper isn't
+    # enough; verify all four dispatched by the loop.
+    - name: Check addspn wrapper exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/addspn
+      register: privesc_tools_addspn_wrapper
+      when: privesc_tools_install_krbrelayx | default(true)
+
+    - name: Check dnstool wrapper exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/dnstool
+      register: privesc_tools_dnstool_wrapper
+      when: privesc_tools_install_krbrelayx | default(true)
+
+    - name: Assert addspn and dnstool wrappers are executable
+      ansible.builtin.assert:
+        that:
+          - privesc_tools_addspn_wrapper.stat.exists
+          - privesc_tools_addspn_wrapper.stat.executable
+          - privesc_tools_dnstool_wrapper.stat.exists
+          - privesc_tools_dnstool_wrapper.stat.executable
+        fail_msg: >-
+          krbrelayx auxiliary wrappers missing or non-executable
+          (addspn exists={{ privesc_tools_addspn_wrapper.stat.exists }},
+          dnstool exists={{ privesc_tools_dnstool_wrapper.stat.exists }})
+        success_msg: "krbrelayx auxiliary wrappers (addspn, dnstool) are executable"
+      when: privesc_tools_install_krbrelayx | default(true)
+
+    # KrbRelayUp shim — the linux.yml install writes a bash wrapper that
+    # shells out via mono to the .exe. A raw shim without the mono runtime
+    # will error at exec time, so also verify mono-runtime is present.
+    - name: Check KrbRelayUp shim exists at /usr/local/bin
+      ansible.builtin.stat:
+        path: /usr/local/bin/KrbRelayUp
+      register: privesc_tools_krbrelayup_shim
+      when: privesc_tools_install_krbrelayup | default(true)
+
+    - name: Assert KrbRelayUp shim is an executable bash wrapper
+      ansible.builtin.assert:
+        that:
+          - privesc_tools_krbrelayup_shim.stat.exists
+          - privesc_tools_krbrelayup_shim.stat.executable
+        fail_msg: >-
+          /usr/local/bin/KrbRelayUp missing or non-executable
+          (exists={{ privesc_tools_krbrelayup_shim.stat.exists }},
+          exec={{ privesc_tools_krbrelayup_shim.stat.executable | default(false) }})
+        success_msg: "/usr/local/bin/KrbRelayUp shim present"
+      when: privesc_tools_install_krbrelayup | default(true)
+
+    - name: Verify mono-runtime is installed (KrbRelayUp shim depends on it)
+      ansible.builtin.command: which mono
+      register: privesc_tools_mono_check
+      changed_when: false
+      failed_when: false
+      when:
+        - privesc_tools_install_krbrelayup | default(true)
+        - ansible_facts['os_family'] == 'Debian'
+
+    - name: Assert mono is on PATH so KrbRelayUp shim can dispatch
+      ansible.builtin.assert:
+        that:
+          - privesc_tools_mono_check.rc == 0
+        fail_msg: >-
+          mono is not on PATH — the /usr/local/bin/KrbRelayUp shim will fail
+          at exec time with 'mono: command not found'
+        success_msg: "mono is on PATH at {{ privesc_tools_mono_check.stdout }}"
+      when:
+        - privesc_tools_install_krbrelayup | default(true)
+        - ansible_facts['os_family'] == 'Debian'
+
     # pygpoabuse verification
     - name: Check pygpoabuse is installed
       ansible.builtin.command: which pygpoabuse
