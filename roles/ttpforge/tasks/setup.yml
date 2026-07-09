@@ -152,5 +152,10 @@
 - name: Initialize ttpforge
   ansible.builtin.command:
     cmd: "{{ ttpforge_install_path }}/ttpforge init"
+  become: true
+  become_user: "{{ ttpforge_username }}"
+  environment:
+    HOME: "{{ ttpforge_user_home }}"
+    USER: "{{ ttpforge_username }}"
   when: not ttpforge_initialized_stat.stat.exists
   changed_when: false
