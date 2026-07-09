@@ -67,4 +67,13 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          task -y run-pre-commit
+          # Retry to survive transient failures fetching remote Taskfiles from raw.githubusercontent.com.
+          for attempt in 1 2 3; do
+            if task -y run-pre-commit; then
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying in $((attempt * 10))s..."
+            sleep $((attempt * 10))
+          done
+          echo "All retries exhausted"
+          exit 1
