@@ -107,6 +107,7 @@ Install and configure lateral movement and credential extraction tools
 - **Check alternate ffi.h location** (ansible.builtin.shell) - Conditional
 - **Check pkg-config for libffi** (ansible.builtin.command) - Conditional
 - **Display build environment for debugging** (ansible.builtin.debug) - Conditional
+- **Check whether gcc is functional** (ansible.builtin.command) - Conditional
 - **Force reinstall gcc packages to restore missing libgcc files** (ansible.builtin.shell) - Conditional
 - **Test gcc can compile a simple program** (ansible.builtin.shell) - Conditional
 - **Create symlink for ffi.h in standard include path** (ansible.builtin.file) - Conditional

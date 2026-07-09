@@ -141,7 +141,9 @@
 
     # Build the sliver binary using the direct path to Go
     echo "Building sliver binary:"
-    {{ 'make' if ansible_facts['distribution'] == 'Kali GNU/Linux' else 'gmake' }} -C {{ sliver_install_path }} -j{{ ansible_facts['processor_vcpus'] | default(2) }}
+    {{ 'make' if ansible_facts['distribution'] == 'Kali GNU/Linux' else 'gmake' }} \
+      -C {{ sliver_install_path }} \
+      -j{{ ansible_facts['processor_vcpus'] | default(2) }}
   args:
     chdir: "{{ sliver_install_path }}"
     executable: /bin/bash
@@ -221,6 +223,7 @@
     executable: /bin/bash
   changed_when: "'configs saved' in sliver_result.stdout"
   register: sliver_result
+  no_log: true
 
 - name: Set ownership of sliver-client binary
   ansible.builtin.file:

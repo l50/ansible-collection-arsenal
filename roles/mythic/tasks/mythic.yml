@@ -21,7 +21,8 @@
   ansible.builtin.git:
     repo: "{{ mythic_repo }}"
     dest: "{{ mythic_install_dir }}"
-    force: yes
+    version: "{{ mythic_repo_version }}"
+    force: true
   become: true
   become_user: "{{ mythic_user }}"
 
@@ -29,8 +30,8 @@
   ansible.builtin.command:
     cmd: make
     chdir: "{{ mythic_install_dir }}"
+    creates: "{{ mythic_install_dir }}/mythic-cli"
   become: true
-  changed_when: false
 
 - name: Template Mythic environment file
   ansible.builtin.template:
@@ -40,6 +41,7 @@
     group: "{{ mythic_user }}"
     mode: '0600'
   become: true
+  no_log: true
   notify: Restart mythic services
 
 - name: Start Mythic services

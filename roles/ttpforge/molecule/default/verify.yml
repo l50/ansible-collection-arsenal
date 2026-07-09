@@ -7,22 +7,163 @@
       ansible.builtin.include_vars:
         file: "../../defaults/main.yml"
 
-    - name: Check if TTPForge binary exists and is executable
-      ansible.builtin.stat:
-        path: "{{ ttpforge_install_path }}/ttpforge"
-      register: ttpforge_binary
-      failed_when: >
-        not ttpforge_binary.stat.exists or
-        not ttpforge_binary.stat.executable
+    # Mirror the overrides converge.yml passes to the role so ownership /
+    # home-path assertions compare against the same identity the role was
+    # actually invoked with. Without this, defaults/main.yml would evaluate
+    # ttpforge_usergroup to `ansible_facts['user_id']` (`root` inside the
+    # container) even though converge sets it to the distro-lowercase user.
+    - name: Align verify-time identity with converge-time overrides
+      ansible.builtin.set_fact:
+        ttpforge_username: "{{ ansible_facts['distribution'] | lower }}"
+        ttpforge_usergroup: "{{ ansible_facts['distribution'] | lower }}"
 
-    - name: Check user exists
+    - name: Set ttpforge user home directory
+      ansible.builtin.include_tasks: "../../tasks/ttpforge_get_user_home.yml"
+
+    # ===== User and privileges =====
+
+    - name: Check ttpforge user exists
       ansible.builtin.command: "id -un {{ ttpforge_username }}"
       register: ttpforge_user_check
       changed_when: false
       failed_when: ttpforge_user_check.rc != 0
 
-    - name: Check user sudo access
+    # NOTE: the ttpforge role does not manage /etc/sudoers.d/<user> — it only
+    # runs as the target user, never grants them sudo. Asserting a sudoers
+    # drop-in exists would be checking behavior the role never performs.
+
+    # ===== Install path ownership =====
+
+    - name: Stat TTPForge install path directory
       ansible.builtin.stat:
-        path: "/etc/sudoers.d/{{ ttpforge_username }}"
-      register: ttpforge_sudoers_check
-      when: ttpforge_username != 'root'
+        path: "{{ ttpforge_install_path }}"
+      register: ttpforge_install_dir
+
+    - name: Assert TTPForge install path is a directory owned by ttpforge user
+      ansible.builtin.assert:
+        that:
+          - ttpforge_install_dir.stat.exists
+          - ttpforge_install_dir.stat.isdir
+          - ttpforge_install_dir.stat.pw_name == ttpforge_username
+          - ttpforge_install_dir.stat.gr_name == ttpforge_usergroup
+        fail_msg: >-
+          {{ ttpforge_install_path }} missing or not owned by
+          {{ ttpforge_username }}:{{ ttpforge_usergroup }}
+          (exists={{ ttpforge_install_dir.stat.exists }},
+          owner={{ ttpforge_install_dir.stat.pw_name | default('n/a') }}:{{ ttpforge_install_dir.stat.gr_name | default('n/a') }})
+        success_msg: >-
+          {{ ttpforge_install_path }} is owned by
+          {{ ttpforge_username }}:{{ ttpforge_usergroup }}
+
+    # ===== ttpforge binary =====
+
+    - name: Stat TTPForge binary
+      ansible.builtin.stat:
+        path: "{{ ttpforge_install_path }}/ttpforge"
+      register: ttpforge_binary
+
+    - name: Assert TTPForge binary is present, executable, and non-empty
+      ansible.builtin.assert:
+        that:
+          - ttpforge_binary.stat.exists
+          - ttpforge_binary.stat.executable
+          - ttpforge_binary.stat.size > 0
+        fail_msg: >-
+          {{ ttpforge_install_path }}/ttpforge missing, non-executable, or empty
+          (exists={{ ttpforge_binary.stat.exists }},
+          exec={{ ttpforge_binary.stat.executable | default(false) }},
+          size={{ ttpforge_binary.stat.size | default(0) }})
+        success_msg: >-
+          ttpforge binary present ({{ ttpforge_binary.stat.size }} bytes) at
+          {{ ttpforge_install_path }}/ttpforge
+
+    # Functional check: run the compiled binary. Catches wrong-Go-version /
+    # broken linker regressions that a plain stat won't detect.
+    - name: Run ttpforge help to confirm the binary launches
+      ansible.builtin.command:
+        cmd: "{{ ttpforge_install_path }}/ttpforge help"
+      become: true
+      become_user: "{{ ttpforge_username }}"
+      register: ttpforge_help
+      changed_when: false
+      environment:
+        HOME: "{{ ttpforge_user_home }}"
+
+    - name: Assert ttpforge help output contains the TTPForge banner text
+      ansible.builtin.assert:
+        that:
+          - ttpforge_help.rc == 0
+          # "TTPForge" appears in the CLI banner regardless of subcommand list
+          # ordering, so this is a stable marker across upstream refactors.
+          - "'TTPForge' in ttpforge_help.stdout or 'ttpforge' in ttpforge_help.stdout"
+        fail_msg: >-
+          ttpforge help failed (rc={{ ttpforge_help.rc }})
+          stdout={{ ttpforge_help.stdout }}
+          stderr={{ ttpforge_help.stderr }}
+        success_msg: "ttpforge binary launches and prints help"
+
+    # ===== TTPForge init state =====
+
+    - name: Stat ttpforge init directory
+      ansible.builtin.stat:
+        path: "{{ ttpforge_user_home }}/.ttpforge"
+      register: ttpforge_init_dir
+
+    - name: Assert `ttpforge init` created the config directory
+      ansible.builtin.assert:
+        that:
+          - ttpforge_init_dir.stat.exists
+          - ttpforge_init_dir.stat.isdir
+        fail_msg: >-
+          {{ ttpforge_user_home }}/.ttpforge missing — `ttpforge init` did not
+          run successfully
+        success_msg: >-
+          ttpforge init directory present at {{ ttpforge_user_home }}/.ttpforge
+
+    # ===== Shell environment =====
+
+    # NOTE: setup.yml skips the bashrc block when running inside a Docker
+    # container (ansible_virtualization_type == 'docker'), so molecule Docker
+    # runs won't have it. Guard the check with the same condition so we don't
+    # produce false negatives when running under Docker, but we still verify
+    # the block on non-container hosts.
+    - name: Read ttpforge user's .bashrc
+      ansible.builtin.slurp:
+        src: "{{ ttpforge_user_home }}/.bashrc"
+      register: ttpforge_bashrc_content
+      become: true
+      when: not (ansible_virtualization_type is defined and ansible_virtualization_type == 'docker')
+
+    - name: Assert TTPForge-managed bashrc block is present with install-path PATH export
+      ansible.builtin.assert:
+        that:
+          - "'ANSIBLE MANAGED BLOCK - TTPFORGE PATHS' in (ttpforge_bashrc_content.content | b64decode)"
+          - "'export PATH=\"' + ttpforge_install_path + ':$PATH\"' in (ttpforge_bashrc_content.content | b64decode)"
+        fail_msg: >-
+          .bashrc for {{ ttpforge_username }} is missing the TTPForge managed
+          block or its install-path PATH export
+        success_msg: >-
+          .bashrc contains the TTPForge managed block and PATH export for
+          {{ ttpforge_install_path }}
+      when: not (ansible_virtualization_type is defined and ansible_virtualization_type == 'docker')
+
+    # ===== Git safe.directory =====
+
+    - name: Read root global gitconfig to confirm safe.directory was set  # noqa: command-instead-of-module
+      ansible.builtin.command: git config --global --get-all safe.directory
+      register: ttpforge_safe_directory
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Assert TTPForge install path is registered as a git safe.directory
+      ansible.builtin.assert:
+        that:
+          - ttpforge_safe_directory.rc == 0
+          - ttpforge_install_path in ttpforge_safe_directory.stdout
+        fail_msg: >-
+          {{ ttpforge_install_path }} not registered in root's git safe.directory
+          list — the `Configure Git to allow ttpforge repository as a safe
+          directory` step did not persist.
+        success_msg: >-
+          {{ ttpforge_install_path }} is a git safe.directory

@@ -25,11 +25,32 @@
       changed_when: false
       failed_when: "'/bin/bash' not in mythic_user_shell.stdout"
 
-    - name: Verify mythic user is in sudo group
+    - name: Verify mythic user is NOT in sudo group
       ansible.builtin.command: "groups {{ mythic_user }}"
       register: mythic_user_groups
       changed_when: false
-      failed_when: "'sudo' not in mythic_user_groups.stdout"
+      failed_when: "'sudo' in mythic_user_groups.stdout.split()"
+
+    # The user was created with ansible.builtin.user's default create_home=true,
+    # so /home/{{ mythic_user }} must exist and be owned by that user. Catches
+    # regressions where the user is created with create_home:false, which would
+    # break every downstream task that writes to $HOME.
+    - name: Stat mythic user home directory
+      ansible.builtin.stat:
+        path: "{{ mythic_home }}"
+      register: mythic_home_stat
+
+    - name: Assert mythic home directory exists and is owned by the mythic user
+      ansible.builtin.assert:
+        that:
+          - mythic_home_stat.stat.exists
+          - mythic_home_stat.stat.isdir
+          - mythic_home_stat.stat.pw_name == mythic_user
+        fail_msg: >-
+          {{ mythic_home }} missing or not owned by {{ mythic_user }}
+          (exists={{ mythic_home_stat.stat.exists }},
+          owner={{ mythic_home_stat.stat.pw_name | default('n/a') }})
+        success_msg: "{{ mythic_home }} exists and is owned by {{ mythic_user }}"
 
     - name: Check sudoers file exists for mythic user
       ansible.builtin.stat:
@@ -39,8 +60,29 @@
         not mythic_sudoers.stat.exists or
         mythic_sudoers.stat.mode != '0440'
 
+    - name: Read scoped sudoers policy for mythic user
+      ansible.builtin.slurp:
+        src: /etc/sudoers.d/mythic
+      register: mythic_sudoers_content
+
+    - name: Verify sudoers policy is scoped to mythic.service systemctl only
+      ansible.builtin.assert:
+        that:
+          - "'Cmnd_Alias MYTHIC_SVC' in sudoers_body"
+          - "'mythic.service' in sudoers_body"
+          - "'NOPASSWD: MYTHIC_SVC' in sudoers_body"
+          - "'NOPASSWD:ALL' not in sudoers_body"
+          - "'NOPASSWD: ALL' not in sudoers_body"
+        fail_msg: "/etc/sudoers.d/mythic is not scoped to the MYTHIC_SVC alias"
+      vars:
+        sudoers_body: "{{ mythic_sudoers_content.content | b64decode }}"
+
     # ===== Package Installation Verification =====
 
+    # Essential packages installed by packages.yml. Sampling covers the
+    # security-critical ones (ca-certificates, gnupg — needed for docker repo
+    # trust) plus the build/language stack (build-essential, golang, rustc,
+    # libssl-dev, cargo) that agents.yml relies on to compile Mythic payloads.
     - name: Check essential packages are installed
       ansible.builtin.command: "dpkg -s {{ item }}"
       register: mythic_package_check
@@ -54,6 +96,11 @@
         - wget
         - golang
         - ca-certificates
+        - gnupg
+        - libssl-dev
+        - rustc
+        - cargo
+        - acl
 
     - name: Check development tools are installed
       ansible.builtin.command: "dpkg -s {{ item }}"
@@ -64,7 +111,50 @@
       loop:
         - make
         - gcc
+        - g++
         - jq
+        - tree
+        - htop
+        - tmux
+
+    # Smoke test: gpg binary runs and reports a version. docker.yml uses
+    # `gpg --dearmor` on the real Docker GPG key; feeding synthetic input here
+    # would fail with "no valid OpenPGP data found", so we check the binary
+    # itself instead — a broken gnupg install (missing helper binaries) still
+    # fails `gpg --version`.
+    - name: Verify gpg binary is functional (docker.yml relies on this)
+      ansible.builtin.command: gpg --version
+      register: mythic_gpg_check
+      changed_when: false
+
+    - name: Assert gpg reported a version
+      ansible.builtin.assert:
+        that:
+          - mythic_gpg_check.rc == 0
+          - "'gpg (GnuPG)' in mythic_gpg_check.stdout"
+        fail_msg: >-
+          gpg --version failed (rc={{ mythic_gpg_check.rc }}) — docker.yml's
+          `Dearmor Docker GPG key` step will not work.
+        success_msg: "gpg is functional (docker.yml key handling will succeed)"
+
+    # Verify golang is on PATH and reports a version. `dpkg -s golang` above
+    # confirms the package is installed; this confirms the /usr/bin/go shim
+    # actually resolves — a common breakage on Debian trixie where /usr/bin/go
+    # is dispatched by golang-go and the metapackage `golang` is a virtual dep.
+    - name: Verify go binary is on PATH and reports a version
+      ansible.builtin.command: go version
+      register: mythic_go_version
+      changed_when: false
+      failed_when: mythic_go_version.rc != 0
+
+    - name: Assert go version output looks like `go version go...`
+      ansible.builtin.assert:
+        that:
+          - "'go version' in mythic_go_version.stdout"
+        fail_msg: >-
+          `go version` did not produce expected output
+          (stdout={{ mythic_go_version.stdout }})
+        success_msg: "go is on PATH: {{ mythic_go_version.stdout }}"
 
     # Note: Docker installation, Mythic setup, agents, service, and credentials
     # verification are skipped because they require Docker-in-Docker which has

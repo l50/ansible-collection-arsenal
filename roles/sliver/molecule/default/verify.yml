@@ -11,21 +11,7 @@
     - name: Set sliver user home directory
       ansible.builtin.include_tasks: "../../tasks/sliver_get_user_home.yml"
 
-    - name: Check if Sliver server is installed
-      ansible.builtin.stat:
-        path: "{{ sliver_install_path }}/sliver-server"
-      register: sliver_server
-      failed_when: >
-        not sliver_server.stat.exists or
-        not sliver_server.stat.executable
-
-    - name: Check if Sliver client is installed
-      ansible.builtin.stat:
-        path: "{{ sliver_install_path }}/sliver-client"
-      register: sliver_client
-      failed_when: >
-        not sliver_client.stat.exists or
-        not sliver_client.stat.executable
+    # ===== User and privileges =====
 
     - name: Check sliver user exists
       ansible.builtin.command: "id -un {{ sliver_username }}"
@@ -33,19 +19,206 @@
       changed_when: false
       failed_when: sliver_user_check.rc != 0
 
-    - name: Check user sudo access
+    - name: Check sudoers drop-in file exists for sliver user
       ansible.builtin.stat:
         path: "/etc/sudoers.d/{{ sliver_username }}"
       register: sliver_sudoers_check
       when: sliver_username != 'root'
-      failed_when: >
-        sliver_username != 'root' and
-        not sliver_sudoers_check.stat.exists
 
-    - name: Check if operator config exists
+    - name: Assert sudoers drop-in has correct owner and mode
+      ansible.builtin.assert:
+        that:
+          - sliver_sudoers_check.stat.exists
+          - sliver_sudoers_check.stat.mode == '0440'
+          - sliver_sudoers_check.stat.pw_name == 'root'
+        fail_msg: >-
+          /etc/sudoers.d/{{ sliver_username }} missing or has wrong owner/mode
+          (exists={{ sliver_sudoers_check.stat.exists }},
+          mode={{ sliver_sudoers_check.stat.mode | default('n/a') }},
+          owner={{ sliver_sudoers_check.stat.pw_name | default('n/a') }})
+        success_msg: "/etc/sudoers.d/{{ sliver_username }} exists with 0440 root:root"
+      when: sliver_username != 'root'
+
+    # ===== Sliver install path =====
+
+    - name: Stat Sliver install path directory
+      ansible.builtin.stat:
+        path: "{{ sliver_install_path }}"
+      register: sliver_install_dir
+
+    - name: Assert Sliver install path is a directory owned by sliver user
+      ansible.builtin.assert:
+        that:
+          - sliver_install_dir.stat.exists
+          - sliver_install_dir.stat.isdir
+          - sliver_install_dir.stat.pw_name == sliver_username
+          - sliver_install_dir.stat.gr_name == sliver_usergroup
+        fail_msg: >-
+          {{ sliver_install_path }} missing or not owned by
+          {{ sliver_username }}:{{ sliver_usergroup }}
+          (exists={{ sliver_install_dir.stat.exists }},
+          owner={{ sliver_install_dir.stat.pw_name | default('n/a') }}:{{ sliver_install_dir.stat.gr_name | default('n/a') }})
+        success_msg: >-
+          {{ sliver_install_path }} exists and is owned by
+          {{ sliver_username }}:{{ sliver_usergroup }}
+
+    # ===== sliver-server binary =====
+
+    - name: Stat sliver-server binary
+      ansible.builtin.stat:
+        path: "{{ sliver_install_path }}/sliver-server"
+      register: sliver_server_binary
+
+    - name: Assert sliver-server binary is present and executable
+      ansible.builtin.assert:
+        that:
+          - sliver_server_binary.stat.exists
+          - sliver_server_binary.stat.executable
+          - sliver_server_binary.stat.size > 0
+        fail_msg: >-
+          sliver-server missing, non-executable, or empty
+          (exists={{ sliver_server_binary.stat.exists }},
+          exec={{ sliver_server_binary.stat.executable | default(false) }},
+          size={{ sliver_server_binary.stat.size | default(0) }})
+        success_msg: >-
+          sliver-server binary present ({{ sliver_server_binary.stat.size }} bytes)
+          at {{ sliver_install_path }}/sliver-server
+
+    # Functional check: the binary must actually run. This catches "compiled
+    # against wrong Go version" / "linker error" regressions that a plain stat
+    # cannot detect.
+    - name: Run sliver-server version to confirm the binary launches
+      ansible.builtin.command:
+        cmd: "{{ sliver_install_path }}/sliver-server version"
+      become: true
+      become_user: "{{ sliver_username }}"
+      register: sliver_server_version
+      changed_when: false
+      environment:
+        HOME: "{{ sliver_user_home }}"
+
+    - name: Assert sliver-server version output looks sane
+      ansible.builtin.assert:
+        that:
+          - sliver_server_version.rc == 0
+          - sliver_server_version.stdout | length > 0
+        fail_msg: >-
+          sliver-server version failed (rc={{ sliver_server_version.rc }})
+          stdout={{ sliver_server_version.stdout }}
+          stderr={{ sliver_server_version.stderr }}
+        success_msg: "sliver-server launches and reports a version"
+
+    # ===== sliver-client binary =====
+
+    - name: Stat sliver-client binary
+      ansible.builtin.stat:
+        path: "{{ sliver_install_path }}/sliver-client"
+      register: sliver_client_binary
+
+    - name: Assert sliver-client binary is present, executable, and owned by sliver user
+      ansible.builtin.assert:
+        that:
+          - sliver_client_binary.stat.exists
+          - sliver_client_binary.stat.executable
+          - sliver_client_binary.stat.size > 0
+          - sliver_client_binary.stat.pw_name == sliver_username
+        fail_msg: >-
+          sliver-client missing, non-executable, empty, or wrong owner
+          (exists={{ sliver_client_binary.stat.exists }},
+          exec={{ sliver_client_binary.stat.executable | default(false) }},
+          owner={{ sliver_client_binary.stat.pw_name | default('n/a') }})
+        success_msg: >-
+          sliver-client binary present, executable, and owned by
+          {{ sliver_username }}
+
+    # ===== Sliver runtime state (operator config) =====
+    #
+    # We don't stat the `sliver-server unpack` output directory here — the
+    # unpack path is an internal implementation detail that has moved between
+    # Sliver versions (~/.sliver-server, ~/.sliver, etc.). Successful operator
+    # config generation below implicitly proves the unpack step ran, since
+    # `sliver-server operator` refuses to run against an un-initialized asset
+    # tree.
+
+    - name: Stat operator config file
       ansible.builtin.stat:
         path: "{{ sliver_user_home }}/.sliver-client/configs/{{ sliver_username }}_localhost.cfg"
       register: sliver_operator_config
-      failed_when: >
-        not sliver_operator_config.stat.exists or
-        sliver_operator_config.stat.size == 0
+
+    - name: Assert operator config was generated with real content
+      ansible.builtin.assert:
+        that:
+          - sliver_operator_config.stat.exists
+          - sliver_operator_config.stat.size > 0
+          - sliver_operator_config.stat.pw_name == sliver_username
+        fail_msg: >-
+          Operator config missing or empty
+          (exists={{ sliver_operator_config.stat.exists }},
+          size={{ sliver_operator_config.stat.size | default(0) }},
+          owner={{ sliver_operator_config.stat.pw_name | default('n/a') }})
+        success_msg: >-
+          Operator config {{ sliver_username }}_localhost.cfg present
+          ({{ sliver_operator_config.stat.size }} bytes) and owned by
+          {{ sliver_username }}
+
+    - name: Read operator config to confirm it is a real Sliver operator file
+      ansible.builtin.slurp:
+        src: "{{ sliver_user_home }}/.sliver-client/configs/{{ sliver_username }}_localhost.cfg"
+      register: sliver_operator_config_body
+      become: true
+
+    - name: Assert operator config carries the operator username and localhost host
+      ansible.builtin.assert:
+        that:
+          # The operator config is JSON. Check for the operator username (the
+          # `--name` we passed to `sliver-server operator`) and `localhost`
+          # (the `--lhost` value). Both must land in the file body when the
+          # generator ran end-to-end.
+          - sliver_username in (sliver_operator_config_body.content | b64decode)
+          - "'localhost' in (sliver_operator_config_body.content | b64decode)"
+        fail_msg: >-
+          Operator config does not contain the expected operator name
+          ('{{ sliver_username }}') and 'localhost' host — `sliver-server
+          operator` did not run to completion.
+        success_msg: "Operator config content matches operator={{ sliver_username }} lhost=localhost"
+
+    # ===== Shell environment (bashrc managed block from setup.yml) =====
+
+    - name: Read sliver user's .bashrc
+      ansible.builtin.slurp:
+        src: "{{ sliver_user_home }}/.bashrc"
+      register: sliver_bashrc_content
+      become: true
+
+    - name: Assert Sliver-managed bashrc block is present and exports the install path
+      ansible.builtin.assert:
+        that:
+          - "'ANSIBLE MANAGED BLOCK - SLIVER PATHS' in (sliver_bashrc_content.content | b64decode)"
+          - "'export PATH=\"' + sliver_install_path + ':$PATH\"' in (sliver_bashrc_content.content | b64decode)"
+        fail_msg: >-
+          .bashrc for {{ sliver_username }} is missing the Sliver managed block
+          or the install-path PATH export
+        success_msg: >-
+          .bashrc contains the Sliver managed block and PATH export for
+          {{ sliver_install_path }}
+
+    # ===== Git safe.directory (setup.yml sets this globally) =====
+
+    - name: Read root global gitconfig to confirm safe.directory was set  # noqa: command-instead-of-module
+      ansible.builtin.command: git config --global --get-all safe.directory
+      register: sliver_safe_directory
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Assert Sliver install path is registered as a git safe.directory
+      ansible.builtin.assert:
+        that:
+          - sliver_safe_directory.rc == 0
+          - sliver_install_path in sliver_safe_directory.stdout
+        fail_msg: >-
+          {{ sliver_install_path }} not registered in root's git safe.directory
+          list — the `Configure Git to allow sliver_install_path as a safe
+          directory` step did not persist.
+        success_msg: >-
+          {{ sliver_install_path }} is a git safe.directory

@@ -1,13 +1,15 @@
 ---
 - name: Ensure proper permissions for Mythic installation
   block:
+    # Recurse ownership only. Setting mode here would clobber the 0600 on
+    # .env (rendered by mythic.yml) and expose the credentials it contains
+    # to any user on the host.
     - name: Set ownership of Mythic directory
       ansible.builtin.file:
         path: "{{ mythic_install_dir }}"
         owner: "{{ mythic_user }}"
         group: "{{ mythic_user }}"
-        recurse: yes
-        mode: '0755'
+        recurse: true
       become: true
 
     - name: Ensure docker-compose.yml is writable
@@ -27,7 +29,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_http_install_start
-      changed_when: mythic_http_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for HTTP container
       ansible.builtin.shell:
@@ -49,7 +51,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_apollo_install_start
-      changed_when: mythic_apollo_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Apollo container
       ansible.builtin.shell:
@@ -71,7 +73,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_poseidon_install_start
-      changed_when: mythic_poseidon_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Poseidon container
       ansible.builtin.shell:
@@ -93,7 +95,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_forge_install_start
-      changed_when: mythic_forge_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Forge container
       ansible.builtin.shell:
@@ -115,7 +117,7 @@
       become: true
       become_user: "{{ mythic_user }}"
       register: mythic_bloodhound_install_start
-      changed_when: mythic_bloodhound_install_start.rc != 0
+      changed_when: true
 
     - name: Wait for Bloodhound container
       ansible.builtin.shell:
