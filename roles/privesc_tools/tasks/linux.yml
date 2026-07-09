@@ -96,6 +96,10 @@
     dest: "{{ privesc_tools_printspoofer_install_dir }}/PrintSpoofer64.exe"
     mode: '0755'
   become: true
+  register: privesc_tools_printspoofer_download
+  until: privesc_tools_printspoofer_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_printspoofer
 
 - name: Create GodPotato directory
@@ -112,6 +116,10 @@
     dest: "{{ privesc_tools_godpotato_install_dir }}/GodPotato-NET4.exe"
     mode: '0755'
   become: true
+  register: privesc_tools_godpotato_download
+  until: privesc_tools_godpotato_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_godpotato
 
 - name: Clone SweetPotato from GitHub
@@ -137,6 +145,10 @@
     dest: "{{ privesc_tools_krbrelayup_install_dir }}/KrbRelayUp.exe"
     mode: '0755'
   become: true
+  register: privesc_tools_krbrelayup_download
+  until: privesc_tools_krbrelayup_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_krbrelayup
 
 - name: Install mono-runtime to execute KrbRelayUp.exe on Linux
@@ -186,6 +198,10 @@
     dest: "{{ privesc_tools_seatbelt_install_dir }}/Seatbelt.exe"
     mode: '0755'
   become: true
+  register: privesc_tools_seatbelt_download
+  until: privesc_tools_seatbelt_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_seatbelt
 
 - name: Create SharpUp directory
@@ -202,6 +218,10 @@
     dest: "{{ privesc_tools_sharpup_install_dir }}/SharpUp.exe"
     mode: '0755'
   become: true
+  register: privesc_tools_sharpup_download
+  until: privesc_tools_sharpup_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_sharpup
 
 - name: Create PowerUp directory
@@ -218,6 +238,10 @@
     dest: "{{ privesc_tools_powerup_install_dir }}/PowerUp.ps1"
     mode: '0755'
   become: true
+  register: privesc_tools_powerup_download
+  until: privesc_tools_powerup_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_powerup
 
 - name: Create PowerUpSQL directory
@@ -234,6 +258,10 @@
     dest: "{{ privesc_tools_powerupsql_install_dir }}/PowerUpSQL.ps1"
     mode: '0755'
   become: true
+  register: privesc_tools_powerupsql_download
+  until: privesc_tools_powerupsql_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_powerupsql
 
 - name: Create WinPEAS directory
@@ -250,6 +278,10 @@
     dest: "{{ privesc_tools_winpeas_install_dir }}/winPEASany_ofs.exe"
     mode: '0755'
   become: true
+  register: privesc_tools_winpeas_download
+  until: privesc_tools_winpeas_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_winpeas
 
 - name: Create LinPEAS directory
@@ -266,6 +298,10 @@
     dest: "{{ privesc_tools_linpeas_install_dir }}/linpeas.sh"
     mode: '0755'
   become: true
+  register: privesc_tools_linpeas_download
+  until: privesc_tools_linpeas_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_linpeas
 
 - name: Create RunasCs directory
@@ -282,6 +318,10 @@
     dest: "/tmp/RunasCs.zip"
     mode: '0644'
   become: true
+  register: privesc_tools_runascs_download
+  until: privesc_tools_runascs_download is succeeded
+  retries: "{{ privesc_tools_download_retries }}"
+  delay: "{{ privesc_tools_download_delay }}"
   when: privesc_tools_install_runascs
 
 - name: Extract RunasCs

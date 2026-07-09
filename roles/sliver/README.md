@@ -13,7 +13,6 @@ Install sliver c2
 
 
 - cowdogmoo.workstation.package_management
-- cowdogmoo.workstation.mise
 
 ## Role Variables
 

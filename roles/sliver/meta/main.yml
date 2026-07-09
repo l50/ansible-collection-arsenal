@@ -20,6 +20,11 @@ galaxy_info:
   galaxy_tags:
     - c2
     - offsec
+# Note: cowdogmoo.workstation.mise is intentionally NOT a meta dependency.
+# This role installs mise itself (see tasks/main.yml) for the sliver user
+# with the sliver-specific plugin set. Declaring mise here would run it a
+# second time with role defaults (root user, full default plugin list), and
+# the two invocations clobber shared state (/usr/local/bin ownership and
+# /tmp/install_mise_plugins), which breaks the molecule idempotence test.
 dependencies:
   - role: cowdogmoo.workstation.package_management
-  - role: cowdogmoo.workstation.mise

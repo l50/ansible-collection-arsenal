@@ -15,6 +15,8 @@ Install and configure privilege escalation tools
 
 | Variable | Type | Default | Description |
 | -------- | ---- | ------- | ----------- |
+| `privesc_tools_download_retries` | int | <code>5</code> | No description |
+| `privesc_tools_download_delay` | int | <code>15</code> | No description |
 | `privesc_tools_kali_packages` | list | <code>&#91;&#93;</code> | No description |
 | `privesc_tools_kali_packages.0` | str | <code>git</code> | No description |
 | `privesc_tools_kali_packages.1` | str | <code>python3-dev</code> | No description |
