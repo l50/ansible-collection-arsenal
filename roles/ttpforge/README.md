@@ -15,7 +15,6 @@ attacker Tactics, Techniques, and Procedures (TTPs)
 
 
 - cowdogmoo.workstation.package_management
-- cowdogmoo.workstation.mise
 
 ## Role Variables
 

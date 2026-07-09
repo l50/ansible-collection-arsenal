@@ -2,6 +2,12 @@
 # Privilege escalation tools for Windows targets
 # These tools exploit various Windows privilege escalation vectors
 
+# Retry behavior for downloads from GitHub. Raw/release endpoints
+# occasionally return HTTP 429 (Too Many Requests) when several molecule
+# containers pull binaries at once, so downloads are retried with a delay.
+privesc_tools_download_retries: 5
+privesc_tools_download_delay: 15
+
 # Privesc tool packages (Kali-specific)
 privesc_tools_kali_packages:
   - git
