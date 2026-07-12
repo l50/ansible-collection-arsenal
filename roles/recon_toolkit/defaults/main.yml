@@ -26,7 +26,7 @@ recon_toolkit_mise_plugins:
     scope: "global"
   # renovate: datasource=github-tags depName=nodejs packageName=nodejs/node extractVersion=^v(?<version>.*)$
   - name: node
-    version: "26.4.0"
+    version: "26.5.0"
     scope: "global"
   # renovate: datasource=github-tags depName=python packageName=python/cpython extractVersion=^v(?<version>.*)$
   - name: python
