@@ -55,8 +55,26 @@
     - credential_access_tools_pipx_check.rc != 0
     - credential_access_tools_pipx_recheck.rc | default(1) != 0
 
+- name: Detect whether pipx supports --global
+  ansible.builtin.shell: |
+    set -o pipefail
+    if pipx install --help 2>&1 | grep -q -- '--global'; then
+      echo "yes"
+    else
+      echo "no"
+    fi
+  args:
+    executable: /bin/bash
+  register: credential_access_tools_pipx_global_supported
+  changed_when: false
+
+- name: Set pipx --global flag
+  ansible.builtin.set_fact:
+    credential_access_tools_pipx_global_flag: >-
+      {{ '--global' if credential_access_tools_pipx_global_supported.stdout == 'yes' else '' }}
+
 - name: Check if NetExec is already installed via pipx
-  ansible.builtin.command: pipx list --global
+  ansible.builtin.command: pipx list {{ credential_access_tools_pipx_global_flag }}
   register: credential_access_tools_pipx_list
   changed_when: false
   failed_when: false
@@ -66,11 +84,12 @@
     PATH: "/root/.cargo/bin:/root/.local/bin:/usr/local/bin:/usr/bin:/bin"
 
 - name: Install NetExec via pipx from GitHub
-  ansible.builtin.command: >
-    pipx install --global git+{{ credential_access_tools_netexec_repo }}
+  ansible.builtin.command: >-
+    pipx install {{ credential_access_tools_pipx_global_flag }}
+    git+{{ credential_access_tools_netexec_repo }}
   register: credential_access_tools_netexec_pipx_install
   changed_when: "'installed package netexec' in credential_access_tools_netexec_pipx_install.stdout"
-  failed_when: false
+  failed_when: credential_access_tools_netexec_pipx_install.rc != 0
   become: true
   environment:
     HOME: /root
@@ -78,7 +97,7 @@
   when: "'netexec' not in credential_access_tools_pipx_list.stdout | default('')"
 
 - name: Upgrade NetExec if already installed
-  ansible.builtin.command: pipx upgrade netexec
+  ansible.builtin.command: pipx upgrade {{ credential_access_tools_pipx_global_flag }} netexec
   register: credential_access_tools_netexec_pipx_upgrade
   changed_when: "'upgraded package netexec' in credential_access_tools_netexec_pipx_upgrade.stdout"
   failed_when: false
@@ -88,28 +107,12 @@
     PATH: "/root/.cargo/bin:/root/.local/bin:/usr/local/bin:/usr/bin:/bin"
   when: "'netexec' in credential_access_tools_pipx_list.stdout | default('')"
 
-- name: Report NetExec installation result
-  ansible.builtin.debug:
-    msg: |
-      NetExec installation via pipx: {{
-        'SUCCESS' if (credential_access_tools_netexec_pipx_install.rc | default(0) == 0
-                      or credential_access_tools_netexec_pipx_upgrade.rc | default(0) == 0)
-        else 'FAILED'
-      }}
-      {% if credential_access_tools_netexec_pipx_install.stderr | default('') %}
-      Error: {{ credential_access_tools_netexec_pipx_install.stderr }}
-      {% endif %}
-      {% if credential_access_tools_netexec_pipx_upgrade.stderr | default('') %}
-      Error: {{ credential_access_tools_netexec_pipx_upgrade.stderr }}
-      {% endif %}
-
 - name: Discover pipx venvs directory
   ansible.builtin.shell: |
     set -o pipefail
-    # netexec is installed via `pipx install --global`, so its venv lives
-    # under PIPX_GLOBAL_VENVS (typically /opt/pipx/venvs). Try the global
-    # path first, then fall back to the per-user path for compatibility
-    # with hosts where --global is unsupported or was not used.
+    # netexec venv location depends on whether --global was used.
+    # Check the global path (used when pipx supports --global) first,
+    # then fall back to the per-user path.
     for value in PIPX_GLOBAL_VENVS PIPX_LOCAL_VENVS; do
       VENVS=$(pipx environment --value "$value" 2>/dev/null || true)
       if [ -n "$VENVS" ] && [ -d "$VENVS/netexec" ]; then
@@ -138,7 +141,8 @@
 
 - name: Inject source impacket into NetExec pipx venv
   ansible.builtin.command: >-
-    pipx inject netexec {{ credential_access_tools_impacket_install_dir }} --force
+    pipx inject {{ credential_access_tools_pipx_global_flag }} netexec
+    {{ credential_access_tools_impacket_install_dir }} --force
   register: credential_access_tools_netexec_impacket_inject
   changed_when: false
   failed_when: false
@@ -148,6 +152,7 @@
     PATH: "/root/.cargo/bin:/root/.local/bin:/usr/local/bin:/usr/bin:/bin"
   when:
     - credential_access_tools_impacket_from_source | default(false)
+    - credential_access_tools_pipx_venvs_dir.stdout | default('NOT_FOUND') != 'NOT_FOUND'
 
 - name: Verify regsecrets is importable from NetExec pipx venv
   ansible.builtin.command: >-
@@ -186,6 +191,7 @@
   become: true
   when:
     - credential_access_tools_impacket_from_source | default(false)
+    - credential_access_tools_pipx_venvs_dir.stdout | default('NOT_FOUND') != 'NOT_FOUND'
     - credential_access_tools_netexec_regsecrets_check.rc | default(1) != 0
 
 - name: Re-verify regsecrets after examples copy
@@ -198,6 +204,7 @@
   become: true
   when:
     - credential_access_tools_impacket_from_source | default(false)
+    - credential_access_tools_pipx_venvs_dir.stdout | default('NOT_FOUND') != 'NOT_FOUND'
     - credential_access_tools_netexec_regsecrets_check.rc | default(1) != 0
 
 - name: Fail if regsecrets not available in NetExec venv
@@ -209,6 +216,7 @@
       Examples copy output: {{ credential_access_tools_netexec_examples_copy.stdout | default('none') }}
   when:
     - credential_access_tools_impacket_from_source | default(false)
+    - credential_access_tools_pipx_venvs_dir.stdout | default('NOT_FOUND') != 'NOT_FOUND'
     - credential_access_tools_netexec_regsecrets_check.rc | default(1) != 0
     - credential_access_tools_netexec_regsecrets_recheck.rc | default(1) != 0
 
@@ -219,7 +227,7 @@
       command -v nxc
       exit 0
     fi
-    for path in /root/.local/share/pipx/venvs/netexec/bin/nxc /root/.local/pipx/venvs/netexec/bin/nxc /root/.local/bin/nxc; do
+    for path in /opt/pipx/venvs/netexec/bin/nxc /root/.local/share/pipx/venvs/netexec/bin/nxc /root/.local/pipx/venvs/netexec/bin/nxc /root/.local/bin/nxc; do
       if [ -e "$path" ]; then echo "$path"; exit 0; fi
     done
     echo "NOT_FOUND"
@@ -248,7 +256,7 @@
       command -v netexec
       exit 0
     fi
-    for path in /root/.local/share/pipx/venvs/netexec/bin/netexec /root/.local/pipx/venvs/netexec/bin/netexec /root/.local/bin/netexec; do
+    for path in /opt/pipx/venvs/netexec/bin/netexec /root/.local/share/pipx/venvs/netexec/bin/netexec /root/.local/pipx/venvs/netexec/bin/netexec /root/.local/bin/netexec; do
       if [ -e "$path" ]; then echo "$path"; exit 0; fi
     done
     echo "NOT_FOUND"

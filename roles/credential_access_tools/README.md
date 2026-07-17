@@ -141,10 +141,11 @@ Install and configure credential access tooling
 - **Reinstall pipx if not available (may have been broken by package removal)** (ansible.builtin.apt) - Conditional
 - **Verify pipx is now available** (ansible.builtin.command) - Conditional
 - **Fail if pipx is still not available** (ansible.builtin.fail) - Conditional
+- **Detect whether pipx supports --global** (ansible.builtin.shell)
+- **Set pipx --global flag** (ansible.builtin.set_fact)
 - **Check if NetExec is already installed via pipx** (ansible.builtin.command)
 - **Install NetExec via pipx from GitHub** (ansible.builtin.command) - Conditional
 - **Upgrade NetExec if already installed** (ansible.builtin.command) - Conditional
-- **Report NetExec installation result** (ansible.builtin.debug)
 - **Discover pipx venvs directory** (ansible.builtin.shell) - Conditional
 - **Inject source impacket into NetExec pipx venv** (ansible.builtin.command) - Conditional
 - **Verify regsecrets is importable from NetExec pipx venv** (ansible.builtin.command) - Conditional
