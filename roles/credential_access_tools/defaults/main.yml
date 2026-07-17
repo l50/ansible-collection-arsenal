@@ -34,6 +34,15 @@ credential_access_tools_lsassy_install_dir: "/opt/lsassy"
 credential_access_tools_install_sprayhound: true
 credential_access_tools_sprayhound_package: "sprayhound"
 
+# NetExec configuration (password spraying, LAPS/GPP loot, SYSVOL search)
+# Required by password_spray, username_as_password, password_policy,
+# domain_admin_checker, gpp_password_finder, sysvol_script_search, laps_dump.
+# On Kali installs from apt; on Ubuntu installs from GitHub via pipx with
+# impacket source injected into the venv (regsecrets module).
+credential_access_tools_install_netexec: true
+credential_access_tools_netexec_package: "netexec"
+credential_access_tools_netexec_repo: "https://github.com/Pennyw0rth/NetExec.git"
+
 # targetedKerberoast configuration (targeted kerberoasting)
 # Reference: https://github.com/ShutdownRepo/targetedKerberoast
 credential_access_tools_install_targetedkerberoast: true
@@ -59,6 +68,7 @@ credential_access_tools_binaries:
   impacket_secretsdump: "/usr/local/bin/impacket-secretsdump"
   lsassy: "/usr/local/bin/lsassy"
   sprayhound: "/usr/bin/sprayhound"
+  netexec: "/usr/local/bin/netexec"
   targetedkerberoast: "/usr/local/bin/targetedKerberoast"
   gmsadumper: "/usr/local/bin/gMSADumper"
   smbclient: "/usr/bin/smbclient"

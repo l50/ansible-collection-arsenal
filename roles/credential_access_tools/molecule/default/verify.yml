@@ -85,6 +85,23 @@
         success_msg: "sprayhound is installed"
       when: credential_access_tools_install_sprayhound | default(true)
 
+    - name: Check netexec is installed
+      ansible.builtin.command: which netexec
+      register: credential_access_tools_netexec_check
+      changed_when: false
+      failed_when: false
+      environment:
+        PATH: "/usr/local/bin:/usr/bin:/bin:/root/.local/bin"
+      when: credential_access_tools_install_netexec | default(true)
+
+    - name: Assert netexec is available
+      ansible.builtin.assert:
+        that:
+          - credential_access_tools_netexec_check.rc == 0
+        fail_msg: "netexec not found"
+        success_msg: "netexec is installed"
+      when: credential_access_tools_install_netexec | default(true)
+
     - name: Check targetedKerberoast wrapper is available
       ansible.builtin.command: which targetedKerberoast
       register: credential_access_tools_targetedkerberoast_check
