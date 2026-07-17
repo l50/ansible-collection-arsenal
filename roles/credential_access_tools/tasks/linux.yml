@@ -51,6 +51,27 @@
     - credential_access_tools_install_impacket
     - credential_access_tools_impacket_from_source
 
+# NetExec - required by password_spray, username_as_password, password_policy,
+# domain_admin_checker, gpp_password_finder, sysvol_script_search, laps_dump.
+# Kali ships a working apt package; on Ubuntu install via pipx from GitHub
+# (see netexec_pipx.yml for impacket-regsecrets venv injection).
+- name: Install NetExec via apt (Kali)
+  ansible.builtin.apt:
+    name: "{{ credential_access_tools_netexec_package }}"
+    state: present
+  become: true
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - ansible_facts['distribution'] == 'Kali'
+    - credential_access_tools_install_netexec
+
+- name: Install NetExec via pipx from GitHub (non-Kali)
+  ansible.builtin.include_tasks: netexec_pipx.yml
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - ansible_facts['distribution'] != 'Kali'
+    - credential_access_tools_install_netexec
+
 - name: Install lsassy via venv
   ansible.builtin.include_tasks: lsassy_venv.yml
   when:

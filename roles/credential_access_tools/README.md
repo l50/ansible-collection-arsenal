@@ -40,6 +40,9 @@ Install and configure credential access tooling
 | `credential_access_tools_lsassy_install_dir` | str | <code>/opt/lsassy</code> | No description |
 | `credential_access_tools_install_sprayhound` | bool | <code>True</code> | No description |
 | `credential_access_tools_sprayhound_package` | str | <code>sprayhound</code> | No description |
+| `credential_access_tools_install_netexec` | bool | <code>True</code> | No description |
+| `credential_access_tools_netexec_package` | str | <code>netexec</code> | No description |
+| `credential_access_tools_netexec_repo` | str | <code>https://github.com/Pennyw0rth/NetExec.git</code> | No description |
 | `credential_access_tools_install_targetedkerberoast` | bool | <code>True</code> | No description |
 | `credential_access_tools_targetedkerberoast_repo` | str | <code>https://github.com/ShutdownRepo/targetedKerberoast.git</code> | No description |
 | `credential_access_tools_targetedkerberoast_install_dir` | str | <code>/opt/targetedKerberoast</code> | No description |
@@ -55,6 +58,7 @@ Install and configure credential access tooling
 | `credential_access_tools_binaries.impacket_secretsdump` | str | <code>/usr/local/bin/impacket-secretsdump</code> | No description |
 | `credential_access_tools_binaries.lsassy` | str | <code>/usr/local/bin/lsassy</code> | No description |
 | `credential_access_tools_binaries.sprayhound` | str | <code>/usr/bin/sprayhound</code> | No description |
+| `credential_access_tools_binaries.netexec` | str | <code>/usr/local/bin/netexec</code> | No description |
 | `credential_access_tools_binaries.targetedkerberoast` | str | <code>/usr/local/bin/targetedKerberoast</code> | No description |
 | `credential_access_tools_binaries.gmsadumper` | str | <code>/usr/local/bin/gMSADumper</code> | No description |
 | `credential_access_tools_binaries.smbclient` | str | <code>/usr/bin/smbclient</code> | No description |
@@ -102,6 +106,8 @@ Install and configure credential access tooling
 - **Install Ubuntu-compatible credential access tools** (ansible.builtin.apt) - Conditional
 - **Set pip break-system-packages args (when supported)** (ansible.builtin.set_fact) - Conditional
 - **Install Impacket from source** (ansible.builtin.include_tasks) - Conditional
+- **Install NetExec via apt (Kali)** (ansible.builtin.apt) - Conditional
+- **Install NetExec via pipx from GitHub (non-Kali)** (ansible.builtin.include_tasks) - Conditional
 - **Install lsassy via venv** (ansible.builtin.include_tasks) - Conditional
 - **Install sprayhound via apt (Kali)** (ansible.builtin.apt) - Conditional
 - **Install sprayhound via pip** (ansible.builtin.pip) - Conditional
@@ -125,6 +131,31 @@ Install and configure credential access tooling
 
 
 - **Include Linux tasks** (ansible.builtin.include_tasks) - Conditional
+
+### netexec_pipx.yml
+
+
+- **Check if Rust is available** (ansible.builtin.command)
+- **Warn if Rust is not available** (ansible.builtin.debug) - Conditional
+- **Check if pipx is available** (ansible.builtin.command)
+- **Reinstall pipx if not available (may have been broken by package removal)** (ansible.builtin.apt) - Conditional
+- **Verify pipx is now available** (ansible.builtin.command) - Conditional
+- **Fail if pipx is still not available** (ansible.builtin.fail) - Conditional
+- **Detect whether pipx supports --global** (ansible.builtin.shell)
+- **Set pipx --global flag** (ansible.builtin.set_fact)
+- **Check if NetExec is already installed via pipx** (ansible.builtin.command)
+- **Install NetExec via pipx from GitHub** (ansible.builtin.command) - Conditional
+- **Upgrade NetExec if already installed** (ansible.builtin.command) - Conditional
+- **Discover pipx venvs directory** (ansible.builtin.shell) - Conditional
+- **Inject source impacket into NetExec pipx venv** (ansible.builtin.command) - Conditional
+- **Verify regsecrets is importable from NetExec pipx venv** (ansible.builtin.command) - Conditional
+- **Install impacket from source into NetExec venv (fallback for pipx inject)** (ansible.builtin.shell) - Conditional
+- **Re-verify regsecrets after examples copy** (ansible.builtin.command) - Conditional
+- **Fail if regsecrets not available in NetExec venv** (ansible.builtin.fail) - Conditional
+- **Find nxc binary location** (ansible.builtin.shell)
+- **Create symlink for nxc in /usr/local/bin** (ansible.builtin.file) - Conditional
+- **Find netexec binary location** (ansible.builtin.shell)
+- **Create symlink for netexec in /usr/local/bin** (ansible.builtin.file) - Conditional
 
 ## Example Playbook
 

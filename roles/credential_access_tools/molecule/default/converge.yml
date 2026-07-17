@@ -12,3 +12,6 @@
         name: l50.arsenal.credential_access_tools
       vars:
         credential_access_tools_pip_break_system_packages: true
+        # NetExec needs a Rust toolchain to build aardwolf; not worth setting
+        # up in molecule. Kali still exercises the apt-installed netexec path.
+        credential_access_tools_install_netexec: "{{ ansible_facts['distribution'] == 'Kali' }}"
