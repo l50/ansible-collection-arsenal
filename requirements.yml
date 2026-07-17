@@ -7,11 +7,11 @@ collections:
   - name: amazon.aws
     version: 11.4.0
   - name: ansible.windows
-    version: 3.6.1
+    version: 3.7.0
   - name: community.docker
     version: 5.2.1
   - name: community.general
-    version: 13.1.0
+    version: 13.2.0
   - name: https://github.com/CowDogMoo/ansible-collection-workstation.git
     type: git
     version: main
