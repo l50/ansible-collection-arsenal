@@ -72,6 +72,29 @@
             state: absent
           become: true
 
+    - name: Build hashcat Rust plugins serially
+      ansible.builtin.shell: |
+        . "$HOME/.cargo/env"
+        plugins=()
+        for manifest in Rust/bridges/*/Cargo.toml; do
+          [ -f "$manifest" ] || continue
+          crate=${manifest#Rust/bridges/}
+          plugins+=("bridges/subs/${crate%/Cargo.toml}.so")
+        done
+        for manifest in Rust/feeds/*/Cargo.toml; do
+          [ -f "$manifest" ] || continue
+          crate=${manifest#Rust/feeds/}
+          plugins+=("feeds/rust_${crate%/Cargo.toml}.so")
+        done
+        if [ -n "${plugins[*]}" ]; then
+          make -j1 "${plugins[@]}"
+        fi
+      args:
+        chdir: /opt/hashcat
+        creates: /opt/hashcat/hashcat
+        executable: /bin/bash
+      become: true
+
     - name: Build hashcat
       ansible.builtin.shell: |
         . "$HOME/.cargo/env"
