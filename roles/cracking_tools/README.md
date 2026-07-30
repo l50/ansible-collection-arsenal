@@ -75,6 +75,7 @@ Install and configure password cracking tools
 - **Download rustup installer** (ansible.builtin.get_url)
 - **Run rustup installer** (ansible.builtin.shell)
 - **Remove rustup installer** (ansible.builtin.file)
+- **Build hashcat Rust plugins serially** (ansible.builtin.shell)
 - **Build hashcat** (ansible.builtin.shell)
 - **Install hashcat binary** (ansible.builtin.copy)
 - **Create hashcat share directory** (ansible.builtin.file)
