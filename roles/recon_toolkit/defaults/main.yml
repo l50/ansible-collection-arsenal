@@ -22,7 +22,7 @@ recon_toolkit_shell: "{{
 recon_toolkit_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
   - name: go
-    version: "1.26.5"
+    version: "1.26.6"
     scope: "global"
   # renovate: datasource=github-tags depName=nodejs packageName=nodejs/node extractVersion=^v(?<version>.*)$
   - name: node
