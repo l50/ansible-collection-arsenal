@@ -16,7 +16,7 @@ ttpforge_shell: "{{
 ttpforge_mise_plugins:
   # renovate: datasource=github-tags depName=golang packageName=golang/go extractVersion=^go(?<version>.*)$
   - name: go
-    version: "1.27.0"
+    version: "1.27.1"
     scope: "global"
   # renovate: datasource=github-tags depName=python packageName=python/cpython extractVersion=^v(?<version>.*)$
   - name: python
