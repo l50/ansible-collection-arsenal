@@ -22,6 +22,7 @@ lateral_movement_tools_ubuntu_packages:
   - ruby-dev
   - rubygems
   - libffi-dev  # Required for building ffi gem (evil-winrm dependency)
+  - libreadline-dev  # Provides readline/readline.h for readline-ext gem (evil-winrm dependency)
   - clang  # Required for building native gem extensions
   - freerdp3-x11  # xfreerdp for RDP pass-the-hash
   - smbclient
