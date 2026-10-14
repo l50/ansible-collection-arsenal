@@ -19,6 +19,10 @@
 {%- endif %}
 
 ## Role Variables
+{#- Descriptions come from a `# description:` comment above the default, else
+    from meta/argument_specs.yml (main entry point), flattened to one line so a
+    folded block can't break the table. #}
+{%- set spec_options = ((role.argument_specs or {}).argument_specs or {}).main.options | default({}, true) if ((role.argument_specs or {}).argument_specs or {}).main is defined else {} %}
 {%- for defaultfile in role.defaults %}
 
 ### Default Variables ({{ defaultfile.file }})
@@ -27,7 +31,7 @@
 | -------- | ---- | ------- | ----------- |
 {%- for key, details in defaultfile.data.items() %}
 {%- if not key.endswith('.0') and not key.endswith('.1') and not key.endswith('.2') and not key.endswith('.3') and not key.endswith('.4') and not key.endswith('.5') and not key.endswith('.6') and '.' not in key or key.count('.') == 1 %}
-| `{{ key }}` | {{ details.type }} | <code>{{ details.value | replace('|', '&#124;') | replace('[', '&#91;') | replace(']', '&#93;') | replace('\n', '\\n') }}</code> | {{ details.description or 'No description' }} |
+| `{{ key }}` | {{ details.type }} | <code>{{ details.value | replace('|', '&#124;') | replace('[', '&#91;') | replace(']', '&#93;') | replace('\n', '\\n') }}</code> | {{ details.description or ((spec_options[key].description | default('', true)) if key in spec_options else '') | replace('\n', ' ') | trim or 'No description' }} |
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
