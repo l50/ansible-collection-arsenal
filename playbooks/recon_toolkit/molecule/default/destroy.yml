@@ -10,5 +10,8 @@
         name: "{{ item.name }}"
         state: absent
         force_kill: "{{ item.force_kill | default(true) }}"
+        # Removing the kali container (large writable layer) can exceed the
+        # Docker SDK default 60s read timeout on GitHub-hosted runners.
+        timeout: 300
       loop: "{{ molecule_yml.platforms }}"
       when: molecule_yml.platforms is defined
