@@ -2,6 +2,14 @@
 - name: Converge
   hosts: all
   gather_facts: true
+  # Write the remote AnsiballZ module payload to /var/tmp instead of /tmp. The
+  # systemd-based geerlingguy/docker-ubuntu2204-ansible image mounts a fresh
+  # tmpfs over /tmp shortly after boot, which races with fact gathering and can
+  # delete the payload zip mid-execution (FileNotFoundError: ...payload.zip ->
+  # "The following modules failed to execute: ansible.legacy.setup"). /var/tmp
+  # lives on the container's persistent overlay and is never shadowed.
+  environment:
+    TMPDIR: /var/tmp
   vars:
     test_username: "ttpforge"
     test_shell: "/bin/bash"
