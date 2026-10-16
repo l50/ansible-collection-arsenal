@@ -1,0 +1,30 @@
+---
+# Template-sync PRs from CowDogMoo/ansible-collection-workstation carry no
+# auto-merge, so each one sat green until merged by hand. Enable auto-merge on
+# them; the default-branch ruleset still requires the pre-commit check to pass
+# before GitHub merges.
+name: Template Sync Automerge
+on:
+  pull_request_target:
+    branches: ["main"]
+    types: ["opened", "reopened", "synchronize"]
+
+permissions: {}
+
+jobs:
+  automerge:
+    name: Enable auto-merge on template-sync PR
+    if: >-
+      github.event.pull_request.user.login == 'l50-renovate-bot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'repo-sync/ansible-collection-workstation/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
