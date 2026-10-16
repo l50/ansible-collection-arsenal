@@ -72,6 +72,14 @@ jobs:
             if task -y run-pre-commit; then
               exit 0
             fi
+            # A hook that rewrote files (docsible, end-of-file-fixer, ...) is a
+            # real failure; retrying would pass against its own rewrite.
+            # autoupdate edits .pre-commit-config.yaml on every run, so skip it.
+            if [ -n "$(git status --porcelain -- . ':!.pre-commit-config.yaml')" ]; then
+              echo "Hooks modified files; commit these changes:"
+              git status --porcelain -- . ':!.pre-commit-config.yaml'
+              exit 1
+            fi
             echo "Attempt ${attempt} failed; retrying in $((attempt * 10))s..."
             sleep $((attempt * 10))
           done
