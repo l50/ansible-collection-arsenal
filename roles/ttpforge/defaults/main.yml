@@ -1,5 +1,5 @@
 ---
-ttpforge_cleanup: false  # Enable for Docker/container builds to minimize image size
+ttpforge_cleanup: false # Enable for Docker/container builds to minimize image size
 ttpforge_install_path: /opt/ttpforge
 ttpforge_username: "{{
   ansible_facts['user_id']
