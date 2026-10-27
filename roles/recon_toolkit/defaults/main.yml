@@ -3,7 +3,7 @@
 # Recon Toolkit - Default Variables
 # ============================================================================
 
-recon_toolkit_cleanup: false  # Enable for Docker/container builds to minimize image size
+recon_toolkit_cleanup: false # Enable for Docker/container builds to minimize image size
 recon_toolkit_install_path: /opt/recon_toolkit
 
 recon_toolkit_username: "{{
@@ -30,7 +30,7 @@ recon_toolkit_mise_plugins:
     scope: "global"
   # renovate: datasource=github-tags depName=python packageName=python/cpython extractVersion=^v(?<version>.*)$
   - name: python
-    version: "3.15.0"
+    version: "3.14.10"
     scope: "global"
 
 # ============================================================================
@@ -39,7 +39,7 @@ recon_toolkit_mise_plugins:
 recon_toolkit_core_packages:
   - curl
   - jq
-  - dnsutils       # dig, host, nslookup
+  - dnsutils # dig, host, nslookup
   - git
   - openssl
   - wget
