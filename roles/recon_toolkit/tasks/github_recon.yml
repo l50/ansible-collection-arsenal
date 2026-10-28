@@ -16,6 +16,10 @@
     executable: /bin/bash
   become: true
   become_user: "{{ recon_toolkit_username }}"
+  register: recon_toolkit_github_subdomains_go_install
+  until: recon_toolkit_github_subdomains_go_install is succeeded
+  retries: "{{ recon_toolkit_go_install_retries }}"
+  delay: "{{ recon_toolkit_go_install_delay }}"
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"

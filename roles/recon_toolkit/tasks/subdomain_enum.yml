@@ -16,6 +16,10 @@
     executable: /bin/bash
   become: true
   become_user: "{{ recon_toolkit_username }}"
+  register: recon_toolkit_subfinder_go_install
+  until: recon_toolkit_subfinder_go_install is succeeded
+  retries: "{{ recon_toolkit_go_install_retries }}"
+  delay: "{{ recon_toolkit_go_install_delay }}"
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
@@ -36,6 +40,10 @@
     executable: /bin/bash
   become: true
   become_user: "{{ recon_toolkit_username }}"
+  register: recon_toolkit_amass_go_install
+  until: recon_toolkit_amass_go_install is succeeded
+  retries: "{{ recon_toolkit_go_install_retries }}"
+  delay: "{{ recon_toolkit_go_install_delay }}"
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
@@ -59,6 +67,10 @@
     executable: /bin/bash
   become: true
   become_user: "{{ recon_toolkit_username }}"
+  register: recon_toolkit_assetfinder_go_install
+  until: recon_toolkit_assetfinder_go_install is succeeded
+  retries: "{{ recon_toolkit_go_install_retries }}"
+  delay: "{{ recon_toolkit_go_install_delay }}"
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
@@ -143,6 +155,10 @@
     executable: /bin/bash
   become: true
   become_user: "{{ recon_toolkit_username }}"
+  register: recon_toolkit_puredns_go_install
+  until: recon_toolkit_puredns_go_install is succeeded
+  retries: "{{ recon_toolkit_go_install_retries }}"
+  delay: "{{ recon_toolkit_go_install_delay }}"
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
@@ -163,6 +179,10 @@
     executable: /bin/bash
   become: true
   become_user: "{{ recon_toolkit_username }}"
+  register: recon_toolkit_shuffledns_go_install
+  until: recon_toolkit_shuffledns_go_install is succeeded
+  retries: "{{ recon_toolkit_go_install_retries }}"
+  delay: "{{ recon_toolkit_go_install_delay }}"
   environment:
     HOME: "{{ recon_toolkit_user_home }}"
     USER: "{{ recon_toolkit_username }}"
