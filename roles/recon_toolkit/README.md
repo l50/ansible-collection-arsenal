@@ -23,6 +23,8 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | -------- | ---- | ------- | ----------- |
 | `recon_toolkit_cleanup` | bool | <code>False</code> | No description |
 | `recon_toolkit_install_path` | str | <code>/opt/recon_toolkit</code> | No description |
+| `recon_toolkit_go_install_retries` | int | <code>5</code> | No description |
+| `recon_toolkit_go_install_delay` | int | <code>10</code> | No description |
 | `recon_toolkit_username` | str | <code>{{ ansible_facts&#91;'user_id'&#93; if ansible_facts&#91;'os_family'&#93; == 'Darwin' else ansible_facts&#91;'distribution'&#93; &#124; lower }}</code> | No description |
 | `recon_toolkit_usergroup` | str | <code>{{ 'staff' if ansible_facts&#91;'os_family'&#93; == 'Darwin' else ansible_facts&#91;'user_id'&#93; if ansible_facts&#91;'os_family'&#93; in &#91;'Debian', 'RedHat'&#93; else ansible_facts&#91;'distribution'&#93; &#124; lower }}</code> | No description |
 | `recon_toolkit_shell` | str | <code>{{ '/bin/zsh' if ansible_facts&#91;'os_family'&#93; == 'Darwin' else '/bin/bash' }}</code> | No description |

@@ -5,6 +5,8 @@
 
 recon_toolkit_cleanup: false # Enable for Docker/container builds to minimize image size
 recon_toolkit_install_path: /opt/recon_toolkit
+recon_toolkit_go_install_retries: 5 # Retry go install on transient proxy.golang.org errors
+recon_toolkit_go_install_delay: 10
 
 recon_toolkit_username: "{{
   ansible_facts['user_id']
