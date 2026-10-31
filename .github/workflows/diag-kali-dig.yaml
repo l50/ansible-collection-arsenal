@@ -10,24 +10,28 @@ jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Probe dig in Kali container
         run: |
-          docker run --rm cisagov/docker-kali-ansible:latest bash -c '
-            set -x
+          docker run --rm -v "$PWD/.github/diag:/d:ro" cisagov/docker-kali-ansible:latest bash -c '
             export DEBIAN_FRONTEND=noninteractive
-            grep -m1 "model name" /proc/cpuinfo
+            probe() { echo "=== $1"; dig -v; echo "rc=$?"; }
             apt-get update -qq >/dev/null
             apt-get install -y -qq dnsutils >/dev/null 2>&1
-            dpkg -l libc6 libssl3t64 openssl openssl-provider-legacy bind9-libs bind9-dnsutils libjemalloc2 | tail -7
-            dig -v; echo "rc=$?"
-            OPENSSL_CONF=/dev/null dig -v; echo "noconf rc=$?"
-            openssl version -a; openssl list -providers; echo "prov rc=$?"
-            ls -l /usr/lib/x86_64-linux-gnu/ossl-modules/ || true
-            apt-get install -y -qq --only-upgrade libc6 >/dev/null 2>&1; dpkg -l libc6 | tail -1
-            dig -v; echo "after libc rc=$?"
-            apt-get install -y -qq --only-upgrade libssl3t64 openssl openssl-provider-legacy libssl-dev >/dev/null 2>&1
-            dpkg -l libssl3t64 openssl-provider-legacy | tail -2
-            dig -v; echo "after ssl rc=$?"
-            openssl list -providers; echo "prov2 rc=$?"
-            OPENSSL_CONF=/dev/null dig -v; echo "noconf2 rc=$?"
+            probe base
+            pk=$(for p in $(cat /d/pkgs.txt); do apt-cache show "$p" >/dev/null 2>&1 && echo "$p"; done)
+            apt-get install -y -qq $pk > /tmp/a.log 2>&1; echo "first install rc=$?"; tail -2 /tmp/a.log
+            dpkg -l libc6 libssl3t64 libjemalloc2 systemd | tail -4
+            probe after-first-install
+            if ! dig -v >/dev/null 2>&1; then
+              ldd /usr/bin/dig
+              env | sort | grep -i -E "ssl|ld_|conf" || true
+              OPENSSL_CONF=/dev/null dig -v; echo "noconf rc=$?"
+              ls /etc/ld.so.conf.d/; cat /etc/ld.so.conf.d/* ; ls -la /etc/ssl /usr/lib/ssl
+              ls -l /usr/lib/x86_64-linux-gnu/ossl-modules/
+              openssl list -providers; echo "prov rc=$?"
+              OPENSSL_TRACE=all dig -v 2>&1 | tail -20 || true
+              apt-get install -y -qq strace >/dev/null 2>&1 && strace -f -e trace=openat,open dig -v 2>&1 | grep -v ENOENT | tail -40
+            fi
           ' || true

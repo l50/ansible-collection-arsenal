@@ -9,17 +9,6 @@
     package_management_common_install_packages: "{{ recon_toolkit_common_install_packages }}"
     package_management_debian_specific_packages: "{{ recon_toolkit_debian_packages }}"
 
-# Kali is rolling: installing new packages onto an older image upgrades libc
-# and pulls fresh BIND builds while leaving the OpenSSL libraries behind, and
-# dig then aborts in OPENSSL_init_ssl(). Bring the OpenSSL stack current.
-- name: Upgrade the OpenSSL stack on Kali so dig can initialize TLS
-  ansible.builtin.apt:
-    name: "{{ recon_toolkit_kali_openssl_packages }}"
-    state: latest
-    only_upgrade: true
-  become: true
-  when: ansible_facts['distribution'] == 'Kali'
-
 - name: Create user
   ansible.builtin.include_role:
     name: cowdogmoo.workstation.user_setup
