@@ -29,7 +29,8 @@ tasks:
     desc: "Generate changelog fragment from commits since last release"
     cmds:
       - |
-        # Get the last release tag
+        # Get the last release tag (release tags are created on GitHub, so fetch them first)
+        git fetch --tags --quiet
         LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
         if [ -z "$LAST_TAG" ]; then
@@ -49,11 +50,27 @@ tasks:
         echo "$COMMITS"
         echo ""
 
-        # Generate changelog fragment using fabric
-        echo "$COMMITS" | fabric --pattern changelog > "changelogs/fragments/{{.NEXT_VERSION}}.yaml"
+        FRAGMENT="changelogs/fragments/{{.NEXT_VERSION}}.yaml"
+        mkdir -p changelogs/fragments
 
-        echo "Generated changelog fragment: changelogs/fragments/{{.NEXT_VERSION}}.yaml"
-        cat "changelogs/fragments/{{.NEXT_VERSION}}.yaml"
+        # Generate the changelog fragment with the squad changelog agent
+        squad run --agent changelog --provider claude-code --isolate none \
+          "Release version {{.NEXT_VERSION}} of this Ansible collection, covering ${LAST_TAG:-the root commit}..HEAD. \
+        Write the entry as a new antsibull-changelog fragment at $FRAGMENT and \
+        do not edit changelogs/changelog.yaml or changelogs/CHANGELOG.rst. \
+        Use only the sections in changelogs/config.yaml (added, changed, removed, fixed) plus release_summary. \
+        Single-quote any entry that contains a '#' so YAML does not read it as a comment."
+
+        if [ ! -s "$FRAGMENT" ]; then
+          echo "squad did not write $FRAGMENT"
+          exit 1
+        fi
+
+        echo "Generated changelog fragment: $FRAGMENT"
+        cat "$FRAGMENT"
+    preconditions:
+      - sh: command -v squad
+        msg: "squad not found. Install it from https://github.com/CowDogMoo/squad"
     requires:
       vars: ['NEXT_VERSION']
 
