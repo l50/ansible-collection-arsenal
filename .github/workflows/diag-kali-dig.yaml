@@ -10,24 +10,19 @@ jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
-      - name: Host AppArmor profiles for dig
+      - name: Allow Kali OpenSSL config in host dig AppArmor profile
+        shell: bash
         run: |
-          grep -m1 PRETTY /etc/os-release
-          grep -rl -E "bin/dig|bin/\{[^}]*dig" /etc/apparmor.d 2>/dev/null || true
-          for f in $(grep -rl -E "bin/dig|bin/\{[^}]*dig" /etc/apparmor.d 2>/dev/null); do echo "== $f"; cat "$f"; done
-          sudo aa-status 2>/dev/null | grep -i -E "dig|bind" || true
+          if [[ -f /etc/apparmor.d/dig ]]; then
+            sudo mkdir -p /etc/apparmor.d/local
+            echo '/etc/ssl/kali.cnf r,' | sudo tee -a /etc/apparmor.d/local/dig
+            sudo apparmor_parser -r /etc/apparmor.d/dig
+          fi
       - name: Privileged Kali container
         run: |
           docker run --rm --privileged cisagov/docker-kali-ansible:latest bash -c '
             export DEBIAN_FRONTEND=noninteractive
             apt-get update -qq >/dev/null; apt-get install -y -qq dnsutils >/dev/null 2>&1
-            cat /proc/self/attr/current
             dig -v; echo "priv rc=$?"
-          ' || true
-          docker run --rm cisagov/docker-kali-ansible:latest bash -c '
-            export DEBIAN_FRONTEND=noninteractive
-            apt-get update -qq >/dev/null; apt-get install -y -qq dnsutils >/dev/null 2>&1
-            cat /proc/self/attr/current
-            dig -v; echo "unpriv rc=$?"
           ' || true
           sudo dmesg | grep -i apparmor | grep -i dig | tail -5 || true
