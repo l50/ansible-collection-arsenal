@@ -1,0 +1,33 @@
+---
+name: Diag Kali dig
+on:
+  push:
+    branches:
+      - fm/arsenal-recon-dig
+permissions:
+  contents: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe dig in Kali container
+        run: |
+          docker run --rm cisagov/docker-kali-ansible:latest bash -c '
+            set -x
+            export DEBIAN_FRONTEND=noninteractive
+            grep -m1 "model name" /proc/cpuinfo
+            apt-get update -qq >/dev/null
+            apt-get install -y -qq dnsutils >/dev/null 2>&1
+            dpkg -l libc6 libssl3t64 openssl openssl-provider-legacy bind9-libs bind9-dnsutils libjemalloc2 | tail -7
+            dig -v; echo "rc=$?"
+            OPENSSL_CONF=/dev/null dig -v; echo "noconf rc=$?"
+            openssl version -a; openssl list -providers; echo "prov rc=$?"
+            ls -l /usr/lib/x86_64-linux-gnu/ossl-modules/ || true
+            apt-get install -y -qq --only-upgrade libc6 >/dev/null 2>&1; dpkg -l libc6 | tail -1
+            dig -v; echo "after libc rc=$?"
+            apt-get install -y -qq --only-upgrade libssl3t64 openssl openssl-provider-legacy libssl-dev >/dev/null 2>&1
+            dpkg -l libssl3t64 openssl-provider-legacy | tail -2
+            dig -v; echo "after ssl rc=$?"
+            openssl list -providers; echo "prov2 rc=$?"
+            OPENSSL_CONF=/dev/null dig -v; echo "noconf2 rc=$?"
+          ' || true
