@@ -120,6 +120,11 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 | `recon_toolkit_packages.runtime_debian.1` | str | `masscan` | No description |
 | `recon_toolkit_packages.runtime_debian.2` | str | `nmap` | No description |
 | `recon_toolkit_packages.runtime_debian.3` | str | `whatweb` | No description |
+| `recon_toolkit_kali_openssl_packages` | list | `[]` | No description |
+| `recon_toolkit_kali_openssl_packages.0` | str | `libssl-dev` | No description |
+| `recon_toolkit_kali_openssl_packages.1` | str | `libssl3t64` | No description |
+| `recon_toolkit_kali_openssl_packages.2` | str | `openssl` | No description |
+| `recon_toolkit_kali_openssl_packages.3` | str | `openssl-provider-legacy` | No description |
 | `recon_toolkit_common_install_packages` | str | `{{ recon_toolkit_packages.essential + recon_toolkit_packages.build_only }}` | No description |
 | `recon_toolkit_debian_packages` | str | `{{ recon_toolkit_packages.runtime_debian }}` | No description |
 | `recon_toolkit_cleanup_packages_debian` | str | `{{ recon_toolkit_packages.build_only }}` | No description |
@@ -182,6 +187,7 @@ Install reconnaissance tools for subdomain enumeration, HTTP discovery, web craw
 
 - **Set recon_toolkit user home directory** (ansible.builtin.include_tasks)
 - **Install required packages for recon_toolkit** (ansible.builtin.include_role)
+- **Upgrade the OpenSSL stack on Kali so dig can initialize TLS** (ansible.builtin.apt) - Conditional
 - **Create user** (ansible.builtin.include_role)
 - **Ensure home directory exists for recon_toolkit user** (ansible.builtin.file)
 - **Check if .bashrc exists for recon_toolkit user** (ansible.builtin.stat)
