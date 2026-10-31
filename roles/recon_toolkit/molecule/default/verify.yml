@@ -36,31 +36,6 @@
       changed_when: false
       failed_when: false
 
-    - name: TEMP diag dig failure
-      ansible.builtin.shell: |
-        set -x
-        command -v dig; ls -l /usr/bin/dig
-        env | sort
-        ldd /usr/bin/dig
-        OPENSSL_CONF=/dev/null dig -v; echo "noconf rc=$?"
-        env -i PATH=/usr/bin:/bin dig -v; echo "envi rc=$?"
-        openssl version -a; openssl list -providers; echo "prov rc=$?"
-        cat /etc/ld.so.conf.d/*; ls -la /usr/local/lib /etc/ld.so.preload 2>&1 | head -40
-        ls -la /etc/ssl /usr/lib/ssl
-        dpkg -l libc6 libssl3t64 openssl openssl-provider-legacy bind9-libs | tail -5
-        apt-get install -y -qq strace >/dev/null 2>&1; strace -f -e trace=openat dig -v 2>&1 | grep -v ENOENT | tail -60
-      args:
-        executable: /bin/bash
-      register: recon_toolkit_dig_diag
-      changed_when: false
-      failed_when: false
-      when: recon_toolkit_dig_check.rc != 0
-
-    - name: TEMP show dig diag
-      ansible.builtin.debug:
-        msg: "{{ (recon_toolkit_dig_diag.stdout_lines | default([])) + (recon_toolkit_dig_diag.stderr_lines | default([])) }}"
-      when: recon_toolkit_dig_check.rc != 0
-
     - name: Verify openssl is installed
       ansible.builtin.command: openssl version
       register: recon_toolkit_openssl_check
