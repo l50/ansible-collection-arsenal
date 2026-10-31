@@ -26,6 +26,13 @@ recon_toolkit_packages:
     - nmap
     - whatweb
 
+# OpenSSL packages kept current on Kali so BIND tools (dig) can initialize TLS
+recon_toolkit_kali_openssl_packages:
+  - libssl-dev
+  - libssl3t64
+  - openssl
+  - openssl-provider-legacy
+
 # Compose installation lists
 recon_toolkit_common_install_packages: "{{ recon_toolkit_packages.essential + recon_toolkit_packages.build_only }}"
 
