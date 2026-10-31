@@ -56,7 +56,10 @@
       ansible.builtin.assert:
         that:
           - recon_toolkit_dig_check.rc == 0
-        fail_msg: "dig is not properly installed"
+        fail_msg: >-
+          dig is not properly installed (rc={{ recon_toolkit_dig_check.rc | default('n/a') }},
+          msg={{ recon_toolkit_dig_check.msg | default('') }},
+          stderr={{ recon_toolkit_dig_check.stderr | default('') }})
         success_msg: "dig is installed"
 
     - name: Assert openssl is available
