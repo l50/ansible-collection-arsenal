@@ -10,28 +10,24 @@ jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Probe dig in Kali container
+      - name: Host AppArmor profiles for dig
         run: |
-          docker run --rm -v "$PWD/.github/diag:/d:ro" cisagov/docker-kali-ansible:latest bash -c '
+          grep -m1 PRETTY /etc/os-release
+          grep -rl -E "bin/dig|bin/\{[^}]*dig" /etc/apparmor.d 2>/dev/null || true
+          for f in $(grep -rl -E "bin/dig|bin/\{[^}]*dig" /etc/apparmor.d 2>/dev/null); do echo "== $f"; cat "$f"; done
+          sudo aa-status 2>/dev/null | grep -i -E "dig|bind" || true
+      - name: Privileged Kali container
+        run: |
+          docker run --rm --privileged cisagov/docker-kali-ansible:latest bash -c '
             export DEBIAN_FRONTEND=noninteractive
-            probe() { echo "=== $1"; dig -v; echo "rc=$?"; }
-            apt-get update -qq >/dev/null
-            apt-get install -y -qq dnsutils >/dev/null 2>&1
-            probe base
-            pk=$(for p in $(cat /d/pkgs.txt); do apt-cache show "$p" >/dev/null 2>&1 && echo "$p"; done)
-            apt-get install -y -qq $pk > /tmp/a.log 2>&1; echo "first install rc=$?"; tail -2 /tmp/a.log
-            dpkg -l libc6 libssl3t64 libjemalloc2 systemd | tail -4
-            probe after-first-install
-            if ! dig -v >/dev/null 2>&1; then
-              ldd /usr/bin/dig
-              env | sort | grep -i -E "ssl|ld_|conf" || true
-              OPENSSL_CONF=/dev/null dig -v; echo "noconf rc=$?"
-              ls /etc/ld.so.conf.d/; cat /etc/ld.so.conf.d/* ; ls -la /etc/ssl /usr/lib/ssl
-              ls -l /usr/lib/x86_64-linux-gnu/ossl-modules/
-              openssl list -providers; echo "prov rc=$?"
-              OPENSSL_TRACE=all dig -v 2>&1 | tail -20 || true
-              apt-get install -y -qq strace >/dev/null 2>&1 && strace -f -e trace=openat,open dig -v 2>&1 | grep -v ENOENT | tail -40
-            fi
+            apt-get update -qq >/dev/null; apt-get install -y -qq dnsutils >/dev/null 2>&1
+            cat /proc/self/attr/current
+            dig -v; echo "priv rc=$?"
           ' || true
+          docker run --rm cisagov/docker-kali-ansible:latest bash -c '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq >/dev/null; apt-get install -y -qq dnsutils >/dev/null 2>&1
+            cat /proc/self/attr/current
+            dig -v; echo "unpriv rc=$?"
+          ' || true
+          sudo dmesg | grep -i apparmor | grep -i dig | tail -5 || true
