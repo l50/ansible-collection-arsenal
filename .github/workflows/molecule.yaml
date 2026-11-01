@@ -224,6 +224,20 @@ jobs:
           echo "Disk space after cleanup:"
           df -h
 
+      - name: Allow Kali OpenSSL config in host dig AppArmor profile
+        if: env.ACT == ''
+        shell: bash
+        run: |
+          # Ubuntu 26.04 runners enforce an AppArmor profile on /usr/bin/dig.
+          # Privileged Molecule containers run unconfined, so dig inside them
+          # falls under that host profile, which denies the /etc/ssl/kali.cnf
+          # include in Kali's openssl.cnf and makes dig abort on startup.
+          if [[ -f /etc/apparmor.d/dig ]]; then
+            sudo mkdir -p /etc/apparmor.d/local
+            echo '/etc/ssl/kali.cnf r,' | sudo tee -a /etc/apparmor.d/local/dig
+            sudo apparmor_parser -r /etc/apparmor.d/dig
+          fi
+
       - name: Checkout git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -324,6 +338,20 @@ jobs:
           rm -rf /opt/hostedtoolcache
           echo "Disk space after cleanup:"
           df -h
+
+      - name: Allow Kali OpenSSL config in host dig AppArmor profile
+        if: env.ACT == ''
+        shell: bash
+        run: |
+          # Ubuntu 26.04 runners enforce an AppArmor profile on /usr/bin/dig.
+          # Privileged Molecule containers run unconfined, so dig inside them
+          # falls under that host profile, which denies the /etc/ssl/kali.cnf
+          # include in Kali's openssl.cnf and makes dig abort on startup.
+          if [[ -f /etc/apparmor.d/dig ]]; then
+            sudo mkdir -p /etc/apparmor.d/local
+            echo '/etc/ssl/kali.cnf r,' | sudo tee -a /etc/apparmor.d/local/dig
+            sudo apparmor_parser -r /etc/apparmor.d/dig
+          fi
 
       - name: Checkout git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -434,6 +462,20 @@ jobs:
           rm -rf /opt/hostedtoolcache
           echo "Disk space after cleanup:"
           df -h
+
+      - name: Allow Kali OpenSSL config in host dig AppArmor profile
+        if: env.ACT == ''
+        shell: bash
+        run: |
+          # Ubuntu 26.04 runners enforce an AppArmor profile on /usr/bin/dig.
+          # Privileged Molecule containers run unconfined, so dig inside them
+          # falls under that host profile, which denies the /etc/ssl/kali.cnf
+          # include in Kali's openssl.cnf and makes dig abort on startup.
+          if [[ -f /etc/apparmor.d/dig ]]; then
+            sudo mkdir -p /etc/apparmor.d/local
+            echo '/etc/ssl/kali.cnf r,' | sudo tee -a /etc/apparmor.d/local/dig
+            sudo apparmor_parser -r /etc/apparmor.d/dig
+          fi
 
       - name: Checkout git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
