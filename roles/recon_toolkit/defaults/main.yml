@@ -8,11 +8,6 @@ recon_toolkit_install_path: /opt/recon_toolkit
 recon_toolkit_go_install_retries: 5 # Retry go install on transient proxy.golang.org errors
 recon_toolkit_go_install_delay: 10
 
-# Retry behavior for binary downloads from GitHub release endpoints, which
-# intermittently time out or return transient errors from CI runners.
-recon_toolkit_download_retries: 5
-recon_toolkit_download_delay: 10
-
 recon_toolkit_username: "{{
   ansible_facts['user_id']
   if ansible_facts['os_family'] == 'Darwin'
