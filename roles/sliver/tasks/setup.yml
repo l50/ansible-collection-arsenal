@@ -166,6 +166,9 @@
     - molecule-idempotence-notest
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
   register: sliver_compile_result
+  until: sliver_compile_result is succeeded
+  retries: 2
+  delay: 30
   failed_when:
     - sliver_compile_result.rc != 0
     - "'No executable go found' not in sliver_compile_result.stderr"

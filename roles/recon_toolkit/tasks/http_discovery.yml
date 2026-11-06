@@ -76,6 +76,10 @@
         dest: "/tmp/{{ recon_toolkit_rustscan_archive }}"
         mode: '0644'
       become: true
+      register: recon_toolkit_rustscan_download
+      until: recon_toolkit_rustscan_download is succeeded
+      retries: 5
+      delay: 10
       when: recon_toolkit_rustscan_installed.rc != 0
 
     - name: Create rustscan temp extraction directory
@@ -226,6 +230,10 @@
         dest: "/tmp/feroxbuster.zip"
         mode: '0644'
       become: true
+      register: recon_toolkit_feroxbuster_download
+      until: recon_toolkit_feroxbuster_download is succeeded
+      retries: 5
+      delay: 10
       when: recon_toolkit_feroxbuster_installed.rc != 0
 
     - name: Create feroxbuster temp extraction directory
